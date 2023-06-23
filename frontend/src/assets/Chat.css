@@ -1,0 +1,407 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;500&display=swap');
+
+.Chat {
+  height: 100vh;
+  display: flex;
+  font-family: 'Roboto', sans-serif;
+  position: relative;
+}
+  
+#chat-container {
+    border: 1px solid #ccc;
+    border-radius: 14px;
+    overflow-y: scroll;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+    justify-content: baseline;
+    flex-grow: 1;
+    overflow-y: auto;
+    height: 100vh;
+}
+  
+.message {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #45a049;
+  border-radius: 10px;
+  width: 33%;
+}
+
+.message-sent {
+  align-self: flex-end;
+}
+
+.message-received {
+  align-self: flex-start;
+  background-color: #0089d8;
+}
+  
+.msg-input {
+  margin-top: 10px;
+}
+  
+.input-field {
+  width: 70%;
+  padding: 5px;
+  bottom: 0;
+  align-items: end;
+  border-radius: 10px;
+  width: 90% ;
+}
+  
+.send-button {
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  bottom: 0;
+  transition: 0.5s;
+  width: 8%;
+  min-width: 50px;
+}
+  
+.send-button:hover {
+  opacity: 0.7;
+}
+
+#chat-container::-webkit-scrollbar {
+  width: 8px;
+}
+  
+#chat-container::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+  
+#chat-container::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.channels-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.channels-list::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.channels-list::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.selected {
+  background-color: #555;
+  font-weight: bold;
+}
+
+.channel{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.channel:hover{
+  background-color: #888;
+  cursor: pointer;
+}
+
+.channels-list {
+  width: 200px;
+  border: 1px solid #ccc;
+  overflow-y: scroll;
+  overflow-x: auto;
+  padding: 10px;
+  position: relative;
+}
+
+.create-channel-button {
+  position: absolute;
+  bottom: 0;
+  border-radius: 10px;
+}
+
+
+.choose-channel-button:hover{
+  cursor: pointer;
+  background-color: #888;
+}
+
+#msg-container{
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#msg-container::-webkit-scrollbar {
+    width: 8px;
+}
+  
+#msg-container::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+}
+  
+#msg-container::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+.message-time{
+  font-size: 12px;
+}
+
+.button-container {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5%;
+  margin-left: 10px;
+  background-color: #555;
+  border-radius: 15px;
+
+}
+
+
+.bar-button{
+  border: none;
+  background-color: transparent;
+  padding: 5px;
+  cursor: pointer;
+  width: 25%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  transition: transform 0.3s ease-in-out;
+}
+
+.bar-button:hover {
+  transform: translateY(-5px);
+}
+
+
+.user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.user:hover {
+  background-color: #888;
+}
+
+.add-friend {
+  background: url('../src/assets/add_friend.svg') no-repeat;
+  border: none;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.friend-remove{
+  background: url('../src/assets/remove_friend.svg') no-repeat;
+  border: none;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+@media (prefers-color-scheme: light) {
+  .channel-button,
+  .people-button,
+  .new-button,
+  .back-button,
+  .add-friend,
+  .button-container,
+  .search-button {
+    filter: invert(100%);
+  }
+}
+
+
+.channel-button {
+  background-image: url('../src/assets/channels.svg');
+}
+.people-button {
+  background-image: url('../src/assets/user.svg');
+}
+
+.new-button {
+  background-image: url('../src/assets/new_message.svg');
+}
+
+.search-button {
+  background-image: url('../src/assets/search.svg');  
+}
+
+.search-input-container {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5%;
+  border-radius: 15px;
+  margin-left: 10px;
+  max-width: 200px;
+  background-color: #555;
+}
+
+.search-input {
+  padding: 5px;
+  margin: 0 2px;
+  border: none;
+  width: 60%;
+}
+
+.back-button {
+  background-image: url('../src/assets/back.svg');
+  border: none;
+  background-color: #555;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transition: transform 0.3s ease-in-out;
+  height: 32px;
+  width: 32px;
+}
+
+.list-header{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ffffff;
+  vertical-align: middle;
+  line-height: 40px;
+  font-weight: bold;
+}
+
+.send-search-button{
+  background-image: url('../src/assets/search.svg');  
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color:#6D9E67;
+  border: none;
+  outline: none;
+  padding: 5px;
+  cursor: pointer;
+  color: #fff;
+  width: 25px;
+  height: 25px;
+  border-radius: 3px;
+}
+
+
+.highlighted {
+  border-bottom: 2px solid #999;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  overflow: visible; 
+  width: 100%; 
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  position: fixed;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; 
+  padding: 15px;
+  left: 490px;
+}
+
+@media (max-width: 767px) {
+  .tooltip .tooltiptext {
+    left: 47%;
+    right: auto;
+  }
+}
+
+
+@media (max-width: 1024px) {
+  .tooltip .tooltiptext {
+    left: 400px;
+
+  }
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #333;
+}
+
+.modal-content {
+  border-radius: 20px;
+  background-color: #fefefe;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 400px; 
+  border-radius: 20px;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.list-fade-enter-active, .list-fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.list-fade-enter, .list-fade-leave-to {
+  opacity: 0;
+}
