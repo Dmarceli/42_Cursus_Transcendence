@@ -73,7 +73,7 @@
     <div class="button-container" v-if="side_info !== 3" >
       <button :class="['channel-button', 'bar-button', { 'highlighted': side_info === 0 }]"
         @click="getChannels()"></button>
-      <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]" @click="getUsers()"></button>
+      <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]" @click="getFriends()"></button>
       <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]" @click="createChannel()"></button>
       <button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]" @click="search()"></button>
     </div>
@@ -304,6 +304,7 @@ const isFriend = (friendId) => {
 
 
 const getFriends = async () => {
+  side_info.value = 1;
   try {
     const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends/${localStorage.id}`);
     if (response.ok) {
