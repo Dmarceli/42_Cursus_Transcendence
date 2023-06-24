@@ -29,8 +29,8 @@ export class AuthController {
   }
   
   
-  @Get('/callback_intra')
   @UseGuards(FortyTwoAuthGuard)
+  @Get('/callback_intra')
   async callbackIntra(@Req() req: any) {
     console.log("cheguei aqui")
     console.log('Request User:');

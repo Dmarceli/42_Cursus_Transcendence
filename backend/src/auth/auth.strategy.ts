@@ -8,9 +8,12 @@ import { UsersService } from 'src/db_interactions_modules/users/users.service';
 export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
   constructor(private userService: UsersService) {
     super({
+      authorizationURL: 'https://api.intra.42.fr/oauth/authorize',
+      tokenURL: 'https://api.intra.42.fr/oauth/token',
       clientID: process.env.INTRA_CLIENT_ID,
       clientSecret: process.env.INTRA_CLIENT_SECRET,
-      callbackURL: process.env.INTRA_REDIRECT_URI,
+      //callbackURL: process.env.INTRA_REDIRECT_URI,
+      callbackURL: 'http://localhost:3000/auth/callback_intra',
     });
   }
   
@@ -19,7 +22,7 @@ export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
     refreshToken: string,
     profile: Profile,
     ): Promise<any> {
-      console.log(profile._json.id);
+    console.log(profile._json.id);
     console.log(profile._json.email);
     console.log(profile._json.login);
     console.log(profile._json.first_name);
@@ -34,12 +37,12 @@ export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
     
     const newUser: CreateUserDto = {
       // id: profile.id,
-      intra_nick: "dmarceli",
+      intra_nick: profile._json.login,
       // email: profile._json.email,
       nick: profile._json.login,
       // first_name: profile._json.first_name,
       // last_name: profile._json.last_name,
-      avatar: '',
+      avatar: 'a',
       // twoFactorAuthenticationSecret: '',
       // isTwoFactorAuthenticationEnabled: false,
     };
