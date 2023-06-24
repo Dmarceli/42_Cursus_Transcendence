@@ -55,12 +55,44 @@ onUnmounted(() => {
 })
 
 function isBallInsideHorizontalWalls() {
-  return ball.y + ball.radius < gamecanvas.value.height && ball.y - ball.radius > 0
+  return ball.y + ball.radius < gamecanvas.value.height && ball.y - ball.radius > 0;
 }
 
 function isBallInsideVerticalWalls() {
 
-  return ball.x + ball.radius < gamecanvas.value.width && ball.x - ball.radius > 0
+  return ball.x + ball.radius < gamecanvas.value.width && ball.x - ball.radius > 0;
+}
+
+function areColliding(circle, rectangle)
+{
+    let testX = circle.x;
+    let testY = circle.y;
+
+  if (circle.x < rectangle.x)
+  {
+    testX = rectangle.x;
+  }
+  else if (circle.x > rectangle.x+rectangle.width)
+  {
+    testX = rectangle.x+rectangle.width;
+  }
+  if (circle.y < rectangle.y){
+    testY = rectangle.y;
+  }
+  else if (circle.y > rectangle.y+rectangle.height)
+  {
+    testY = rectangle.y+rectangle.height;
+  }
+
+  let distX = circle.x-testX;
+  let distY = circle.y-testY;
+  let distance = Math.sqrt((distX*distX) + (distY*distY));
+
+  // if the distance is less than the radius, collision!
+  if (distance <= circle.radius) {
+    return true;
+  }
+  return false;
 }
 
 function init() {
@@ -71,7 +103,7 @@ function init() {
   ball.x = gamecanvas.value.width / 2
   ball.y = gamecanvas.value.height / 2
   ball.radius = gamecanvas.value.height / 100
-  ball.speed = 0.2
+  ball.speed = 0.4
 
   while (Math.abs(ball.direction.x) <= 0.4) {
     console.log('before' + ball.direction.x)
@@ -107,6 +139,9 @@ function start_animation()
       }
       if (!isBallInsideHorizontalWalls()) {
         ball.direction.y *= -1
+      }
+      if (areColliding(ball, paddle1) || areColliding(ball, paddle2)) {
+        ball.direction.x *= -1
       }
       ball.x += ball.direction.x * ball.speed * delta
       ball.y += ball.direction.y * ball.speed * delta
