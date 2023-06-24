@@ -15,7 +15,8 @@ export class UsersService {
 
 
   async createUser(User: CreateUserDto){
-    try {// Perform the database operation that may cause a duplicate key exception
+    // Perform the database operation that may cause a duplicate key exception
+    try {
         const response = await this.userRepository.save({...User, creation_date : new Date(), last_joined_date : new Date(), lost_games: 0, won_games: 0, xp_total:0})
         return response
       } catch (error) {
@@ -39,6 +40,13 @@ export class UsersService {
     else
       return res.status(200).json(resp);
   }
+
+  async findByLogin(intra_nick_ :string) {
+    const resp= await this.userRepository.findOne(
+      {where: {intra_nick: intra_nick_}}
+     );
+     return resp;
+   }
 
   // findOne(id: number) {
   //   return `This action returns a #${id} user`;

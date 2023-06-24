@@ -7,8 +7,8 @@ services:
     volumes:
       - v_db:/data
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - PGDATA=/data
       - APP_DATABASE=${DB_NAME}
     ports:
@@ -22,10 +22,9 @@ services:
     restart: on-failure
     volumes:
       - ./backend:/home/node/app
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-      - DB_NAME=${DB_NAME}
+
+    env_file:
+      - .env    
     ports:
       - "3000:3000"
     container_name: backend
