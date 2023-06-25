@@ -3,8 +3,12 @@
     <div class="channels-list">
       <div v-if="side_info === 0">
         <div class="list-header">JOINED CHANNELS</div>
-        <div v-for="channel in channels" :key="channel.id"
-          :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
+        <div
+          v-for="channel in channels"
+          :key="channel.id"
+          :class="['channel', { selected: channel.id === selected_channel }]"
+          @click="chooseChannel(channel.id)"
+        >
           {{ channel.channel_name }}
         </div>
       </div>
@@ -13,10 +17,10 @@
         <div v-for="user_friend in User_Friends" :key="user_friend.id" class="tooltip">
           <div class="user">
             <span class="tooltiptext">
-              Nickname: {{ user_friend.nick }}<br>
-              Intra Nick: {{ user_friend.intra_nick }}<br>
-              Lost Games: {{ user_friend.lost_games }}<br>
-              Won Games: {{ user_friend.won_games }}<br>
+              Nickname: {{ user_friend.nick }}<br />
+              Intra Nick: {{ user_friend.intra_nick }}<br />
+              Lost Games: {{ user_friend.lost_games }}<br />
+              Won Games: {{ user_friend.won_games }}<br />
             </span>
             {{ user_friend.nick }}
             <button class="friend-remove" @click="removeFriend(user_friend)"></button>
@@ -28,11 +32,23 @@
           <div class="modal-content">
             <span class="close" @click="showModal = false">&times;</span>
             <label for="channelName">Channel Name:</label>
-            <input class="input-field" type="text" id="channelName" name="channelName">
+            <input class="input-field" type="text" id="channelName" name="channelName" />
             <label for="channelName">Password:</label>
-            <input class="input-field" placeholder="(optional)" type="text" id="channelPassword" name="channelPassword">
+            <input
+              class="input-field"
+              placeholder="(optional)"
+              type="text"
+              id="channelPassword"
+              name="channelPassword"
+            />
             <label for="inviteUser">Invite Users:</label>
-            <select class="input-field" v-model="selectedUsers" id="inviteUser" name="inviteUser" multiple>
+            <select
+              class="input-field"
+              v-model="selectedUsers"
+              id="inviteUser"
+              name="inviteUser"
+              multiple
+            >
               <option value="" disabled>Select users</option>
               <option v-for="user in users" :key="user.id" :value="user.id">{{ user.nick }}</option>
             </select>
@@ -45,341 +61,355 @@
         <div v-for="user in users" :key="user.id" class="tooltip">
           <div class="user">
             <span class="tooltiptext">
-              Nickname: {{ user.nick }}<br>
-              Intra Nick: {{ user.intra_nick }}<br>
-              Lost Games: {{ user.lost_games }}<br>
-              Won Games: {{ user.won_games }}<br>
+              Nickname: {{ user.nick }}<br />
+              Intra Nick: {{ user.intra_nick }}<br />
+              Lost Games: {{ user.lost_games }}<br />
+              Won Games: {{ user.won_games }}<br />
             </span>
-          <transition name="list-fade" mode="out-in">
+            <transition name="list-fade" mode="out-in">
               {{ user.nick }}
-          </transition>
-          <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
-          <button v-else class="friend-remove" @click="removeFriend(user)"></button>
+            </transition>
+            <button
+              v-if="!isFriend(user.id)"
+              class="add-friend"
+              @click="addFriend(user.id)"
+            ></button>
+            <button v-else class="friend-remove" @click="removeFriend(user)"></button>
+          </div>
+        </div>
+        <div class="list-header">CHANNELS LIST</div>
+        <div
+          v-for="channel in channels"
+          :key="channel.id"
+          :class="['channel', { selected: channel.id === selected_channel }]"
+          @click="chooseChannel(channel.id)"
+        >
+          {{ channel.channel_name }}
+        </div>
+        <form @submit.prevent="searchQuery">
+          <div class="search-input-container">
+            <button type="button" class="back-button" @click="side_info = 0"></button>
+            <input v-model="searchText" type="text" placeholder="Search..." class="search-input" />
+            <button type="submit" class="send-search-button"></button>
+          </div>
+        </form>
+      </div>
+      <div class="button-container" v-if="side_info !== 3">
+        <button
+          :class="['channel-button', 'bar-button', { highlighted: side_info === 0 }]"
+          @click="getChannels()"
+        ></button>
+        <button
+          :class="['people-button', 'bar-button', { highlighted: side_info === 1 }]"
+          @click="getFriends()"
+        ></button>
+        <button
+          :class="['new-button', 'bar-button', { highlighted: side_info === 2 }]"
+          @click="createChannel()"
+        ></button>
+        <button
+          :class="['search-button', 'bar-button', { highlighted: side_info === 3 }]"
+          @click="search()"
+        ></button>
+      </div>
+    </div>
+    <div id="chat-container" ref="chatContainer">
+      <div id="msg-container" ref="msgsContainer">
+        <div
+          v-for="message in messages"
+          :key="message.id"
+          :class="[getMessageClass(message.author.nick), 'message']"
+        >
+          <strong>[{{ message.author?.nick }}]:</strong> {{ message.message }}
+          <div class="message-time">{{ formatTime(message.time) }}</div>
         </div>
       </div>
-      <div class="list-header">CHANNELS LIST</div>
-      <div v-for="channel in channels" :key="channel.id"
-        :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
-        {{ channel.channel_name }}
-      </div>
-      <form @submit.prevent="searchQuery">
-        <div class="search-input-container">
-          <button type="button" class="back-button" @click="side_info = 0"></button>
-          <input v-model="searchText" type="text" placeholder="Search..." class="search-input">
-          <button type="submit" class="send-search-button"></button>
-        </div>
-      </form>
-    </div>
-    <div class="button-container" v-if="side_info !== 3" >
-      <button :class="['channel-button', 'bar-button', { 'highlighted': side_info === 0 }]"
-        @click="getChannels()"></button>
-      <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]" @click="getFriends()"></button>
-      <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]" @click="createChannel()"></button>
-      <button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]" @click="search()"></button>
-    </div>
-  </div>
-  <div id="chat-container" ref="chatContainer">
-    <div id="msg-container" ref="msgsContainer">
-      <div v-for="message in messages" :key="message.id" :class="[getMessageClass(message.author.nick), 'message']">
-        <strong>[{{ message.author?.nick }}]:</strong> {{ message.message }}
-        <div class="message-time">{{ formatTime(message.time) }}</div>
+      <div class="msg-input">
+        <form @submit.prevent="sendMessage">
+          <input v-model="messageText" placeholder="Message" class="input-field" />
+          <button type="submit" class="send-button">Send</button>
+        </form>
       </div>
     </div>
-    <div class="msg-input">
-      <form @submit.prevent="sendMessage">
-        <input v-model="messageText" placeholder="Message" class="input-field">
-        <button type="submit" class="send-button">Send</button>
-      </form>
-    </div>
   </div>
-</div>
 </template>
-
 
 <script setup>
 import { io } from 'socket.io-client'
-import { ref, onBeforeMount, watch, nextTick } from 'vue';
+import { ref, onBeforeMount, watch, nextTick } from 'vue'
 
-const socket = io(process.env.VUE_APP_BACKEND_URL);
-const msgsContainer = ref(null);
-let show_UserInfo = ref(false);
-const messageText = ref('');
-const searchText = ref('');
-const messages = ref([]);
-const channels = ref([]);
-const users = ref([]);
-let User_Friends = ref([]);
-let selected_channel = null;
-let side_info = ref(0);
-let showModal = ref(false);
-
+const socket = io(process.env.VUE_APP_BACKEND_URL)
+const msgsContainer = ref(null)
+let show_UserInfo = ref(false)
+const messageText = ref('')
+const searchText = ref('')
+const messages = ref([])
+const channels = ref([])
+const users = ref([])
+let User_Friends = ref([])
+let selected_channel = null
+let side_info = ref(0)
+let showModal = ref(false)
 
 const check_user = async () => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/' + localStorage.name
-    const response = await fetch(url);
+    const response = await fetch(url)
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json()
       localStorage.id = data.id
     } else {
-      console.log('Error:', response.status);
+      console.log('Error:', response.status)
       window.alert("User Doesn't exist")
     }
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
   }
-};
+}
 
 //https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/set
-let params = new URLSearchParams(document.location.search);
-let name = params.get("username"); // is the string "Jonathan"
-let intra_nick = params.get("intra_nick"); // is the number 18
+let params = new URLSearchParams(document.location.search)
+let name = params.get('username') // is the string "Jonathan"
+let intra_nick = params.get('intra_nick') // is the number 18
 if (name && intra_nick) {
-  localStorage.name = name;
-  localStorage.intra_nick = intra_nick;
+  localStorage.name = name
+  localStorage.intra_nick = intra_nick
   check_user()
+} else {
+  window.alert('Please set username + intra:nick')
+  window.history.replaceState(null, '', '?username=PLEASE_SET&intra_nick=PLEASE_SET')
 }
-else {
-  window.alert("Please set username + intra:nick")
-  window.history.replaceState(null, '', '?username=PLEASE_SET&intra_nick=PLEASE_SET');
-}
-  
 
 const getMessageClass = (author) => {
   if (author == localStorage.name) {
-    return 'message-sent';
+    return 'message-sent'
   }
-  return 'message-received';
-};
-
+  return 'message-received'
+}
 
 const getMessages = async () => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/chat/msg_in_channel/' + selected_channel
-    const response = await fetch(url);
+    const response = await fetch(url)
     if (response.ok) {
-      const data = await response.json();
-      messages.value = data;
-      scrollToBottom();
+      const data = await response.json()
+      messages.value = data
+      scrollToBottom()
     } else {
-      console.log('Error:', response.status);
+      console.log('Error:', response.status)
     }
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
   }
-};
+}
 
 const getUsers = async () => {
-  side_info.value = 1;
+  side_info.value = 1
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers';
-    const response = await fetch(url);
+    let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers'
+    const response = await fetch(url)
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json()
       // Filter out the user stored in local storage
-      const filteredUsers = data.filter(user => user.nick !== localStorage.name);
-      users.value = filteredUsers;
+      const filteredUsers = data.filter((user) => user.nick !== localStorage.name)
+      users.value = filteredUsers
     } else {
-      console.log('Error:', response.status);
+      console.log('Error:', response.status)
     }
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
   }
-};
-
-
+}
 
 const getChannels = async () => {
-  side_info.value = 0;
+  side_info.value = 0
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/channels/all'
-    const response = await fetch(url);
+    const response = await fetch(url)
     if (response.ok) {
-      const data = await response.json();
-      channels.value = data;
+      const data = await response.json()
+      channels.value = data
     } else {
-      console.log('Error:', response.status);
+      console.log('Error:', response.status)
     }
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
   }
-};
+}
 
 const scrollToBottom = () => {
   try {
     nextTick(() => {
-      let container = msgsContainer.value;
-      container.scrollTop = container.scrollHeight;
-    });
+      let container = msgsContainer.value
+      container.scrollTop = container.scrollHeight
+    })
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
   }
-};
+}
 
 const formatTime = (timestamp) => {
-  const currentTime = new Date();
-  const messageTime = new Date(timestamp);
-  const timeDiffMinutes = Math.floor((currentTime - messageTime) / (1000 * 60));
+  const currentTime = new Date()
+  const messageTime = new Date(timestamp)
+  const timeDiffMinutes = Math.floor((currentTime - messageTime) / (1000 * 60))
 
   if (timeDiffMinutes < 1) {
-    return 'Just now';
+    return 'Just now'
   } else if (timeDiffMinutes < 60) {
-    return `${timeDiffMinutes} mins ago`;
+    return `${timeDiffMinutes} mins ago`
   } else if (timeDiffMinutes < 1440) {
-    const hours = Math.floor(timeDiffMinutes / 60);
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    const hours = Math.floor(timeDiffMinutes / 60)
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
   } else {
-    const days = Math.floor(timeDiffMinutes / 1440);
-    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    const days = Math.floor(timeDiffMinutes / 1440)
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`
   }
-};
-
+}
 
 const searchQuery = () => {
-  const searchTerm = searchText.value.toLowerCase().trim();
-  if (searchTerm === '')
-    search()
+  const searchTerm = searchText.value.toLowerCase().trim()
+  if (searchTerm === '') search()
   else {
-    const filteredChannels = channels.value.filter(channel => channel.channel_name.toLowerCase().includes(searchTerm));
-    const filteredUsers = users.value.filter(user => user.nick.toLowerCase().includes(searchTerm));
-    channels.value = filteredChannels;
-    users.value = filteredUsers;
+    const filteredChannels = channels.value.filter((channel) =>
+      channel.channel_name.toLowerCase().includes(searchTerm)
+    )
+    const filteredUsers = users.value.filter((user) => user.nick.toLowerCase().includes(searchTerm))
+    channels.value = filteredChannels
+    users.value = filteredUsers
   }
-};
+}
 
-watch(searchText, searchQuery);
+watch(searchText, searchQuery)
 
 const sendMessage = () => {
   if (messageText.value == '' || selected_channel == null)
-    return window.alert("Error: Message cannot be empty. Please enter a valid message or join channel before sending ");
-  socket.emit('sendMessage', { authorId: parseInt(localStorage.id), message: messageText.value, channelId: selected_channel })
-  messageText.value = '';
+    return window.alert(
+      'Error: Message cannot be empty. Please enter a valid message or join channel before sending '
+    )
+  socket.emit('sendMessage', {
+    authorId: parseInt(localStorage.id),
+    message: messageText.value,
+    channelId: selected_channel
+  })
+  messageText.value = ''
 }
 
 const search = () => {
-  getUsers();
+  getUsers()
   getChannels()
-  side_info.value = 3;
+  side_info.value = 3
 }
 
 const chooseChannel = (channel) => {
-  selected_channel = channel;
-  getMessages();
+  selected_channel = channel
+  getMessages()
 }
 
 const createChannel = async () => {
-  getUsers();
-  side_info.value = 2;
-  showModal.value = true;
-  let channelName = document.getElementById("channelName").value;
-  let channelPassword = document.getElementById("channelPassword").value;
+  getUsers()
+  side_info.value = 2
+  showModal.value = true
+  let channelName = document.getElementById('channelName').value
+  let channelPassword = document.getElementById('channelPassword').value
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/channels/create';
+    let url = process.env.VUE_APP_BACKEND_URL + '/channels/create'
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ type: 1, channel_name: channelName, password: channelPassword }),
-    });
+      body: JSON.stringify({ type: 1, channel_name: channelName, password: channelPassword })
+    })
     if (response.ok) {
-      const data = await response.json();
-      await getChannels();
-      chooseChannel(data.id);
+      const data = await response.json()
+      await getChannels()
+      chooseChannel(data.id)
     } else {
-      console.log('Error:', response.status);
+      console.log('Error:', response.status)
     }
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
   }
-  showModal.value = false;
-};
-
+  showModal.value = false
+}
 
 const isFriend = (friendId) => {
   return User_Friends.value.some((friendship) => {
     return friendship.id === friendId
-  });
-};
-
+  })
+}
 
 const getFriends = async () => {
-  side_info.value = 1;
+  side_info.value = 1
   try {
-    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends/${localStorage.id}`);
+    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends/${localStorage.id}`)
     if (response.ok) {
-      const data = await response.json();
-      User_Friends.value = data;
+      const data = await response.json()
+      User_Friends.value = data
     } else {
-      console.log('Error:', response.status);
+      console.log('Error:', response.status)
     }
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
   }
-};
+}
 
 const addFriend = async (friendId) => {
   try {
     const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends/create`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ user1Id: parseInt(localStorage.id), user2Id: parseInt(friendId) }),
-    });
+      body: JSON.stringify({ user1Id: parseInt(localStorage.id), user2Id: parseInt(friendId) })
+    })
     if (response.ok) {
-      const data = await response.json();
-      getFriends();
+      const data = await response.json()
+      getFriends()
     } else {
-      console.log('Error:', response.status);
+      console.log('Error:', response.status)
     }
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error:', error)
   }
-};
+}
 
 const removeFriend = async (friend) => {
   if (confirm('Are you sure you want to stop being friends with ' + friend.nick + '?')) {
     try {
-      const url = `${process.env.VUE_APP_BACKEND_URL}/friends/deletefriends/${localStorage.id}/${friend.id}`;
+      const url = `${process.env.VUE_APP_BACKEND_URL}/friends/deletefriends/${localStorage.id}/${friend.id}`
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+          'Content-Type': 'application/json'
+        }
+      })
       if (response.ok) {
-        const data = await response.json();
-        getFriends();
+        const data = await response.json()
+        getFriends()
       } else {
-        console.log('Error:', response.status);
+        console.log('Error:', response.status)
       }
     } catch (error) {
-      console.log('Error:', error);
+      console.log('Error:', error)
     }
-
   }
-};
+}
 
 onBeforeMount(() => {
-  getChannels();
-  getFriends();
-});
+  getChannels()
+  getFriends()
+})
 
-socket.on('recMessage', message => {
+socket.on('recMessage', (message) => {
   getMessages()
-});
+})
 
 watch(messages, () => {
-  scrollToBottom();
-});
-
-
+  scrollToBottom()
+})
 </script>
-
 
 <style>
 @import '../assets/Chat.css';
 </style>
-
-

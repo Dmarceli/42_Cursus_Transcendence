@@ -36,10 +36,11 @@ const paddle2 = {
   movingUp: false
 }
 
-let lastTime = null
+let lastAnimationTime = null
+let lastCollisionTime = 0
 
 onMounted(() => {
-  console.log("Mounting Pong")
+  console.log('Mounting Pong')
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
@@ -48,51 +49,47 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  console.log("Unmounting Pong")
+  console.log('Unmounting Pong')
   window.removeEventListener('resize', onWidthChange)
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
 })
 
 function isBallInsideHorizontalWalls() {
-  return ball.y + ball.radius < gamecanvas.value.height && ball.y - ball.radius > 0;
+  return ball.y + ball.radius < gamecanvas.value.height && ball.y - ball.radius > 0
 }
 
 function isBallInsideVerticalWalls() {
-
-  return ball.x + ball.radius < gamecanvas.value.width && ball.x - ball.radius > 0;
+  return ball.x + ball.radius < gamecanvas.value.width && ball.x - ball.radius > 0
 }
 
-function areColliding(circle, rectangle)
-{
-    let testX = circle.x;
-    let testY = circle.y;
-
-  if (circle.x < rectangle.x)
+function areColliding(circle, rectangle) {
+  if (Date.now() < lastCollisionTime + 200) {
+    console.log('Not ready yet');
+    return false
+  }
+  console.log('READ');
+  let closestX =
+    circle.x < rectangle.x
+      ? rectangle.x
+      : circle.x > rectangle.x + rectangle.width
+      ? rectangle.x + rectangle.width
+      : circle.x
+  let closestY =
+    circle.y < rectangle.y
+      ? rectangle.y
+      : circle.y > rectangle.y + rectangle.height
+      ? rectangle.y + rectangle.height
+      : circle.y
+  let dx = closestX - circle.x
+  let dy = closestY - circle.y
+  let willcollide = dx * dx + dy * dy <= circle.radius * circle.radius
+  if (willcollide)
   {
-    testX = rectangle.x;
+    lastCollisionTime = Date.now()
+    console.log('COLLIDGION')
   }
-  else if (circle.x > rectangle.x+rectangle.width)
-  {
-    testX = rectangle.x+rectangle.width;
-  }
-  if (circle.y < rectangle.y){
-    testY = rectangle.y;
-  }
-  else if (circle.y > rectangle.y+rectangle.height)
-  {
-    testY = rectangle.y+rectangle.height;
-  }
-
-  let distX = circle.x-testX;
-  let distY = circle.y-testY;
-  let distance = Math.sqrt((distX*distX) + (distY*distY));
-
-  // if the distance is less than the radius, collision!
-  if (distance <= circle.radius) {
-    return true;
-  }
-  return false;
+  return willcollide
 }
 
 function init() {
@@ -106,11 +103,11 @@ function init() {
   ball.speed = 0.4
 
   while (Math.abs(ball.direction.x) <= 0.4) {
-    console.log('before' + ball.direction.x)
+    // console.log('before' + ball.direction.x)
     const angle = randomNumberBetween(0, 2 * Math.PI)
     ball.direction = { x: Math.cos(angle), y: Math.sin(angle) }
   }
-  console.log('after' + ball.direction.x)
+  // console.log('after' + ball.direction.x)
 
   paddle1.width = 20
   paddle1.height = 100
@@ -125,15 +122,14 @@ function init() {
   ctx.value = gamecanvas.value.getContext('2d')
 }
 
-function start_animation()
-{
+function start_animation() {
   animation = requestAnimationFrame(animate)
   function animate(time: DOMHighResTimeStamp) {
-    if (lastTime != null) {
-      const delta = time - lastTime
+    if (lastAnimationTime != null) {
+      const delta = time - lastAnimationTime
       if (!isBallInsideVerticalWalls()) {
-        console.log("Delta "+delta)
-        console.log("IN VIEW INSIDE "+ball.x+" "+ball.y)
+        // console.log('Delta ' + delta)
+        // console.log('IN VIEW INSIDE ' + ball.x + ' ' + ball.y)
         cancelAnimationFrame(animation)
         return
       }
@@ -159,7 +155,7 @@ function start_animation()
       drawBall()
       drawPaddles()
     }
-    lastTime = time
+    lastAnimationTime = time
     animation = requestAnimationFrame(animate)
   }
 }
