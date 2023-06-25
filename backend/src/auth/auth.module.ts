@@ -7,6 +7,7 @@ import { FortyTwoAuthStrategy } from './auth.strategy';
 import { SessionSerializer } from './session.serializer';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { JwtAuthStrategy } from './jwt-auth.strategy';
 @Module({
   imports: [ 
     UsersModule,
@@ -21,7 +22,8 @@ import { PassportModule } from '@nestjs/passport';
     AuthService,
     JwtService, 
     FortyTwoAuthStrategy,
-    SessionSerializer
+    SessionSerializer,
+    JwtAuthStrategy
   ]
 })
 export class AuthModule {}
