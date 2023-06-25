@@ -4,6 +4,7 @@ import { User } from 'src/db_interactions_modules/users/user.entity';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import { sign } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,7 @@ export class AuthService {
     console.log(payload)
     return {
       login: payload.login,
-      access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`}),
+      access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,/*expiresIn: '30s'*/ expiresIn: '1d'}),
     };
   }
 }

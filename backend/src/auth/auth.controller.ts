@@ -23,6 +23,7 @@ export class AuthController {
   login(@Res() res: any) {
     res.redirect('callback_intra');
   }
+
   @UseGuards(FortyTwoAuthGuard)
   @Get('/callback_intra')
   async callbackIntra(@Req() req: any) {
