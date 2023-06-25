@@ -8,6 +8,7 @@ interface Rectangle {
   movingDown: Boolean
   movingUp: Boolean
   updatePosition(canvasmax: number): void
+  draw(context: CanvasRenderingContext2D): void
 }
 
 class Paddle implements Rectangle {
@@ -27,11 +28,15 @@ class Paddle implements Rectangle {
     this.movingUp = false
   }
   updatePosition(canvasmax: number): void {
-    if (this.movingDown && this.y + this.height + 15 < canvasmax) {
-      this.y += 20
+    if (this.movingDown && this.y + this.height + 10 < canvasmax) {
+      this.y += 10
     } else if (this.movingUp && this.y > 0) {
-      this.y -= 20
+      this.y -= 10
     }
+  }
+  draw(context: CanvasRenderingContext2D): void {
+    context.fillStyle = 'hsla(0, 0%, 100%, 1)'
+    context.fillRect(this.x, this.y, this.width, this.height)
   }
 }
 
@@ -42,6 +47,7 @@ interface Circle {
   direction: { x: number; y: number }
   speed: number
   updatePosition(delta: number): void
+  draw(context: CanvasRenderingContext2D): void
 }
 
 class Ball implements Circle {
@@ -65,6 +71,13 @@ class Ball implements Circle {
   updatePosition(delta: number): void {
     this.x += this.direction.x * this.speed * delta
     this.y += this.direction.y * this.speed * delta
+  }
+
+  draw(context: CanvasRenderingContext2D): void {
+    context.beginPath()
+    context.fillStyle = 'hsla(0, 0%, 100%, 1)'
+    context.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+    context.fill()
   }
 }
 

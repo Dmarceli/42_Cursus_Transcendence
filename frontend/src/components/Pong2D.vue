@@ -84,7 +84,13 @@ function init_values() {
 function start_animation() {
   animation = requestAnimationFrame(animate)
   function animate(time: DOMHighResTimeStamp) {
-    if (ball != null && paddle1 != null && paddle2 != null && gamecanvas.value != null) {
+    if (
+      ctx.value != null &&
+      ball != null &&
+      paddle1 != null &&
+      paddle2 != null &&
+      gamecanvas.value != null
+    ) {
       if (lastAnimationTime != null) {
         const delta = time - lastAnimationTime
         if (animation != null && !isBallInsideVerticalWalls()) {
@@ -108,8 +114,9 @@ function start_animation() {
         paddle1.updatePosition(gamecanvas.value.height)
         paddle2.updatePosition(gamecanvas.value.height)
         resetBoard()
-        drawBall()
-        drawPaddles()
+        ball.draw(ctx.value)
+        paddle1.draw(ctx.value)
+        paddle2.draw(ctx.value)
       }
       lastAnimationTime = time
       animation = requestAnimationFrame(animate)
@@ -135,28 +142,14 @@ function resetBoard() {
   startBoard()
 }
 
-function drawBall() {
-  if (ctx.value != null && ball != null) {
-    ctx.value.beginPath()
-    ctx.value.fillStyle = 'hsla(0, 0%, 100%, 1)'
-    ctx.value.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2)
-    ctx.value.fill()
-  }
-}
-
-function drawPaddles() {
-  if (ctx.value != null && paddle1 != null && paddle2 != null) {
-    ctx.value.fillStyle = 'hsla(0, 0%, 100%, 1)'
-    ctx.value.fillRect(paddle1.x, paddle1.y, paddle1.width, paddle1.height)
-    ctx.value.fillRect(paddle2.x, paddle2.y, paddle2.width, paddle2.height)
-  }
-}
-
 function onWidthChange() {
   init_values()
   resetBoard()
-  drawBall()
-  drawPaddles()
+  if (ctx.value != null) {
+    ball?.draw(ctx.value)
+    paddle1?.draw(ctx.value)
+    paddle2?.draw(ctx.value)
+  }
 }
 
 function onKeyDown(event: KeyboardEvent) {
