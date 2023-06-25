@@ -1,30 +1,32 @@
 <template>
-  <header v-if="islogged">
-    <nav>
-      <RouterLink to="/">Pong</RouterLink>
-      <RouterLink to="/chat">Chat</RouterLink>
-      <RouterLink to="/leaderboard">Leaderboard</RouterLink>
-      <RouterLink to="/profile">User profile</RouterLink>
-    </nav>
-  </header>
-  <div v-if="islogged">
-    <RouterView />
-  </div>
-  <div v-else>
-    <Login @isbuttonclicked="login" />
-  </div>
+    <header v-if="islogged">
+      <nav>
+        <RouterLink to="/">Pong</RouterLink>
+        <RouterLink to="/chat">Chat</RouterLink>
+        <RouterLink to="/leaderboard">Leaderboard</RouterLink>
+        <RouterLink to="/profile">User profile</RouterLink>
+      </nav>
+    </header>
+    <div v-if="islogged">
+      <RouterView/>
+    </div>
+    <div v-else >
+      <Login @isbuttonclicked="login"/>
+    </div>
 </template>
 
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import Login from './components/LoginPage.vue'
-import { ref } from 'vue'
+import Login from "./components/LoginPage.vue"
+import { ref } from 'vue';
 
-let islogged = ref(false)
+let islogged = ref(false);
 
-function login() {
-  islogged.value = true
+function login()
+{
+  islogged.value=true
 }
+
 </script>
 
 <style scoped>
@@ -73,5 +75,6 @@ nav a:first-of-type {
     margin-left: 0rem;
     font-size: 1.5rem;
   }
+
 }
 </style>
