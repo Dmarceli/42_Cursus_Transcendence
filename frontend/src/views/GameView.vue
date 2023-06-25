@@ -1,10 +1,10 @@
 <template>
   <div v-if="startmenu" class="start-menu">
-    <img src = "../assets/racketas.svg" alt="Green Rackets"/>
+    <img src="../assets/racketas.svg" alt="Green Rackets" />
     <button @click="startmenu = false">Start Game</button>
   </div>
   <div v-else class="board">
-    <Pong2D @game-over="startmenu = true"/>
+    <Pong2D @game-over="startmenu = true" />
   </div>
 </template>
 
@@ -13,7 +13,6 @@ import Pong2D from '../components/Pong2D.vue'
 import { ref } from 'vue'
 
 let startmenu = ref(true)
-
 </script>
 
 <style scoped>
@@ -24,8 +23,7 @@ let startmenu = ref(true)
   display: flex;
 }
 
-.start-menu
-{
+.start-menu {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -66,5 +64,4 @@ button:hover {
 button:active {
   transform: translateY(-1px);
 }
-
 </style>

@@ -137,7 +137,7 @@ function resetBoard() {
 
 function drawBall() {
   if (ctx.value != null && ball != null) {
-    ctx.value.beginPath();
+    ctx.value.beginPath()
     ctx.value.fillStyle = 'hsla(0, 0%, 100%, 1)'
     ctx.value.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2)
     ctx.value.fill()
