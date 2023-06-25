@@ -7,7 +7,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// Create a reactive refs
 const gamecanvas = ref(null)
 let ctx = ref(null)
 let animation = null
@@ -37,7 +36,8 @@ const paddle2 = {
 }
 
 let lastAnimationTime = null
-let lastCollisionTime = 0
+let lastPaddleCollisionTime = 0
+let lastWallCollisionTime = 0
 
 onMounted(() => {
   console.log('Mounting Pong')
@@ -64,11 +64,6 @@ function isBallInsideVerticalWalls() {
 }
 
 function areColliding(circle, rectangle) {
-  if (Date.now() < lastCollisionTime + 200) {
-    console.log('Not ready yet');
-    return false
-  }
-  console.log('READ');
   let closestX =
     circle.x < rectangle.x
       ? rectangle.x
@@ -83,13 +78,7 @@ function areColliding(circle, rectangle) {
       : circle.y
   let dx = closestX - circle.x
   let dy = closestY - circle.y
-  let willcollide = dx * dx + dy * dy <= circle.radius * circle.radius
-  if (willcollide)
-  {
-    lastCollisionTime = Date.now()
-    console.log('COLLIDGION')
-  }
-  return willcollide
+  return dx * dx + dy * dy <= circle.radius * circle.radius
 }
 
 function init() {
@@ -102,12 +91,10 @@ function init() {
   ball.radius = gamecanvas.value.height / 100
   ball.speed = 0.4
 
-  while (Math.abs(ball.direction.x) <= 0.4) {
-    // console.log('before' + ball.direction.x)
+  while (Math.abs(ball.direction.x) <= 0.4 || Math.abs(ball.direction.x) >= 0.9) {
     const angle = randomNumberBetween(0, 2 * Math.PI)
     ball.direction = { x: Math.cos(angle), y: Math.sin(angle) }
   }
-  // console.log('after' + ball.direction.x)
 
   paddle1.width = 20
   paddle1.height = 100
@@ -128,27 +115,27 @@ function start_animation() {
     if (lastAnimationTime != null) {
       const delta = time - lastAnimationTime
       if (!isBallInsideVerticalWalls()) {
-        // console.log('Delta ' + delta)
-        // console.log('IN VIEW INSIDE ' + ball.x + ' ' + ball.y)
         cancelAnimationFrame(animation)
         return
       }
-      if (!isBallInsideHorizontalWalls()) {
+      if (Date.now() > lastWallCollisionTime + 300 && !isBallInsideHorizontalWalls()) {
         ball.direction.y *= -1
+        lastWallCollisionTime = Date.now()
       }
-      if (areColliding(ball, paddle1) || areColliding(ball, paddle2)) {
+      if (Date.now() > lastPaddleCollisionTime + 300 && (areColliding(ball, paddle1) || areColliding(ball, paddle2))) {
         ball.direction.x *= -1
+        lastPaddleCollisionTime = Date.now()
       }
       ball.x += ball.direction.x * ball.speed * delta
       ball.y += ball.direction.y * ball.speed * delta
-      if (paddle1.movingDown == true) {
-        paddle1.y += 20
-      } else if (paddle1.movingUp == true) {
-        paddle1.y -= 20
+      if (paddle1.movingDown == true && paddle1.y + paddle1.height + 15 < gamecanvas.value.height) {
+        paddle1.y += 15
+      } else if (paddle1.movingUp == true && paddle1.y > 0) {
+        paddle1.y -= 15
       }
-      if (paddle2.movingDown == true) {
+      if (paddle2.movingDown == true && paddle2.y + paddle2.height + 15 < gamecanvas.value.height) {
         paddle2.y += 20
-      } else if (paddle2.movingUp == true) {
+      } else if (paddle2.movingUp == true && paddle2.y > 0) {
         paddle2.y -= 20
       }
       resetBoard()
@@ -221,18 +208,14 @@ function onKeyUp(event: KeyboardEvent) {
     ArrowDown: () => {
       paddle1.movingDown = false
     },
-    w: onLiftW,
-    s: onLiftS
+    w: () => {
+      paddle2.movingUp = false
+    },
+    s: () => {
+      paddle2.movingDown = false
+    }
   }[event.key]
   handlers?.()
-}
-
-function onLiftW() {
-  paddle2.movingUp = false
-}
-
-function onLiftS() {
-  paddle2.movingDown = false
 }
 
 function randomNumberBetween(min: Number, max: Number) {
