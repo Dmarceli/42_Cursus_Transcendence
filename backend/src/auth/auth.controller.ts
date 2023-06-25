@@ -20,21 +20,12 @@ export class AuthController {
   /*******************************************/
 
   @Get('/login')
-  // @UseGuards(FortyTwoAuthGuard)
   login(@Res() res: any) {
-    console.log(process.env.INTRA_CLIENT_ID);
-    // console.log("ola")
-    // res.send(200, "ola")
     res.redirect('callback_intra');
   }
-  
-  
   @UseGuards(FortyTwoAuthGuard)
   @Get('/callback_intra')
   async callbackIntra(@Req() req: any) {
-    console.log("cheguei aqui")
-    console.log('Request User:');
-    console.log(req.user);
     const payload = await this.authService.login(req.user);
     return payload;
   }

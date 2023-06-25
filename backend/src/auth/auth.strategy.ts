@@ -12,8 +12,7 @@ export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
       tokenURL: 'https://api.intra.42.fr/oauth/token',
       clientID: process.env.INTRA_CLIENT_ID,
       clientSecret: process.env.INTRA_CLIENT_SECRET,
-      //callbackURL: process.env.INTRA_REDIRECT_URI,
-      callbackURL: 'http://localhost:3000/auth/callback_intra',
+      callbackURL: process.env.INTRA_REDIRECT_URI,
     });
   }
   
@@ -22,11 +21,11 @@ export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
     refreshToken: string,
     profile: Profile,
     ): Promise<any> {
-    console.log(profile._json.id);
-    console.log(profile._json.email);
-    console.log(profile._json.login);
-    console.log(profile._json.first_name);
-    console.log(profile._json.last_name);
+    // console.log(profile._json.id);
+    // console.log(profile._json.email);
+    // console.log(profile._json.login);
+    // console.log(profile._json.first_name);
+    // console.log(profile._json.last_name);
 
     const user = await this.userService.findByLogin(profile.login);
 

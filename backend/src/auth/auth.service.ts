@@ -11,21 +11,15 @@ export class AuthService {
     private userService: UsersService,
     private jwtService: JwtService,
   ) {}
-
-  /*******************************************/
-  /***            Login Logic              ***/
-  /*******************************************/
-
   async login(user: User) {
     const payload = {
-      login: user.intra_nick,
-      secretOrKey: 'secret',
+      login: user.intra_nick
     };
 
     console.log(payload)
     return {
       login: payload.login,
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`}),
     };
   }
 }
