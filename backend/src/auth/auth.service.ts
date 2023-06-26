@@ -20,7 +20,7 @@ export class AuthService {
     console.log(payload)
     return {
       login: payload.login,
-      access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,/*expiresIn: '30s'*/ expiresIn: '1d'}),
+      access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,expiresIn: '30s'/*expiresIn: '1d'*/}),
     };
   }
 }

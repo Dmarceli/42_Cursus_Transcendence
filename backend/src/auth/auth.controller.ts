@@ -26,17 +26,18 @@ export class AuthController {
 
   @UseGuards(FortyTwoAuthGuard)
   @Get('/callback_intra')
-  async callbackIntra(@Req() req: any) {
+  async callbackIntra(@Req() req: any, @Res() res: any) {
     const payload = await this.authService.login(req.user);
-    return payload;
+    console.log(req.cookies)
+    res.cookie('token', payload.access_token, )
+    res.redirect('http://localhost:5173/')
+    // return payload;
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: any, @Res() res: any) {
     console.log('\nlogout');
-    console.log(req.user);
-
     const userName = req.user.username;
 
     return req.logOut(() => {
