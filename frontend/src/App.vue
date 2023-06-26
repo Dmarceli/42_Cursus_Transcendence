@@ -21,11 +21,14 @@ import { RouterLink, RouterView} from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { ref } from 'vue';
 
+const islogged = ref(false);
 const cookies = document.cookie.split('=')
 let token  = cookies[1];
 
+if (token) {
+  islogged.value = true;
+}
 
-const islogged = ref(false);
 
 function login() {
   window.location.href = "http://localhost:3000/auth/login";
