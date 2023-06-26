@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "axios": "^1.4.0",
+    "js-cookie": "^3.0.5",
     "socket.io-client": "^4.6.2",
     "vue": "^3.3.2",
+    "vue-cookies": "^1.8.3",
     "vue-router": "^4.2.2"
   },
   "devDependencies": {

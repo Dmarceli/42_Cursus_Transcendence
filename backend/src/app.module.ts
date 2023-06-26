@@ -16,10 +16,13 @@ import { UserToChannelModule } from './db_interactions_modules/relations/user_to
 import { ConfigModule } from '@nestjs/config';
 import { Messages } from './db_interactions_modules/messages/messages.entity';
 import { MessagesModule } from './db_interactions_modules/messages/messages.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [ 
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ 
+      isGlobal : true
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'db',
@@ -35,7 +38,8 @@ import { MessagesModule } from './db_interactions_modules/messages/messages.modu
     GameHistoryModule,
     ChannelsModule,
     FriendModule,
-    UserToChannelModule
+    UserToChannelModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway],
