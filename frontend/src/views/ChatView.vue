@@ -99,6 +99,7 @@
 <script setup>
 import { io } from 'socket.io-client'
 import { ref, onBeforeMount, watch, nextTick } from 'vue';
+import jwt_decode from 'jwt-decode';
 
 const socket = io(process.env.VUE_APP_BACKEND_URL);
 const msgsContainer = ref(null);
@@ -128,6 +129,10 @@ function getCookieValueByName(name) {
 }
 
 let token  = getCookieValueByName('token');
+const decodedToken = jwt_decode(token);
+const userId = decodedToken.id;
+const users_Name = decodedToken.login;
+
 
 const check_user = async () => {
   try {
@@ -135,7 +140,7 @@ const check_user = async () => {
     const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
-      localStorage.id = data.id
+      userId = data.id
     } else {
       console.log('Error:', response.status);
       window.alert("User Doesn't exist")
@@ -161,7 +166,8 @@ else {
   
 
 const getMessageClass = (author) => {
-  if (author == localStorage.name) {
+  if (author == users_Name) {
+    console.log(users_Name)
     return 'message-sent';
   }
   return 'message-received';
@@ -188,11 +194,15 @@ const getUsers = async () => {
   side_info.value = 1;
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers';
-    const response = await fetch(url);
+    const response = await fetch(url,
+    {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+    });
     if (response.ok) {
       const data = await response.json();
-      // Filter out the user stored in local storage
-      const filteredUsers = data.filter(user => user.nick !== localStorage.name);
+      const filteredUsers = data.filter(user => user.id !== userId);
       users.value = filteredUsers;
     } else {
       console.log('Error:', response.status);
@@ -267,7 +277,7 @@ watch(searchText, searchQuery);
 const sendMessage = () => {
   if (messageText.value == '' || selected_channel == null)
     return window.alert("Error: Message cannot be empty. Please enter a valid message or join channel before sending ");
-  socket.emit('sendMessage', { authorId: parseInt(localStorage.id), message: messageText.value, channelId: selected_channel })
+  socket.emit('sendMessage', { authorId: parseInt(userId), message: messageText.value, channelId: selected_channel })
   messageText.value = '';
 }
 
@@ -345,7 +355,7 @@ const addFriend = async (friendId) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user1Id: parseInt(localStorage.id), user2Id: parseInt(friendId) }),
+      body: JSON.stringify({ user1Id: parseInt(userId), user2Id: parseInt(friendId) }),
     });
     if (response.ok) {
       const data = await response.json();
@@ -361,7 +371,7 @@ const addFriend = async (friendId) => {
 const removeFriend = async (friend) => {
   if (confirm('Are you sure you want to stop being friends with ' + friend.nick + '?')) {
     try {
-      const url = `${process.env.VUE_APP_BACKEND_URL}/friends/deletefriends/${localStorage.id}/${friend.id}`;
+      const url = `${process.env.VUE_APP_BACKEND_URL}/friends/deletefriends/${userId}/${friend.id}`;
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {

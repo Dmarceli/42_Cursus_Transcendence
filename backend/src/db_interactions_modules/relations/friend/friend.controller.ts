@@ -25,7 +25,6 @@ export class friendsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   findOne(@Req() req:any) {
-    //console.log("AAA",req.headers.authorization.split("Bearer ")[1])
     const decoded=this.jwtService.decode(req.headers.authorization.split("Bearer ")[1])
     console.log(decoded['id'])
     return this.friendService.findByUserId(decoded['id']);
