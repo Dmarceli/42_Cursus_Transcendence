@@ -15,8 +15,8 @@
             <span class="tooltiptext">
               Nickname: {{ user_friend.nick }}<br>
               Intra Nick: {{ user_friend.intra_nick }}<br>
-              Lost Games: {{ user_friend.lost_games }}<br>
-              Won Games: {{ user_friend.won_games }}<br>
+              Games Won: {{ user_friend.won_games }}<br>
+              Games Lost: {{ user_friend.lost_games }}<br>
             </span>
             {{ user_friend.nick }}
             <button class="friend-remove" @click="removeFriend(user_friend)"></button>
@@ -47,8 +47,8 @@
             <span class="tooltiptext">
               Nickname: {{ user.nick }}<br>
               Intra Nick: {{ user.intra_nick }}<br>
-              Lost Games: {{ user.lost_games }}<br>
-              Won Games: {{ user.won_games }}<br>
+              Games Won: {{ user.won_games }}<br>
+              Games Lost: {{ user.lost_games }}<br>
             </span>
           <transition name="list-fade" mode="out-in">
               {{ user.nick }}
@@ -114,9 +114,24 @@ let side_info = ref(0);
 let showModal = ref(false);
 
 
+
+function getCookieValueByName(name) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
+    }
+  }
+  return null;
+}
+
+let token  = getCookieValueByName('token');
+
 const check_user = async () => {
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/' + localStorage.name
+    let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/'
     const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
@@ -131,7 +146,7 @@ const check_user = async () => {
 };
 
 //https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/set
-let params = new URLSearchParams(document.location.search);
+/*let params = new URLSearchParams(document.location.search);
 let name = params.get("username"); // is the string "Jonathan"
 let intra_nick = params.get("intra_nick"); // is the number 18
 if (name && intra_nick) {
@@ -142,7 +157,7 @@ if (name && intra_nick) {
 else {
   window.alert("Please set username + intra:nick")
   window.history.replaceState(null, '', '?username=PLEASE_SET&intra_nick=PLEASE_SET');
-}
+}*/
   
 
 const getMessageClass = (author) => {
@@ -306,7 +321,12 @@ const isFriend = (friendId) => {
 const getFriends = async () => {
   side_info.value = 1;
   try {
-    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends/${localStorage.id}`);
+    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends`,
+    {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+    });
     if (response.ok) {
       const data = await response.json();
       User_Friends.value = data;
@@ -346,6 +366,7 @@ const removeFriend = async (friend) => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
       });
       if (response.ok) {

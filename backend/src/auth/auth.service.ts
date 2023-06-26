@@ -14,13 +14,15 @@ export class AuthService {
   ) {}
   async login(user: User) {
     const payload = {
-      login: user.intra_nick
+      login: user.intra_nick,
+      id: user.id
     };
 
     console.log(payload)
     return {
       login: payload.login,
-      access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,expiresIn: '30s'/*expiresIn: '1d'*/}),
+      id: payload.id,
+      access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,/*expiresIn: '30s'*/expiresIn: '1d'}),
     };
   }
 }
