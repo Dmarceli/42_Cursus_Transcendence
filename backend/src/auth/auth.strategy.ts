@@ -21,6 +21,7 @@ export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
     refreshToken: string,
     profile: Profile,
     ): Promise<any> {
+      //console.log(profile)
     // console.log(profile._json.id);
     // console.log(profile._json.email);
     // console.log(profile._json.login);
@@ -36,18 +37,16 @@ export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
     
     const newUser: CreateUserDto = {
       // id: profile.id,
-      intra_nick: profile._json.login,
       // email: profile._json.email,
       nick: profile._json.login,
+      intra_nick: profile._json.login,
+      avatar: profile._json.image.link,
       // first_name: profile._json.first_name,
       // last_name: profile._json.last_name,
-      avatar: 'a',
       // twoFactorAuthenticationSecret: '',
       // isTwoFactorAuthenticationEnabled: false,
     };
-
     const savedUser = this.userService.createUser(newUser);
-    
     return savedUser;
   }
 }

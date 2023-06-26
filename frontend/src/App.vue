@@ -13,10 +13,10 @@
     <div v-else >
       <Login @isbuttonclicked="login"/>
     </div>
-
 </template>
 
 <script setup lang="ts">
+
 import { RouterLink, RouterView} from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { ref } from 'vue';

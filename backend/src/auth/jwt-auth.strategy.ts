@@ -21,15 +21,10 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: TokenPayload) {
-    console.log('\nJwt Strategy 1st');
-    console.log(payload);
-
     const user = await this.userService.findByLogin(payload.login);
-
     if (!user) {
       throw new UnauthorizedException();
     }
-
     return user;
   }
 }
