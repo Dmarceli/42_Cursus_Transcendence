@@ -5,10 +5,8 @@ import { AuthGuard } from '@nestjs/passport';
 export class FortyTwoAuthGuard extends AuthGuard('42') {
   async canActivate(context: ExecutionContext) {
     await super.canActivate(context);
-
     const request = context.switchToHttp().getRequest();
     await super.logIn(request);
-
     return true;
   }
 }

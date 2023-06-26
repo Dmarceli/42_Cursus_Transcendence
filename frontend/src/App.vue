@@ -37,12 +37,9 @@ function getCookieValueByName(name: any) {
 
 let token  = getCookieValueByName('token');
 
-
 if (token) {
   islogged.value = true;
-  console.log(token);
 }
-
 
 function login() {
   window.location.href = "http://localhost:3000/auth/login";
