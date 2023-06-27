@@ -13,6 +13,7 @@ import { CreateMsgDto } from '../messages/dtos/message.dto';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 
 
+const players = 5
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -44,4 +45,51 @@ import { UsePipes, ValidationPipe } from '@nestjs/common';
  handleConnection(client: Socket, ...args: any[]) {
    console.log(`Connected ${client.id}`);
  }
+
+ @SubscribeMessage('PlayerEntered')
+ @UsePipes(new ValidationPipe())
+ async PlayerEntered(client: Socket): Promise<void> {
+  console.log("OH YEA")
+  this.server.emit('updatePlayers', players);
+ }
+
 }
+
+// function onKeyDown(event: KeyboardEvent) {
+//   if (paddle1 != null) {
+//     console.log(event.key)
+//     const handlers: any = {
+//       ArrowUp: () => {
+//         paddle2 != null && (paddle2.movingUp = true)
+//       },
+//       ArrowDown: () => {
+//         paddle2 != null && (paddle2.movingDown = true)
+//       },
+//       w: () => {
+//         paddle1 != null && (paddle1.movingUp = true)
+//       },
+//       s: () => {
+//         paddle1 != null && (paddle1.movingDown = true)
+//       }
+//     }[event.key]
+//     handlers?.()
+//   }
+// }
+
+// function onKeyUp(event: KeyboardEvent) {
+//   const handlers: any = {
+//     ArrowUp: () => {
+//       paddle2 != null && (paddle2.movingUp = false)
+//     },
+//     ArrowDown: () => {
+//       paddle2 != null && (paddle2.movingDown = false)
+//     },
+//     w: () => {
+//       paddle1 != null && (paddle1.movingUp = false)
+//     },
+//     s: () => {
+//       paddle1 != null && (paddle1.movingDown = false)
+//     }
+//   }[event.key]
+//   handlers?.()
+// }

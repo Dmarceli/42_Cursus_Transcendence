@@ -24,7 +24,9 @@ let lastPaddleCollisionTime = 0
 let lastWallCollisionTime = 0
 
 onMounted(() => {
-  console.log('Mounted Pong')
+  console.log('Mounted Pong');
+  socket.emit('PlayerEntered')
+
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
@@ -155,42 +157,10 @@ function onWidthChange() {
   }
 }
 
-function onKeyDown(event: KeyboardEvent) {
-  if (paddle1 != null) {
-    console.log(event.key)
-    const handlers: any = {
-      ArrowUp: () => {
-        paddle2 != null && (paddle2.movingUp = true)
-      },
-      ArrowDown: () => {
-        paddle2 != null && (paddle2.movingDown = true)
-      },
-      w: () => {
-        paddle1 != null && (paddle1.movingUp = true)
-      },
-      s: () => {
-        paddle1 != null && (paddle1.movingDown = true)
-      }
-    }[event.key]
-    handlers?.()
-  }
-}
 
-function onKeyUp(event: KeyboardEvent) {
-  const handlers: any = {
-    ArrowUp: () => {
-      paddle2 != null && (paddle2.movingUp = false)
-    },
-    ArrowDown: () => {
-      paddle2 != null && (paddle2.movingDown = false)
-    },
-    w: () => {
-      paddle1 != null && (paddle1.movingUp = false)
-    },
-    s: () => {
-      paddle1 != null && (paddle1.movingDown = false)
-    }
-  }[event.key]
-  handlers?.()
-}
+
+socket.on('updatePlayers', y => {
+  paddle1.y = y
+});
+
 </script>
