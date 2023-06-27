@@ -19,7 +19,6 @@ export class AuthService {
       id: user.id
     };
 
-    console.log(payload)
     return {
       login: payload.login,
       id: payload.id,
