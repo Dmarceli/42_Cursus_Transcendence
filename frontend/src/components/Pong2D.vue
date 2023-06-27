@@ -7,6 +7,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { type Rectangle, Paddle, type Circle, Ball } from '../types'
+import { io } from 'socket.io-client'
+
+const socket = io(process.env.VUE_APP_BACKEND_URL);
 
 const emit = defineEmits(['gameOver'])
 
