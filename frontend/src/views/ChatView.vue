@@ -2,7 +2,7 @@
   <div class="Chat">
     <div class="channels-list">
       <div v-if="side_info === 0">
-        <div class="list-header">JOINED CHANNELS</div>
+          <div class="list-header">JOINED CHANNELS</div>
         <div v-for="channel in channels" :key="channel.id"
           :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
           {{ channel.channel_name }}
@@ -50,49 +50,49 @@
               Games Won: {{ user.won_games }}<br>
               Games Lost: {{ user.lost_games }}<br>
             </span>
-          <transition name="list-fade" mode="out-in">
-              {{ user.nick }}
-          </transition>
-          <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
-          <button v-else class="friend-remove" @click="removeFriend(user)"></button>
+            {{ user.nick }}
+            <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
+            <button v-else class="friend-remove" @click="removeFriend(user)"></button>
+          </div>
+        </div>
+        <div class="list-header">CHANNELS LIST</div>
+        <div v-for="channel in channels" :key="channel.id"
+          :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
+          {{ channel.channel_name }}
+        </div>
+        <form @submit.prevent="searchQuery">
+          <div class="search-input-container">
+            <button type="button" class="back-button" @click="side_info = 0"></button>
+            <input v-model="searchText" type="text" placeholder="Search..." class="search-input">
+            <button type="submit" class="send-search-button"></button>
+          </div>
+        </form>
+      </div>
+      <div class="button-container" v-if="side_info !== 3">
+        <button :class="['channel-button', 'bar-button', { 'highlighted': side_info === 0 }]"
+          @click="getChannels()"></button>
+        <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]"
+          @click="getFriends()"></button>
+        <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]"
+          @click="createChannel()"></button>
+        <button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]" @click="search()"></button>
+      </div>
+    </div>
+    <div id="chat-container" ref="chatContainer">
+      <div id="msg-container" ref="msgsContainer">
+        <div v-for="message in messages" :key="message.id" :class="[getMessageClass(message.author.nick), 'message']">
+          <strong>[{{ message.author?.nick }}]:</strong> {{ message.message }}
+          <div class="message-time">{{ formatTime(message.time) }}</div>
         </div>
       </div>
-      <div class="list-header">CHANNELS LIST</div>
-      <div v-for="channel in channels" :key="channel.id"
-        :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
-        {{ channel.channel_name }}
-      </div>
-      <form @submit.prevent="searchQuery">
-        <div class="search-input-container">
-          <button type="button" class="back-button" @click="side_info = 0"></button>
-          <input v-model="searchText" type="text" placeholder="Search..." class="search-input">
-          <button type="submit" class="send-search-button"></button>
-        </div>
-      </form>
-    </div>
-    <div class="button-container" v-if="side_info !== 3" >
-      <button :class="['channel-button', 'bar-button', { 'highlighted': side_info === 0 }]"
-        @click="getChannels()"></button>
-      <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]" @click="getFriends()"></button>
-      <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]" @click="createChannel()"></button>
-      <button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]" @click="search()"></button>
-    </div>
-  </div>
-  <div id="chat-container" ref="chatContainer">
-    <div id="msg-container" ref="msgsContainer">
-      <div v-for="message in messages" :key="message.id" :class="[getMessageClass(message.author.nick), 'message']">
-        <strong>[{{ message.author?.nick }}]:</strong> {{ message.message }}
-        <div class="message-time">{{ formatTime(message.time) }}</div>
+      <div class="msg-input">
+        <form @submit.prevent="sendMessage">
+          <input v-model="messageText" placeholder="Message" class="input-field">
+          <button type="submit" class="send-button">Send</button>
+        </form>
       </div>
     </div>
-    <div class="msg-input">
-      <form @submit.prevent="sendMessage">
-        <input v-model="messageText" placeholder="Message" class="input-field">
-        <button type="submit" class="send-button">Send</button>
-      </form>
-    </div>
   </div>
-</div>
 </template>
 
 
@@ -127,8 +127,7 @@ function getCookieValueByName(name) {
   }
   return null;
 }
-
-let token  = getCookieValueByName('token');
+let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
 const userId = decodedToken.id;
 const users_Name = decodedToken.login;
@@ -150,24 +149,8 @@ const check_user = async () => {
   }
 };
 
-//https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/set
-/*let params = new URLSearchParams(document.location.search);
-let name = params.get("username"); // is the string "Jonathan"
-let intra_nick = params.get("intra_nick"); // is the number 18
-if (name && intra_nick) {
-  localStorage.name = name;
-  localStorage.intra_nick = intra_nick;
-  check_user()
-}
-else {
-  window.alert("Please set username + intra:nick")
-  window.history.replaceState(null, '', '?username=PLEASE_SET&intra_nick=PLEASE_SET');
-}*/
-  
-
 const getMessageClass = (author) => {
   if (author == users_Name) {
-    console.log(users_Name)
     return 'message-sent';
   }
   return 'message-received';
@@ -195,11 +178,11 @@ const getUsers = async () => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers';
     const response = await fetch(url,
-    {
+      {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-    });
+      });
     if (response.ok) {
       const data = await response.json();
       const filteredUsers = data.filter(user => user.id !== userId);
@@ -332,11 +315,11 @@ const getFriends = async () => {
   side_info.value = 1;
   try {
     const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends`,
-    {
+      {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-    });
+      });
     if (response.ok) {
       const data = await response.json();
       User_Friends.value = data;

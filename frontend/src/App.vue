@@ -11,7 +11,7 @@
       <RouterView/>
     </div>
     <div v-else >
-      <Login @isbuttonclicked="login"/>
+      <Login @clicked42="login42" @clickedgoogle="loginGoogle"/>
     </div>
 </template>
 
@@ -41,9 +41,15 @@ if (token) {
   islogged.value = true;
 }
 
-function login() {
+function login42() {
   window.location.href = "http://localhost:3000/auth/login";
 }
+
+
+function loginGoogle() {
+  window.location.href = "http://localhost:3000/auth/login_google";
+}
+
 
 </script>
 

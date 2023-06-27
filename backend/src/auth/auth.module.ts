@@ -8,6 +8,8 @@ import { SessionSerializer } from './session.serializer';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtAuthStrategy } from './jwt-auth.strategy';
+import { GoogleStrategy } from './auth_google.strategy';
+
 @Module({
   imports: [ 
     UsersModule,
@@ -24,7 +26,8 @@ import { JwtAuthStrategy } from './jwt-auth.strategy';
     JwtService, 
     FortyTwoAuthStrategy,
     SessionSerializer,
-    JwtAuthStrategy
+    JwtAuthStrategy,
+    GoogleStrategy
   ]
 })
 export class AuthModule {}

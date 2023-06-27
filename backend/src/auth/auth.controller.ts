@@ -13,10 +13,10 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private userService: UsersService,
-  ) {}
+  ) { }
 
   /*******************************************/
-  /***            Login / Logout           ***/
+  /***            Login 42                ***/
   /*******************************************/
 
   @Get('/login')
@@ -28,23 +28,42 @@ export class AuthController {
   @Get('/callback_intra')
   async callbackIntra(@Req() req: any, @Res() res: any) {
     const payload = await this.authService.login(req.user);
-    console.log(req.cookies)
-    res.cookie('token', payload.access_token, )
+    res.cookie('token', payload.access_token,)
     res.redirect('http://localhost:5173/')
     // return payload;
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('logout')
-  async logout(@Req() req: any, @Res() res: any) {
-    console.log('\nlogout');
-    const userName = req.user.username;
+  /*******************************************/
+  /***            Login Google             ***/
+  /*******************************************/
 
-    return req.logOut(() => {
-      res.json({
-        user: userName,
-        message: 'User has been logged out!',
-      });
-    });
+
+  
+  @Get('/login_google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() req) {}
+
+  @Get('/callback_google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req:any, @Res() res: any) {
+    const payload = this.authService.googleLogin(req)
+    res.cookie('token', payload.access_token,)
+    res.redirect('http://localhost:5173/')
   }
+
+
+  // @UseGuards(JwtAuthGuard)
+  // @Post('logout')
+  // async logout(@Req() req: any, @Res() res: any) {
+  //   console.log('\nlogout');
+  //   const userName = req.user.username;
+
+  //   return req.logOut(() => {
+  //     res.json({
+  //       user: userName,
+  //       message: 'User has been logged out!',
+  //     });
+  //   });
+
+  // }
 }
