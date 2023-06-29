@@ -49,9 +49,11 @@ const lastGames = ref([
       <table>
         <tbody>
           <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
-            <td>{{ game.user.nick }} ({{ game.user.score }})</td>
-            <td class="vs">vs</td>
-            <td>({{ game.opponent.score }}) {{ game.opponent.nick }}</td>
+            <td>{{ game.user.nick }}</td>
+            <td class="user-score">{{ game.user.score }}</td>
+            <td class="vs">-</td>
+            <td class="opponent-score">{{ game.opponent.score }}</td>
+            <td>{{ game.opponent.nick }}</td>
           </tr>
         </tbody>
       </table>
@@ -117,13 +119,23 @@ const lastGames = ref([
   margin-top: 20px;
 }
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+}
 .game-won {
   background-color: #87cefa;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);}
+}
 
 .game-lost {
   background-color: #ff7f7f;
-  border-color: #d44d4d;
+}
+
+td {
+  padding: 10px;
+  text-align: center;
+  color: black;
 }
 
 .vs {
@@ -132,16 +144,15 @@ const lastGames = ref([
   color: white;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.user-score {
+  font-weight: bold;
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+  color: white;
 }
 
-td {
-  padding: 10px;
-  text-align: center;
-  border: 2px solid transparent;
-  border-radius: 5px;
+.opponent-score {
+  font-weight: bold;
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
   color: white;
 }
 
