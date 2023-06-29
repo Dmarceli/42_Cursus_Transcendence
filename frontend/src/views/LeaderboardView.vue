@@ -13,6 +13,9 @@
 	{ id: 2, name: 'Player 2', score: 200 },
 	{ id: 3, name: 'Player 3', score: 150 },
 	{ id: 3, name: 'Player 4', score: 150 },
+	{ id: 3, name: 'Player 5', score: 0 },
+	{ id: 3, name: 'Player 6', score: 120 },
+	{ id: 3, name: 'Player 7', score: 300 },
 	]);
 
   const sortLeaderboard = () => {
@@ -61,8 +64,13 @@
 		      </tr>
 		    </thead>
 		    <tbody>
-          <tr v-for="(player, index) in leaderboard" :key="player.id">
-            <td>{{ index + 1 }}</td>
+          <tr v-for="(player, index) in leaderboard" :key="player.id" @click="openPlayerProfile(player)">
+            <td class="player-name">
+              <span v-if="index === 0">🥇</span>
+              <span v-else-if="index === 1">🥈</span>
+              <span v-else-if="index === 2">🥉</span>
+              <span v-else>{{ index + 1 }}</span>
+            </td>
             <td class="player-name" @click="openPlayerProfile(player)">{{ player.name }}</td>
             <td>{{ player.score }}</td>
           </tr>
