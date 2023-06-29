@@ -6,7 +6,9 @@ const userProfile = ref({
   avatar: 'path/to/avatar.jpg',
   gamesWon: 10,
   gamesLost: 5,
-  winStreak: 3,
+  winStreak: 1,
+  biggestStreak: 3,
+  rank: 5,
   // Add more user profile data here
 });
 
@@ -37,10 +39,28 @@ const lastGames = ref([
       <!-- Statistics -->
       <div class="statistics">
 	      <h2>Statistics</h2>
-	      <p>Games Won: {{ userProfile.gamesWon }}</p>
-	      <p>Games Lost: {{ userProfile.gamesLost }}</p>
-	      <p>Win Streak: {{ userProfile.winStreak }}</p>
-	      <!-- Add more statistics here -->
+	      <div class="stat-board">
+          <div class="stat-item">
+            <div class="stat-label">Games Won</div>
+            <div class="stat-value">{{ userProfile.gamesWon }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Games Lost</div>
+            <div class="stat-value">{{ userProfile.gamesLost }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Win Streak</div>
+            <div class="stat-value">{{ userProfile.winStreak }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Highest Streak</div>
+            <div class="stat-value">{{ userProfile.biggestStreak }}</div>
+          </div>
+          <div class="stat-item stat-rank">
+            <div class="stat-label">Rank</div>
+            <div class="stat-value">{{ userProfile.rank }}</div>
+          </div>
+        </div>
 	    </div>
 
       <!-- Game History -->
@@ -105,18 +125,19 @@ const lastGames = ref([
 
 .profile-body {
   display: flex;
-  flex-direction: space-between;
-  align-items: center;
+  align-items: stretch;
+}
+
+.game-history {
+  flex: 1;
 }
 
 .statistics {
   flex: 1;
   margin-right: 20px;
-}
-
-.game-history {
-  flex: 1;
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 table {
@@ -154,6 +175,34 @@ td {
   font-weight: bold;
   text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
   color: white;
+}
+
+.stat-board {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px;
+  background-color: #f1f1f1;
+  padding: 10px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-rank {
+  grid-column: 1 / span 2;
+  align-items: center;
+}
+.stat-label {
+  font-weight: bold;
+  color: #333333;
+}
+
+.stat-value {
+  font-size: 24px;
+  color: #666666;
 }
 
 </style>
