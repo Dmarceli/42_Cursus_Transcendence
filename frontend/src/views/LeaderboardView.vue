@@ -1,8 +1,14 @@
 <script setup lang="ts">
 	import { ref, computed } from 'vue';
   	
+  interface Player {
+    id: number;
+    name: string;
+    score: number;
+  }
+
 	// Sample leaderboard data
-	const leaderboard = ref([
+	const leaderboard = ref<Player[]>([
 	{ id: 1, name: 'Player 1', score: 100 },
 	{ id: 2, name: 'Player 2', score: 200 },
 	{ id: 3, name: 'Player 3', score: 150 },
@@ -11,6 +17,16 @@
 
   const sortLeaderboard = () => {
     leaderboard.value.sort((a, b) => b.score - a.score);
+  };
+
+  const selectedPlayer = ref<Player | null>(null);
+
+  const openPlayerProfile = (player: Player) => {
+    selectedPlayer.value = player;
+  };
+
+  const closeModal = () => {
+    selectedPlayer.value = null;
   };
 
   /* Code below is to fetch the leaderboard data from the API, I think... */
@@ -46,6 +62,26 @@
 		    </thead>
 		    <tbody>
           <tr v-for="(player, index) in leaderboard" :key="player.id">
+            <td>{{ index + 1 }}</td>
+            <td class="player-name" @click="openPlayerProfile(player)">{{ player.name }}</td>
+            <td>{{ player.score }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div v-if="selectedPlayer" class="modal">
+      <div class="modal-content">
+        <h2>{{ selectedPlayer.name }}</h2>
+        <p>Score: {{ selectedPlayer.score }}</p>
+        <!-- Add more profile information here -->
+        <button @click="closeModal">Close</button>
+      </div>
+      <div class="modal-overlay" @click="closeModal"></div>
+    </div>
+  </div>
+</template>
+          <!-- <tr v-for="(player, index) in leaderboard" :key="player.id">
 		  	    <td>{{ index + 1 }}</td>
 		  	    <td>{{ player.name }}</td>
   		    	<td>{{ player.score }}</td>
@@ -54,7 +90,7 @@
       </table>
     </div>
   </div>
-</template>
+</template> -->
   
 <style scoped>
 .leaderboard {
@@ -99,5 +135,38 @@ tr:nth-child(odd) {
 tbody tr:hover {
   background-color: hsla(160, 100%, 37%, 0.2);
 }
-  </style>
+
+.player-name {
+  cursor: pointer;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: var(--vt-c-white);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+}
+
+</style>
   
