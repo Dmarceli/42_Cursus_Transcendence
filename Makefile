@@ -39,6 +39,7 @@ logs_db:
 		docker logs db
 
 deep_clean:
+			docker compose down
 			docker system prune -a
 			docker volume rm $(docker volume ls -q)
 			sudo rm -rf $(DB_DATA)
