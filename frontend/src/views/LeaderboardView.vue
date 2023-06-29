@@ -13,6 +13,22 @@
     leaderboard.value.sort((a, b) => b.score - a.score);
   };
 
+  /* Code below is to fetch the leaderboard data from the API, I think... */
+
+  // const fetchLeaderboard = async () => {
+  //     try {
+  //       const response = await fetch('API_ENDPOINT'); // Replace 'API_ENDPOINT' with the actual API URL to fetch the leaderboard data
+  //       const data = await response.json();
+  //       leaderboard.value = data;
+  //     } catch (error) {
+  //       console.error('Error fetching leaderboard data:', error);
+  //     }
+  //   };
+
+  //   onMounted(() => {
+  //     fetchLeaderboard();
+  //   });
+
   sortLeaderboard();
 </script>
 
@@ -47,13 +63,12 @@
   color: hsla(160, 100%, 37%, 1);
 }
 
-.leaderboard-container {
+.board {
   background-color: var(--vt-c-white-soft);
   border-radius: 10px;
   padding: 20px;
   margin: 20px auto;
-  max-width: 600px;
-  font-weight: bold;
+  max-width: 80vw;
 }
 
 table {
@@ -68,9 +83,9 @@ td {
 }
 
 th {
-  background-color: var(--vt-c-white-mute);
+  background-color: hsla(160, 100%, 37%, 0.3);
+  color: hsla(0, 0, 100%, 0.);
   font-weight: bold;
-  color: var(--vt-c-text-dark-1);
 }
 
 tr:nth-child(even) {
