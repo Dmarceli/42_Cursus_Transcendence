@@ -5,7 +5,7 @@ import { FortyTwoAuthGuard } from './42/auth.guard';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { query } from 'express';
-
+import { TwoFactorAuthService } from './2FA/2FA-service';
 
 
 @Controller('/auth')
@@ -13,6 +13,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private userService: UsersService,
+    private TwoFactorAuthService: TwoFactorAuthService
   ) { }
 
   /*******************************************/
@@ -49,6 +50,13 @@ export class AuthController {
     const payload = this.authService.googleLogin(req)
     res.cookie('token', payload.access_token,)
     res.redirect('http://localhost:5173/')
+  }
+
+  @Get('/2fa')
+  async twofactorauth( @Res() res: any){
+    const qrCodeData = this.TwoFactorAuthService.GenerateqrCode("https://www.google.com")
+    res.setHeader('content-type','image/png');
+    res.send(qrCodeData);
   }
 
 

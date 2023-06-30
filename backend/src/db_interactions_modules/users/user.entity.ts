@@ -33,6 +33,10 @@ export class User {
     @Column({default: true})
     TwoFAEnabled: boolean
 
+    @Column({nullable: true})
+    TwoFASecret: string
+
+
     @CreateDateColumn()
     creation_date: Date;
 
