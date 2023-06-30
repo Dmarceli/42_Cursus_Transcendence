@@ -48,15 +48,37 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req:any, @Res() res: any) {
     const payload = this.authService.googleLogin(req)
-    res.cookie('token', payload.access_token,)
+    if (payload.user.TwoFAEnabled)
+    {
+      res.cookie('token', "2FA" + payload.user.intra_nick,)
+    }
+    else
+    {
+      res.cookie('token', payload.access_token,)
+    }
+    
     res.redirect('http://localhost:5173/')
   }
 
   @Get('/2fa')
   async twofactorauth( @Res() res: any){
-    const qrCodeData = this.TwoFactorAuthService.GenerateqrCode("https://www.google.com")
-    res.setHeader('content-type','image/png');
-    res.send(qrCodeData);
+    const qrCode = require('qrcode')
+    const qrCodeData = 'https://www.google.com'; 
+    try {
+      const qrCodeImage = await qrCode.toBuffer(qrCodeData, {
+        type: 'png',
+      })
+      res.setHeader('Content-Type', 'image/png');
+      res.send(qrCodeImage);
+    } catch (error) {
+      res.status(500).send('Error generating QR code');
+    }
+  }
+
+  @Post('/check2fa')
+  async check2FAcode(@Req() req:any, @Res() res: any){
+    console.log(req.body)
+    // console.log(req.body.code)
   }
 
 

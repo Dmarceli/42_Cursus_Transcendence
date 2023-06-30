@@ -1,23 +1,23 @@
 <template>
-    <header v-if="islogged">
-      <nav>
-        <RouterLink to="/">Pong</RouterLink>
-        <RouterLink to="/chat">Chat</RouterLink>
-        <RouterLink to="/leaderboard">Leaderboard</RouterLink>
-        <RouterLink to="/profile">User profile</RouterLink>
-      </nav>
-    </header>
-    <div v-if="islogged">
-      <RouterView/>
-    </div>
-    <div v-else >
-      <Login @clicked42="login42" @clickedgoogle="loginGoogle"/>
-    </div>
+  <header v-if="islogged">
+    <nav>
+      <RouterLink to="/">Pong</RouterLink>
+      <RouterLink to="/chat">Chat</RouterLink>
+      <RouterLink to="/leaderboard">Leaderboard</RouterLink>
+      <RouterLink to="/profile">User profile</RouterLink>
+    </nav>
+  </header>
+  <div v-if="islogged">
+    <RouterView />
+  </div>
+  <div v-else>
+    <Login @clicked42="login42" @clickedgoogle="loginGoogle" />
+  </div>
 </template>
 
 <script setup lang="ts">
 
-import { RouterLink, RouterView} from 'vue-router';
+import { RouterLink, RouterView } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { ref } from 'vue';
 
@@ -35,10 +35,25 @@ function getCookieValueByName(name: any) {
   return null;
 }
 
-let token  = getCookieValueByName('token');
+let token = getCookieValueByName('token');
 
 if (token) {
-  islogged.value = true;
+  console.log("entrei na 1", token)
+  if (token.substring(0, 3) === "2FA") {
+    const user_input = prompt("Enter the code");
+    try {
+      const response = fetch(`http://localhost:3000/auth/check2fa`,
+        {
+          method: 'POST',
+          body: {
+            'id': token?.substring(3),
+            'code': user_input
+          }
+        });
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  };
 }
 
 function login42() {

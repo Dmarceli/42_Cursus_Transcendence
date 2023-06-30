@@ -34,8 +34,7 @@ export class TwoFactorAuthService {
     }
 
     public async GenerateqrCode(otpUrl: string) {
-        
-        return toDataURL(otpUrl)
+        return toDataURL(HTMLCanvasElement, otpUrl)
     }
 
     public async activationOfTwoFa(email: string, status: boolean) {
