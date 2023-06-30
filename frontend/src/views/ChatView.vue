@@ -129,7 +129,7 @@ function getCookieValueByName(name) {
 }
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
-const userId = decodedToken.id;
+let userId = decodedToken.id;
 const users_Name = decodedToken.login;
 
 
@@ -139,7 +139,6 @@ const check_user = async () => {
     const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
-      userId = data.id
     } else {
       console.log('Error:', response.status);
       window.alert("User Doesn't exist")
