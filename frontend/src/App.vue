@@ -37,7 +37,7 @@ function getCookieValueByName(name: any) {
 
 let token = getCookieValueByName('token');
 
-if (token) {
+/*if (token) {
   console.log("entrei na 1", token)
   if (token.substring(0, 3) === "2FA") {
     const user_input = prompt("Enter the code");
@@ -46,14 +46,36 @@ if (token) {
         {
           method: 'POST',
           body: {
-            'id': token?.substring(3),
-            'code': user_input
+            //'id': token?.substring(3),
+            "code": user_input
           }
         });
     } catch (error) {
       console.log('Error:', error);
     }
   };
+}*/
+
+if (token) {
+  if (token.substring(0, 3) === "2FA") 
+    {
+    const user_input = prompt("Enter the code");
+    try {
+      const response = fetch("http://localhost:3000/auth/check2fa", {
+        method: 'POST',
+        body: JSON.stringify({
+          'id': token.substring(3),
+          'code': user_input
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (error) {
+      console.log('Error:', error);
+    }
+    }
+    islogged.value = true;
 }
 
 function login42() {

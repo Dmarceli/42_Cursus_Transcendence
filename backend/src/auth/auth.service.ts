@@ -14,8 +14,7 @@ export class AuthService {
     private jwtService: JwtService,
     private twoFactorAuthService: TwoFactorAuthService,
     ) {}
-
-
+   
   async login(user: User) {
     const payload = {
       login: user.intra_nick,

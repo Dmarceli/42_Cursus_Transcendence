@@ -23,6 +23,7 @@ import { User } from 'src/db_interactions_modules/users/user.entity';
       signOptions: { expiresIn: 30 },
     }),
     PassportModule.register({ session: true }),
+   
   ] ,
   controllers: [AuthController],
   providers: [

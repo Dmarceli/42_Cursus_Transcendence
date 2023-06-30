@@ -6,15 +6,22 @@ import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { query } from 'express';
 import { TwoFactorAuthService } from './2FA/2FA-service';
+import { randomBytes } from 'crypto';
 
+let user_2fa :string[]
 
 @Controller('/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private userService: UsersService,
-    private TwoFactorAuthService: TwoFactorAuthService
-  ) { }
+    private TwoFactorAuthService: TwoFactorAuthService,
+ 
+    ) { 
+    }
+    
+
+
 
   /*******************************************/
   /***            Login 42                ***/
@@ -50,7 +57,9 @@ export class AuthController {
     const payload = this.authService.googleLogin(req)
     if (payload.user.TwoFAEnabled)
     {
-      res.cookie('token', "2FA" + payload.user.intra_nick,)
+      const hash= randomBytes(16)
+      res.cookie('token', "2FA" + hash,)
+      user_2fa.push(hash.toString())
     }
     else
     {
@@ -60,7 +69,7 @@ export class AuthController {
     res.redirect('http://localhost:5173/')
   }
 
-  @Get('/2fa')
+  /*@Get('/2fa')
   async twofactorauth( @Res() res: any){
     const qrCode = require('qrcode')
     const qrCodeData = 'https://www.google.com'; 
@@ -74,13 +83,36 @@ export class AuthController {
       res.status(500).send('Error generating QR code');
     }
   }
+*/
 
   @Post('/check2fa')
   async check2FAcode(@Req() req:any, @Res() res: any){
     console.log(req.body)
+    console.log(user_2fa)
+    const user_=await this.userService.findByLogin(/*req.body.id*/"nunoocameirinha")
+    console.log(this.TwoFactorAuthService.verifyTwoFaCode(req.body.code,user_))
     // console.log(req.body.code)
   }
 
+
+  @Get('/gen2fa')
+  async gen2FAcode(@Res() res: any){
+    const user_=await this.userService.findByNick("Nuno")
+   const url_=await  this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
+   
+   const qrCode = require('qrcode')
+   const qrCodeData = url_.otpAuthUrl; 
+   try {
+     const qrCodeImage = await qrCode.toBuffer(qrCodeData, {
+       type: 'png',
+     })
+     res.setHeader('Content-Type', 'image/png');
+     res.send(qrCodeImage);
+   } catch (error) {
+     res.status(500).send('Error generating QR code');
+   }
+    
+  }
 
   // @UseGuards(JwtAuthGuard)
   // @Post('logout')
