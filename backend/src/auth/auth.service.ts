@@ -30,10 +30,13 @@ export class AuthService {
       login: req.user.intra_nick,
       id: req.user.id
     };
+    if(req.TwoFAEnabled){
+      console.log("Enabled 2FA for user " , req.user.intra_nick )
+    }
     return {
       message: 'User information from google',
       user: req.user,
       access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,/*expiresIn: '30s'*/expiresIn: '1d'}),
     }
-  }
+  } 
 }

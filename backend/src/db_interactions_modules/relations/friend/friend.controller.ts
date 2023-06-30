@@ -3,7 +3,7 @@ import { friend } from './friend.entity';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { friendService } from './friend.service';
 import { CreateFriendDto } from './dtos/friend.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 

@@ -3,7 +3,6 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { config } from 'dotenv';
 import { CreateUserDto } from 'src/db_interactions_modules/users/dtos/user.dto';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
-
 import { Injectable } from '@nestjs/common';
 import { randomInt } from 'crypto';
 

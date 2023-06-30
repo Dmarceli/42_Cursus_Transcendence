@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { Console } from 'console';
 import { Strategy, Profile } from 'passport-42';
 import { CreateUserDto } from 'src/db_interactions_modules/users/dtos/user.dto';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
@@ -18,7 +19,7 @@ export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
   
   async validate(accessToken: string,refreshToken: string,profile: Profile,): Promise<any> {
 
-    const user = await this.userService.findByLogin(profile.login);
+    const user = await this.userService.findByLogin(profile._json.login);
 
     if (user) {
       console.log('User already exists!');

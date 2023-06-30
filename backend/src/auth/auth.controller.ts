@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AuthService } from './auth.service';
-import { FortyTwoAuthGuard } from './auth.guard';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { FortyTwoAuthGuard } from './42/auth.guard';
+import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { query } from 'express';
 
