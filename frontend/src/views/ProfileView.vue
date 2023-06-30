@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const userProfile = ref({
   nickname: 'John Doe',
@@ -24,12 +24,63 @@ const lastGames = ref([
   { id: 9, user: { nick: 'JohnDoe', score: 9 }, opponent: { nick: 'MarkTaylor', score: 11 }, userWon: false },
   // Add more game data here
 ]);
+
+const isSettingsOpen = ref(false);
+
+const updateNickname = ref(userProfile.value.nickname);
+const updateAvatar = ref('');
+
+function openSettings() {
+  isSettingsOpen.value = true;
+}
+
+function saveSettings() {
+  userProfile.value.nickname = updateNickname.value;
+  userProfile.value.avatar = updateAvatar.value;
+  //send it to backend here
+  closeSettings();
+}
+
+function closeSettings() {
+  isSettingsOpen.value = false;
+}
+
+function handleNewAvatar(event: Event) {
+  if (event.target instanceof HTMLInputElement && event.target.files) {
+    const file = event.target.files[0];
+    if (file) {
+      // Need to make validation for image files
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          updateAvatar.value = result;
+        }
+        else {
+          console.error('Error reading file');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+}
+
+// watch(() => userProfile.value.nickname, (newNickname, oldNickname) => {
+//   lastGames.value.forEach((game) => {
+//     if (game.user.nick === oldNickname) {
+//       game.user.nick = newNickname;
+//     }
+//   });
+// });
+
+
 </script>
 
 <template>
 	<div class="profile">
     <!-- Avatar and Nick -->
     <div class="profile-header">
+      <button @click="openSettings" class="settingsButton">Edit Profile</button>
       <div class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
       </div>
@@ -79,8 +130,33 @@ const lastGames = ref([
       </table>
 	    </div>
     </div>
+
+    <!-- Settings Modal -->
+    <div v-if="isSettingsOpen" class="dimmed-background"></div>
+    <div v-if="isSettingsOpen" class="settings">
+      <div class="settings-content">
+        <h2>Edit Profile</h2>
+        <!-- Avatar -->
+        <div class="settings-section">
+          <label for="avatar" class="avatar-label">Avatar</label>
+          <div class="avatar-container-settings">
+            <img :src="updateAvatar || userProfile.avatar" alt="Avatar" class="avatar-settings" />
+          </div>
+          <input type="file" @change="handleNewAvatar($event)" id="avatar" />
+        </div>
+        <!-- Nickname -->
+        <div class="settings-section">
+          <label for="nickname">Nickname</label>
+          <input v-model="updateNickname" type="text" id="nickname" />
+        </div>
+        <div class="modal-buttons">
+          <button @click="saveSettings">Save</button>
+          <button @click="closeSettings">Cancel</button>
+        </div>
+      </div>
+    </div>
 	</div>
-  </template>
+</template>
 
 <style scoped>
 
@@ -89,6 +165,7 @@ const lastGames = ref([
   max-width: 80vw;
   margin: 0 auto;
   padding: 20px;
+  position: relative;
 }
 
 .profile-header {
@@ -111,10 +188,39 @@ const lastGames = ref([
   align-items: center;
 }
 
+.avatar-container-settings {
+  width:100px;
+  height:100px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: 2px solid hsla(160, 100%, 37%, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar-settings {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 2px solid hsla(160, 100%, 37%, 1);
+}
+
 .avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+label[for="nickname"] {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+#nickname {
+  width: 100%;
+  margin-bottom: 10px;
 }
 
 .nickname {
@@ -203,6 +309,79 @@ td {
 .stat-value {
   font-size: 24px;
   color: #666666;
+}
+
+.settings {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.settings-section {
+  margin-bottom: 20px;
+}
+
+.settings-button {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.settings-open {
+  pointer-events: none;
+}
+
+.settings-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(150, 81, 81, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.settings-content {
+  background-color: rgb(13, 24, 13);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.dimmed-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 99;
 }
 
 </style>
