@@ -20,9 +20,12 @@ let ball: Circle | null = null
 let paddle1: Rectangle | null = null
 let paddle2: Rectangle | null = null
 let lastAnimationTime: DOMHighResTimeStamp | null = null
-let lastPaddleCollisionTime = 0
-let lastWallCollisionTime = 0
-let gameover = false
+let gameover: boolean | null = null
+const board_dims = {
+  width: 1400,
+  height: 700
+}
+
 
 onMounted(() => {
   console.log('Mounted Pong');
@@ -30,6 +33,7 @@ onMounted(() => {
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
+
 })
 
 onUnmounted(() => {
@@ -40,19 +44,33 @@ onUnmounted(() => {
 })
 
 socket.on('updateGame', game => {
-  init_values()
+  if (ball == null || paddle1 == null || paddle2 == null)
+  {
+    init_values(game)
+  }
+  else
+  {
+    ball.update(game.ball)
+    paddle1.update(game.playerPaddle1)
+    paddle2.update(game.playerPaddle2)
+  }
   start_animation()
-  ball.update(game.ball.x, game.ball.y, game.ball.radius)
-  paddle1.update(game.paddle1.x)
-  paddle2.update(gamecanvas.value.height)
 });
 
-function init_values() {
+function init_values(game) {
   if (gamecanvas.value != null) {
-    gamecanvas.value.height = window.innerHeight * 0.8
-    gamecanvas.value.width = window.innerWidth * 0.8
+    let current_ratio = window.innerWidth/innerHeight
+    if (current_ratio > 2)
+    {
+      gamecanvas.value.height = window.innerHeight * 0.8
+      gamecanvas.value.width = window.innerHeight * 0.8 * 2
+    } else
+    {
+      gamecanvas.value.height = window.innerWidth * 0.8 /2
+      gamecanvas.value.width = window.innerWidth * 0.8
+    }
     ctx.value = gamecanvas.value.getContext('2d')
-    ball = new Ball(gamecanvas.value)
+    ball = new Ball(gamecanvas.value.width / 2, gamecanvas.value.height / 2, )
     paddle1 = new Paddle(gamecanvas.value, 20)
     paddle2 = new Paddle(gamecanvas.value, gamecanvas.value.width - paddle1.x - paddle1.width)
   }

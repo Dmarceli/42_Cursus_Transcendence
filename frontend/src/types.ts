@@ -5,9 +5,7 @@ interface Rectangle {
   y: number
   height: number
   width: number
-  movingDown: Boolean
-  movingUp: Boolean
-  updatePosition(canvasmax: number): void
+  update(paddleref: any): void
   draw(context: CanvasRenderingContext2D): void
 }
 
@@ -17,17 +15,17 @@ class Paddle implements Rectangle {
   height: number
   width: number
 
-  constructor(canvas_height: number, x: number) {
-    this.height = 100
-    this.width = 20
-    this.x = x
-    this.y = canvas_height / 2 - this.height / 2
+  constructor(paddleref: any) {
+    this.height = paddleref.height
+    this.width = paddleref.width
+    this.x = paddleref.x
+    this.y = paddleref.y
   }
-  update(x: number, y: number, height: number, width: number): void {
-    this.x = x
-    this.y = y
-    this.height = height
-    this.width = width
+  update(paddleref: any): void {
+    this.height = paddleref.height
+    this.width = paddleref.width
+    this.x = paddleref.x
+    this.y = paddleref.y
   }
   draw(context: CanvasRenderingContext2D): void {
     context.fillStyle = 'hsla(0, 0%, 100%, 1)'
@@ -39,9 +37,7 @@ interface Circle {
   x: number
   y: number
   radius: number
-  direction: { x: number; y: number }
-  speed: number
-  updatePosition(delta: number): void
+  update(ballref: any): void
   draw(context: CanvasRenderingContext2D): void
 }
 
@@ -49,16 +45,15 @@ class Ball implements Circle {
   x: number
   y: number
   radius: number
-
-  constructor(x: number, y: number, radius: number) {
-    this.x = x
-    this.y = y
-    this.radius = radius
+  constructor(ballref: any) {
+    this.x = ballref.x
+    this.y = ballref.y
+    this.radius = ballref.radius
   }
-  update(x: number, y: number, radius: number): void {
-    this.x = x
-    this.y = y
-    this.radius = radius
+  update(ballref: any): void {
+    this.x = ballref.x
+    this.y = ballref.y
+    this.radius = ballref.radius
   }
 
   draw(context: CanvasRenderingContext2D): void {
