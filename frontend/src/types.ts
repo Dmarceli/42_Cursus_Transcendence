@@ -16,23 +16,18 @@ class Paddle implements Rectangle {
   y: number
   height: number
   width: number
-  movingDown: Boolean
-  movingUp: Boolean
 
-  constructor(canvas: HTMLCanvasElement, x: number) {
+  constructor(canvas_height: number, x: number) {
     this.height = 100
     this.width = 20
     this.x = x
-    this.y = canvas.height / 2 - this.height / 2
-    this.movingDown = false
-    this.movingUp = false
+    this.y = canvas_height / 2 - this.height / 2
   }
-  updatePosition(canvasmax: number): void {
-    if (this.movingDown && this.y + this.height + 10 < canvasmax) {
-      this.y += 10
-    } else if (this.movingUp && this.y > 0) {
-      this.y -= 10
-    }
+  update(x: number, y: number, height: number, width: number): void {
+    this.x = x
+    this.y = y
+    this.height = height
+    this.width = width
   }
   draw(context: CanvasRenderingContext2D): void {
     context.fillStyle = 'hsla(0, 0%, 100%, 1)'
@@ -54,23 +49,16 @@ class Ball implements Circle {
   x: number
   y: number
   radius: number
-  direction: { x: number; y: number }
-  speed: number
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.x = canvas.width / 2
-    this.y = canvas.height / 2
-    this.radius = canvas.height / 100
-    this.direction = { x: 0, y: 0 }
-    while (Math.abs(this.direction.x) <= 0.4 || Math.abs(this.direction.x) >= 0.9) {
-      const angle = randomNumberBetween(0, 2 * Math.PI)
-      this.direction = { x: Math.cos(angle), y: Math.sin(angle) }
-    }
-    this.speed = 0.5
+  constructor(x: number, y: number, radius: number) {
+    this.x = x
+    this.y = y
+    this.radius = radius
   }
-  updatePosition(delta: number): void {
-    this.x += this.direction.x * this.speed * delta
-    this.y += this.direction.y * this.speed * delta
+  update(x: number, y: number, radius: number): void {
+    this.x = x
+    this.y = y
+    this.radius = radius
   }
 
   draw(context: CanvasRenderingContext2D): void {

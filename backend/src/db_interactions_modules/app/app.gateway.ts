@@ -12,8 +12,6 @@ import { AppService } from '../../app.service';
 import { CreateMsgDto } from '../messages/dtos/message.dto';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 
-
-const players = 5
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -46,12 +44,6 @@ const players = 5
    console.log(`Connected ${client.id}`);
  }
 
- @SubscribeMessage('PlayerEntered')
- @UsePipes(new ValidationPipe())
- async PlayerEntered(client: Socket): Promise<void> {
-  console.log("OH YEA")
-  this.server.emit('updatePlayers', players);
- }
 
 }
 

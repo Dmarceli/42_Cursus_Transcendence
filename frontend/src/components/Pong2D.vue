@@ -22,16 +22,14 @@ let paddle2: Rectangle | null = null
 let lastAnimationTime: DOMHighResTimeStamp | null = null
 let lastPaddleCollisionTime = 0
 let lastWallCollisionTime = 0
+let gameover = false
 
 onMounted(() => {
   console.log('Mounted Pong');
   socket.emit('PlayerEntered')
-
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
-  init_values()
-  start_animation()
 })
 
 onUnmounted(() => {
@@ -41,39 +39,13 @@ onUnmounted(() => {
   window.removeEventListener('keyup', onKeyUp)
 })
 
-function isBallInsideHorizontalWalls() {
-  if (gamecanvas.value != null && ball != null) {
-    return ball.y + ball.radius < gamecanvas.value.height && ball.y - ball.radius > 0
-  } else {
-    return false
-  }
-}
-
-function isBallInsideVerticalWalls() {
-  if (gamecanvas.value != null && ball != null) {
-    return ball.x + ball.radius < gamecanvas.value.width && ball.x - ball.radius > 0
-  } else {
-    return false
-  }
-}
-
-function areColliding(circle: Circle, rectangle: Rectangle) {
-  let closestX =
-    circle.x < rectangle.x
-      ? rectangle.x
-      : circle.x > rectangle.x + rectangle.width
-      ? rectangle.x + rectangle.width
-      : circle.x
-  let closestY =
-    circle.y < rectangle.y
-      ? rectangle.y
-      : circle.y > rectangle.y + rectangle.height
-      ? rectangle.y + rectangle.height
-      : circle.y
-  let dx = closestX - circle.x
-  let dy = closestY - circle.y
-  return dx * dx + dy * dy <= circle.radius * circle.radius
-}
+socket.on('updateGame', game => {
+  init_values()
+  start_animation()
+  ball.update(game.ball.x, game.ball.y, game.ball.radius)
+  paddle1.update(game.paddle1.x)
+  paddle2.update(gamecanvas.value.height)
+});
 
 function init_values() {
   if (gamecanvas.value != null) {
@@ -98,26 +70,11 @@ function start_animation() {
     ) {
       if (lastAnimationTime != null) {
         const delta = time - lastAnimationTime
-        if (animation != null && !isBallInsideVerticalWalls()) {
+        if (animation != null && gameover) {
           cancelAnimationFrame(animation)
           emit('gameOver')
           return
         }
-        if (Date.now() > lastWallCollisionTime + 300 && !isBallInsideHorizontalWalls()) {
-          ball.direction.y *= -1
-          lastWallCollisionTime = Date.now()
-        }
-        if (
-          Date.now() > lastPaddleCollisionTime + 300 &&
-          (areColliding(ball, paddle1) || areColliding(ball, paddle2))
-        ) {
-          ball.direction.x *= -1
-          ball.speed *= 1.1
-          lastPaddleCollisionTime = Date.now()
-        }
-        ball.updatePosition(delta)
-        paddle1.updatePosition(gamecanvas.value.height)
-        paddle2.updatePosition(gamecanvas.value.height)
         resetBoard()
         ball.draw(ctx.value)
         paddle1.draw(ctx.value)
@@ -157,10 +114,31 @@ function onWidthChange() {
   }
 }
 
+function onKeyDown(event: KeyboardEvent) {
+  if (paddle1 != null) {
+    console.log(event.key)
+    const handlers: any = {
+      ArrowUp: () => {
+        socket.emit('keydown', "up")
+      },
+      ArrowDown: () => {
+        socket.emit('keydown', "down")
+      },
+    }[event.key]
+    handlers?.()
+  }
+}
 
-
-socket.on('updatePlayers', y => {
-  paddle1.y = y
-});
+function onKeyUp(event: KeyboardEvent) {
+  const handlers: any = {
+    ArrowUp: () => {
+      socket.emit('keyup', "up")
+    },
+    ArrowDown: () => {
+      socket.emit('keyup', "down")
+    },
+  }[event.key]
+  handlers?.()
+}
 
 </script>
