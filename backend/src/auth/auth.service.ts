@@ -21,15 +21,6 @@ export class AuthService {
       id: user.id,
       TwoFAEnabled: user.TwoFAEnabled
     };
-    // let code = "xona"
-    // if(payload.TwoFAEnabled){
-    //   authenticator.verify({
-    //     token: code,
-    //     secret: user.TwoFASecret
-    //   })
-      // const { secret, otpAuthUrl } = await this.twoFactorAuthService.generateTwoFactorAuthSecret(user);
-      // return this.twoFactorAuthService.GenerateqrCode(otpAuthUrl)
-   // }
     return {
       login: payload.login,
       id: payload.id,

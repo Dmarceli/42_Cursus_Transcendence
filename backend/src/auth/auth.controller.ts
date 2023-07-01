@@ -6,9 +6,7 @@ import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { query } from 'express';
 import { TwoFactorAuthService } from './2FA/2FA-service';
-import { randomBytes } from 'crypto';
-
-let user_2fa :string[]
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('/auth')
 export class AuthController {
@@ -16,13 +14,9 @@ export class AuthController {
     private readonly authService: AuthService,
     private userService: UsersService,
     private TwoFactorAuthService: TwoFactorAuthService,
- 
+    private jwtService: JwtService
     ) { 
     }
-    
-
-
-
   /*******************************************/
   /***            Login 42                ***/
   /*******************************************/
@@ -43,10 +37,8 @@ export class AuthController {
 
   /*******************************************/
   /***            Login Google             ***/
-  /*******************************************/
+  /*******************************************/  
 
-
-  
   @Get('/login_google')
   @UseGuards(AuthGuard('google'))
   async googleAuth(@Req() req) {}
@@ -55,41 +47,25 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req:any, @Res() res: any) {
     const payload = this.authService.googleLogin(req)
-    if (payload.user.TwoFAEnabled)
+    if (payload.user.TwoFAEnabled && payload.user.TwoFASecret)
     {
-      const hash= randomBytes(16)
-      res.cookie('token', "2FA" + hash,)
-      user_2fa.push(hash.toString())
+      const payload2FA = {
+        login: payload.user.intra_nick,
+      };
+      let access_token2FA = this.jwtService.sign(payload2FA, {privateKey: `${process.env.JWT_SECRET_KEY}`,expiresIn: '5m'})
+      res.cookie('token', "2FA" + access_token2FA)
     }
-    else
-    {
-      res.cookie('token', payload.access_token,)
+    else {
+      res.cookie('token', payload.access_token)
     }
     
     res.redirect('http://localhost:5173/')
   }
 
-  /*@Get('/2fa')
-  async twofactorauth( @Res() res: any){
-    const qrCode = require('qrcode')
-    const qrCodeData = 'https://www.google.com'; 
-    try {
-      const qrCodeImage = await qrCode.toBuffer(qrCodeData, {
-        type: 'png',
-      })
-      res.setHeader('Content-Type', 'image/png');
-      res.send(qrCodeImage);
-    } catch (error) {
-      res.status(500).send('Error generating QR code');
-    }
-  }
-*/
-
   @Post('/check2fa')
   async check2FAcode(@Req() req:any, @Res() res: any){
     console.log(req.body)
-    console.log(user_2fa)
-    const user_=await this.userService.findByLogin(/*req.body.id*/"nunoocameirinha")
+    const user_ = await this.userService.findByLogin(req.body.id)
     console.log(this.TwoFactorAuthService.verifyTwoFaCode(req.body.code,user_))
     // console.log(req.body.code)
   }
@@ -97,8 +73,8 @@ export class AuthController {
 
   @Get('/gen2fa')
   async gen2FAcode(@Res() res: any){
-    const user_=await this.userService.findByNick("Nuno")
-   const url_=await  this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
+    const user_=await this.userService.findByNick("Daniel")
+    const url_=await  this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
    
    const qrCode = require('qrcode')
    const qrCodeData = url_.otpAuthUrl; 

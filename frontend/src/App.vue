@@ -37,34 +37,18 @@ function getCookieValueByName(name: any) {
 
 let token = getCookieValueByName('token');
 
-/*if (token) {
-  console.log("entrei na 1", token)
-  if (token.substring(0, 3) === "2FA") {
-    const user_input = prompt("Enter the code");
-    try {
-      const response = fetch(`http://localhost:3000/auth/check2fa`,
-        {
-          method: 'POST',
-          body: {
-            //'id': token?.substring(3),
-            "code": user_input
-          }
-        });
-    } catch (error) {
-      console.log('Error:', error);
-    }
-  };
-}*/
-
 if (token) {
   if (token.substring(0, 3) === "2FA") 
     {
     const user_input = prompt("Enter the code");
     try {
+      const payloadBase64 = token.split('.')[1];
+      const payloadJson = atob(payloadBase64);
+      const payload = JSON.parse(payloadJson);
       const response = fetch("http://localhost:3000/auth/check2fa", {
         method: 'POST',
         body: JSON.stringify({
-          'id': token.substring(3),
+          'id': payload.login,
           'code': user_input
         }),
         headers: {
