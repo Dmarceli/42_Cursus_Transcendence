@@ -70,7 +70,6 @@ export class AuthController {
     } else {
       res.status(401).json({ message: 'Invalid verification code' });
     }
-
   }
 
 

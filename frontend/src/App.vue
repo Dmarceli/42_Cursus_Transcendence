@@ -50,7 +50,6 @@ async function verifyCode(token:string, code:any) {
         'Content-Type': 'application/json'
       }
     });
-
     if (response.ok) {
       return true;
     } else {
@@ -77,8 +76,11 @@ async function verifyCode(token:string, code:any) {
         console.log('Invalid code');
       }
     }
+    islogged.value = true;
   }
 })();
+
+
 function login42() {
   window.location.href = "http://localhost:3000/auth/login";
 }
