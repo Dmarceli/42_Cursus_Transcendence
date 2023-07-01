@@ -35,33 +35,50 @@ function getCookieValueByName(name: any) {
   return null;
 }
 
-let token = getCookieValueByName('token');
+async function verifyCode(token:string, code:any) {
+  try {
+    const payloadBase64 = token.split('.')[1];
+    const payloadJson = atob(payloadBase64);
+    const payload = JSON.parse(payloadJson);
+    const response = await fetch("http://localhost:3000/auth/check2fa", {
+      method: 'POST',
+      body: JSON.stringify({
+        'id': payload,
+        'code': code
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
-if (token) {
-  if (token.substring(0, 3) === "2FA") 
-    {
-    const user_input = prompt("Enter the code");
-    try {
-      const payloadBase64 = token.split('.')[1];
-      const payloadJson = atob(payloadBase64);
-      const payload = JSON.parse(payloadJson);
-      const response = fetch("http://localhost:3000/auth/check2fa", {
-        method: 'POST',
-        body: JSON.stringify({
-          'id': payload.login,
-          'code': user_input
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-    } catch (error) {
-      console.log('Error:', error);
+    if (response.ok) {
+      return true;
+    } else {
+      return false; 
     }
-    }
-    islogged.value = true;
+  } catch (error) {
+    console.log('Error:', error);
+    return false; 
+  }
 }
 
+//let token = getCookieValueByName('token');
+
+(async () => {
+  let token = getCookieValueByName('token');
+  if (token) {
+    if (token.substring(0, 3) === "2FA") {
+      const user_input = prompt("Enter the code");
+      const isCodeValid = await verifyCode(token, user_input);
+      if (isCodeValid) {
+        console.log('Verification successful');
+        islogged.value = true;
+      } else {
+        console.log('Invalid code');
+      }
+    }
+  }
+})();
 function login42() {
   window.location.href = "http://localhost:3000/auth/login";
 }
