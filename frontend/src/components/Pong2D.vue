@@ -26,7 +26,6 @@ const board_dims = {
   height: 700
 }
 
-
 onMounted(() => {
   console.log('Mounted Pong');
   socket.emit('PlayerEntered')
@@ -54,13 +53,13 @@ socket.on('updateGame', game => {
     paddle1.update(game.playerPaddle1)
     paddle2.update(game.playerPaddle2)
   }
-  start_animation()
+  render_animation()
 });
 
-function init_values(game) {
+function init_values(game: any) {
   if (gamecanvas.value != null) {
-    let current_ratio = window.innerWidth/innerHeight
-    if (current_ratio > 2)
+    let current_wh_ratio = window.innerWidth/innerHeight
+    if (current_wh_ratio > 2)
     {
       gamecanvas.value.height = window.innerHeight * 0.8
       gamecanvas.value.width = window.innerHeight * 0.8 * 2
@@ -70,39 +69,33 @@ function init_values(game) {
       gamecanvas.value.width = window.innerWidth * 0.8
     }
     ctx.value = gamecanvas.value.getContext('2d')
-    ball = new Ball(gamecanvas.value.width / 2, gamecanvas.value.height / 2, )
-    paddle1 = new Paddle(gamecanvas.value, 20)
-    paddle2 = new Paddle(gamecanvas.value, gamecanvas.value.width - paddle1.x - paddle1.width)
+    let conv_rate = gamecanvas.value.width / board_dims.width;
+
+    ball = new Ball(game.ball, conv_rate)
+    paddle1 = new Paddle(game.playerPaddle1, conv_rate)
+    paddle2 = new Paddle(game.playerPaddle2, conv_rate)
   }
 }
 
-function start_animation() {
-  animation = requestAnimationFrame(animate)
-  function animate(time: DOMHighResTimeStamp) {
-    if (
-      ctx.value != null &&
-      ball != null &&
-      paddle1 != null &&
-      paddle2 != null &&
-      gamecanvas.value != null
-    ) {
-      if (lastAnimationTime != null) {
-        const delta = time - lastAnimationTime
-        if (animation != null && gameover) {
-          cancelAnimationFrame(animation)
-          emit('gameOver')
-          return
-        }
-        resetBoard()
-        ball.draw(ctx.value)
-        paddle1.draw(ctx.value)
-        paddle2.draw(ctx.value)
+function render_animation() {
+  if (
+    ctx.value != null &&
+    ball != null &&
+    paddle1 != null &&
+    paddle2 != null &&
+    gamecanvas.value != null
+  ) {
+      if (animation != null && gameover) {
+        cancelAnimationFrame(animation)
+        emit('gameOver')
+        return
       }
-      lastAnimationTime = time
-      animation = requestAnimationFrame(animate)
+      resetBoard()
+      ball.draw(ctx.value)
+      paddle1.draw(ctx.value)
+      paddle2.draw(ctx.value)
     }
   }
-}
 
 function startBoard() {
   if (ctx.value != null && gamecanvas.value != null) {
@@ -123,7 +116,10 @@ function resetBoard() {
 }
 
 function onWidthChange() {
-  init_values()
+  if (gamecanvas.value && ball)
+    {
+      ball.conv_rate=gamecanvas.value.width / 1700*0.8;
+    }
   resetBoard()
   if (ctx.value != null) {
     ball?.draw(ctx.value)
@@ -157,6 +153,19 @@ function onKeyUp(event: KeyboardEvent) {
     },
   }[event.key]
   handlers?.()
+}
+
+function printAll()
+{
+  console.log("Ball:")
+  console.log("x:"+ball?.x)
+  console.log("y:"+ball?.y)
+  console.log("radius:"+ball?.radius)
+  console.log("Paddle 1:")
+  console.log("x:" + paddle1?.x)
+  console.log("y:" + paddle1?.y)
+  console.log("width:" + paddle1?.width)
+  console.log("height:" + paddle1?.height)
 }
 
 </script>
