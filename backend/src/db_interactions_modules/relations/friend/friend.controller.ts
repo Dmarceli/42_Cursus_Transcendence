@@ -6,6 +6,7 @@ import { CreateFriendDto } from './dtos/friend.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
+import { User } from 'src/db_interactions_modules/users/user.entity';
 
 
 @UseGuards(JwtAuthGuard)
@@ -27,7 +28,8 @@ export class friendsController {
   }
 
   @Get()
-  findOne(@Req() req:any, @getUserIDFromToken() user:any) {
+  findOne(@Req() req:any, @getUserIDFromToken() user:User) {
+    console.log(user)
     return this.friendService.findByUserId(user.id);
 
   }

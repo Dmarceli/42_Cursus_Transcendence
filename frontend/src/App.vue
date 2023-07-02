@@ -48,10 +48,11 @@ async function verifyCode(token:string, code:any) {
       }),
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
     });
     if (response.ok) {
-      return true;
+      //console.log(response.headers.get('token2'))
+      return response.json();
     } else {
       return false; 
     }
@@ -68,16 +69,20 @@ async function verifyCode(token:string, code:any) {
   if (token) {
     if (token.substring(0, 3) === "2FA") {
       const user_input = prompt("Enter the code");
-      const isCodeValid = await verifyCode(token, user_input);
-      if (isCodeValid) {
-        console.log('Verification successful');
+      const new_code = await verifyCode(token, user_input);
+      if (new_code) {
+        console.log('Verification successful', new_code);
+        document.cookie=`token=${new_code.code}`
         islogged.value = true;
       } else {
         console.log('Invalid code');
       }
     }
+    else{
     islogged.value = true;
+    }
   }
+
 })();
 
 

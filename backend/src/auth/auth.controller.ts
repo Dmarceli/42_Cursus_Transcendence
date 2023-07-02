@@ -50,8 +50,10 @@ export class AuthController {
     if (payload.user.TwoFAEnabled && payload.user.TwoFASecret) {
       const payload2FA = {
         login: payload.user.intra_nick,
+        id: -1,
+        TwoFAEnabled: true
       };
-      let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: `${process.env.JWT_SECRET_KEY}`, expiresIn: '5m' })
+      let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
@@ -63,10 +65,14 @@ export class AuthController {
 
   @Post('/check2fa')
   async check2FAcode(@Req() req: any, @Res() res: any) {
-    const user_ = await this.userService.findByLogin(req.body.id)
-    let verified = this.TwoFactorAuthService.verifyTwoFaCode(req.body.code, user_)
-    if (verified) {
-      res.status(200).json({ message: 'Verification successful' });
+    const user_ = await this.userService.findByLogin(req.body.id.login)
+    console.log(req.body.id.login)
+    let  verified = await this.TwoFactorAuthService.verifyTwoFaCode(req.body.code, user_)
+
+    if (verified && user_) {
+      const payload = await this.authService.login(user_)
+      res.cookie('token', payload.access_token)
+      res.status(200).json({ message: 'Verification successful', code: payload.access_token });
     } else {
       res.status(401).json({ message: 'Invalid verification code' });
     }
@@ -75,7 +81,8 @@ export class AuthController {
 
   @Get('/gen2fa')
   async gen2FAcode(@Res() res: any) {
-    const user_ = await this.userService.findByNick("Daniel")
+    //Pesquisa por nick
+    const user_ = await this.userService.findByNick("Nuno")
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
 
     const qrCode = require('qrcode')

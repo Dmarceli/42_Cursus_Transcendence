@@ -44,10 +44,15 @@ export class TwoFactorAuthService {
     }
 
     public async verifyTwoFaCode(code: string, user: User) {
+        if(user){
         return authenticator.verify({
             token: code,
             secret: user.TwoFASecret
         });
+        }
+        else{
+            return false;
+        }
     }
 
     async signIn(user: User, isTwoFaAuthenticated: boolean) {
