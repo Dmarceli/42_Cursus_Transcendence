@@ -245,8 +245,6 @@ export class GameGateway
         }
         else
         {
-          console.log("Updating game for client"+game.playerPaddle1.client?.id)
-          console.log("Updating game for client"+game.playerPaddle2.client?.id)
           game.playerPaddle1.client?.emit('WaitingForPlayers')
           game.playerPaddle2.client?.emit('WaitingForPlayers')
         }
@@ -280,11 +278,12 @@ function RemovePlayerFromGame(client: Socket)
 {
     for (let game of games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
-        game.playerPaddle2.client.emit("PlayerWon")
+        game.playerPaddle2.client?.emit("PlayerWon")
       } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
-        game.playerPaddle1.client.emit("PlayerWon")
+        game.playerPaddle1.client?.emit("PlayerWon")
       }
     }
+    // TODO: Fix. Sometimes doesn't work
     if (client != null)
       games = games.filter(RemoveGameWithClient(client))
 }
