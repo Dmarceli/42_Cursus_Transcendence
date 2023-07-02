@@ -49,7 +49,6 @@ onUnmounted(() => {
 })
 
 socket.on('updateGame', game => {
-  console.log("YOOOOOOOOO")
   lobbyPage.value=false
   if (ball == null || paddle1 == null || paddle2 == null || score == null) {
     init_values(game)
@@ -64,7 +63,7 @@ socket.on('updateGame', game => {
 });
 
 socket.on('WaitingForPlayers', () => {
-
+  lobbyPage.value = true
 });
 
 function init_values(game: any) {

@@ -98,7 +98,7 @@ class Score {
     context.font = fontSize+"px Helvetica Neue";
     context.fillStyle = "white";
     let text = this.player1+"|"+this.player2
-    console.log("TEXT IS: "+text)
+    // console.log("TEXT IS: "+text)
     let text_width = context.measureText(text).width
     let x = (this.canvas_width-text_width)/2
     console.log("X is: "+x)

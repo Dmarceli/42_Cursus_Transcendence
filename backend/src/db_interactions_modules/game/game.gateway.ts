@@ -16,7 +16,7 @@ const board_dims = {
 }
 
 class Ball {
-  visual: {
+  frontEndData: {
     x: number
     y: number
     radius: number
@@ -27,12 +27,12 @@ class Ball {
     this.init(x, y, radius)
   }
   updatePosition(): void {
-    this.visual.x += this.direction.x * this.speed
-    this.visual.y += this.direction.y * this.speed
+    this.frontEndData.x += this.direction.x * this.speed
+    this.frontEndData.y += this.direction.y * this.speed
   }
   init(x: number, y: number, radius: number): void {
-    this.visual = { x: x, y: y, radius: radius }
-    this.visual.radius = y / 40
+    this.frontEndData = { x: x, y: y, radius: radius }
+    this.frontEndData.radius = y / 40
     this.direction = { x: 0, y: 0 }
     while (Math.abs(this.direction.x) <= 0.4 || Math.abs(this.direction.x) >= 0.9) {
       const angle = randomNumberBetween(0, 2 * Math.PI)
@@ -42,20 +42,20 @@ class Ball {
   }
 }
 
-function isBallTouchingTopWall() {
-  return game.ball.visual.y - game.ball.visual.radius < 0
+function isBallTouchingTopWall(game) {
+  return game.ball.frontEndData.y - game.ball.frontEndData.radius < 0
 }
 
-function isBallTouchingBottomWall() {
-  return game.ball.visual.y + game.ball.visual.radius > board_dims.height
+function isBallTouchingBottomWall(game) {
+  return game.ball.frontEndData.y + game.ball.frontEndData.radius > board_dims.height
 }
 
-function ballTouchingLeftWall() {
-  return game.ball.visual.x - game.ball.visual.radius < 0
+function ballTouchingLeftWall(game) {
+  return game.ball.frontEndData.x - game.ball.frontEndData.radius < 0
 }
 
-function ballTouchingRightWall() {
-  return game.ball.visual.x + game.ball.visual.radius > board_dims.width
+function ballTouchingRightWall(game) {
+  return game.ball.frontEndData.x + game.ball.frontEndData.radius > board_dims.width
 }
 
 class PlayerPaddle {
@@ -65,11 +65,12 @@ class PlayerPaddle {
     height: number
     width: number
   }
-  id: string
+  client: Socket | null
   movingDown: Boolean
   movingUp: Boolean
   constructor(x: number, y: number, width: number, height: number) {
     this.init(x, y, width, height)
+    this.client = null
   }
   updatePosition(canvasHeight: number): void {
     if (this.movingDown && this.frontEndData.y + this.frontEndData.height + 10 < canvasHeight) {
@@ -123,7 +124,7 @@ class Game {
 
 let games = []
 
-let game = new Game
+// let game = new Game
 
 let refreshIntervalid = null
 
@@ -142,63 +143,60 @@ export class GameGateway
 
   handleDisconnect(client: Socket) {
     console.log(`Game detected disconnection of client: ${client.id}`);
+    let LobbyPlayer = null
+    for (let game of games) {
+      if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
+        LobbyPlayer = game.playerPaddle2.client
+      } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
+        LobbyPlayer = game.playerPaddle1.client
+      }
+    }
+    games = games.filter(RemoveGameWithClient(client))
+    if (LobbyPlayer != null)
+    {
+      console.log("GONNA READD")
+      AddPlayerToGame(LobbyPlayer)
+    }
   }
 
   afterInit(server: Server) {
+    this.UpdateAllPositions();
+    // Logic should be here
   }
 
   // Game
-
   @SubscribeMessage('NewPlayer')
   @UsePipes(new ValidationPipe())
   async NewPlayer(client: Socket): Promise<void> {
-    console.log("NewPlayer")
+    console.log("NewPlayer"+client.id)
     // TODO: Replace with intraId
-    let Game = AddPlayerToLobby(client.id)
-    if (Game == null)
-    {
-      this.server.emit('WaitingForPlayers', game);
-    }
-    else {
-      this.UpdateAllPositions();
-      if (!game.playerPaddle1.id) {
-        game.playerPaddle1.id = client.id
-      } else if (!game.playerPaddle2.id) {
-        game.playerPaddle2.id = client.id
-      }
-      this.server.emit('updateGame', game);
-    }
+    AddPlayerToGame(client)
   }
 
   @SubscribeMessage('PlayerExited')
   @UsePipes(new ValidationPipe())
   async PlayerExited(client: Socket): Promise<void> {
     console.log("PlayerExited")
-    if (game.playerPaddle1.id == client.id) {
-      game.playerPaddle1.id = null
-    } else if (game.playerPaddle2.id == client.id) {
-      game.playerPaddle2.id = null
-    }
-    this.server.emit('updateGame', game);
   }
 
   @SubscribeMessage('keydown')
   @UsePipes(new ValidationPipe())
   async PlayerKeyDown(client: Socket, key: string): Promise<void> {
-    // console.log("KEY Down" + client.id)
-    if (game.playerPaddle1.id === client.id) {
-      if (key === "up") {
-        game.playerPaddle1.movingUp = true
-      }
-      else if (key === "down") {
-        game.playerPaddle1.movingDown = true
-      }
-    } else if (game.playerPaddle2.id === client.id) {
-      if (key === "up") {
-        game.playerPaddle2.movingUp = true
-      }
-      else if (key === "down") {
-        game.playerPaddle2.movingDown = true
+    for (let game of games) {
+      if (game.playerPaddle1.client.id === client.id) {
+        if (key === "up") {
+          game.playerPaddle1.movingUp = true
+        }
+        else if (key === "down") {
+          game.playerPaddle1.movingDown = true
+        }
+      } else if (game.playerPaddle2.client.id === client.id) {
+        if (key === "up") {
+          game.playerPaddle2.movingUp = true
+        }
+        else if (key === "down") {
+          game.playerPaddle2.movingDown = true
+        }
       }
     }
   }
@@ -207,19 +205,22 @@ export class GameGateway
   @UsePipes(new ValidationPipe())
   async PlayerKeyUp(client: Socket, key: string): Promise<void> {
     // console.log("KEY UP" + client.id)
-    if (game.playerPaddle1.id === client.id) {
-      if (key === "up") {
-        game.playerPaddle1.movingUp = false
-      }
-      else if (key === "down") {
-        game.playerPaddle1.movingDown = false
-      }
-    } else if (game.playerPaddle2.id === client.id) {
-      if (key === "up") {
-        game.playerPaddle2.movingUp = false
-      }
-      else if (key === "down") {
-        game.playerPaddle2.movingDown = false
+    for (let game of games) {
+
+      if (game.playerPaddle1.client.id === client.id) {
+        if (key === "up") {
+          game.playerPaddle1.movingUp = false
+        }
+        else if (key === "down") {
+          game.playerPaddle1.movingDown = false
+        }
+      } else if (game.playerPaddle2.client.id === client.id) {
+        if (key === "up") {
+          game.playerPaddle2.movingUp = false
+        }
+        else if (key === "down") {
+          game.playerPaddle2.movingDown = false
+        }
       }
     }
   }
@@ -227,78 +228,107 @@ export class GameGateway
   @UsePipes(new ValidationPipe())
   async UpdateAllPositions(): Promise<void> {
     refreshIntervalid = setInterval(() => {
-      GameLogic();
-      let gamevisual = {
-        ball: game.ball.visual,
-        playerPaddle1: game.playerPaddle1.frontEndData,
-        playerPaddle2: game.playerPaddle2.frontEndData,
-        score: game.score
+      for (let game of games) {
+        if (game.playerPaddle1.client !== null && game.playerPaddle2.client !== null)
+        {
+          UpdateGame(game);
+          if ((game.score.player1 > 4 || game.score.player2 > 4) && refreshIntervalid != null) {
+            let winner = game.score.player1 > 4 ? 1: 2
+            game.playerPaddle1.client?.emit('PlayerWon', winner)
+            game.playerPaddle2.client?.emit('PlayerWon', winner)
+          }
+          else
+          {
+            let gamevisual = {
+              ball: game.ball.frontEndData,
+              playerPaddle1: game.playerPaddle1.frontEndData,
+              playerPaddle2: game.playerPaddle2.frontEndData,
+              score: game.score
+            }
+            // console.log("Updating game for client"+game.playerPaddle1.client?.id)
+            // console.log("Updating game for client"+game.playerPaddle2.client?.id)
+            game.playerPaddle1.client?.emit('updateGame', gamevisual)
+            game.playerPaddle2.client?.emit('updateGame', gamevisual)
+          }
+          // printAll()
+        }
+        else
+        {
+          game.playerPaddle1.client?.emit('WaitingForPlayers')
+          game.playerPaddle2.client?.emit('WaitingForPlayers')
+        }
       }
-      // printAll()
-      this.server.emit('updateGame', gamevisual)
-    }, 15
+    },15
     )
   }
 }
 
-function AddPlayerToLobby(playerId: string) {
+function AddPlayerToGame(playerClient: Socket) {
   if (!games.length) {
     let game = new Game
-    game.playerPaddle1.id = playerId
+    game.playerPaddle1.client = playerClient
     games.push(game)
-    return null
+    return
   }
   for (let i = 0; i < games.length; i++) {
-    if (games[i].playerPaddle1.id && !games[i].playerPaddle2.id)
-    {
-      games[i].playerPaddle2.id = playerId
-      return (i)
+    if (games[i].playerPaddle1.client && !games[i].playerPaddle2.client) {
+      games[i].playerPaddle2.client = playerClient
+      return
     }
-    else if (!games[i].playerPaddle1.id && games[i].playerPaddle2.id)
-    {
-      games[i].playerPaddle2.id = playerId
-      return (i)
-    }
-    else
-    {
-      return null
+    else if (!games[i].playerPaddle1.client && games[i].playerPaddle2.client) {
+      games[i].playerPaddle2.client = playerClient
+      return
     }
   }
 }
 
-function GameLogic() {
-  ScoreLogic()
-  game.playerPaddle1.updatePosition(board_dims.height);
-  game.playerPaddle2.updatePosition(board_dims.height);
-  BallPositionLogic();
-  game.ball.updatePosition()
+function RemoveGameWithClient(client) {
+    return function(game) {
+        return game.playerPaddle1.client.id != client.id && game.playerPaddle2.client.id != client.id;
+    }
 }
 
-function ScoreLogic() {
-  if (ballTouchingLeftWall()) {
+// function RemovePlayerFromGame(playerClient: Socket)
+// {
+//   for (let game of games) {
+//     if (game.playerPaddle1.client.id == playerClient.id) {
+//       game.playerPaddle1 = null
+//     } else if (game.playerPaddle2.client.id == playerClient.id) {
+//       game.playerPaddle2 = null
+//     }
+//   }
+// }
+
+function UpdateGame(game) {
+  game.playerPaddle1.updatePosition(board_dims.height);
+  game.playerPaddle2.updatePosition(board_dims.height);
+  BallPositionLogic(game);
+  game.ball.updatePosition()
+  ScoreLogic(game)
+}
+
+function ScoreLogic(game) {
+  if (ballTouchingLeftWall(game)) {
     game.score.player2 += 1
     game.resetPositions()
-  } else if (ballTouchingRightWall()) {
+  } else if (ballTouchingRightWall(game)) {
     game.score.player1 += 1
     game.resetPositions()
   }
-  if ((game.score.player1 > 4 || game.score.player2 > 4) && refreshIntervalid != null) {
-    clearInterval(refreshIntervalid)
-  }
 }
 
-function BallPositionLogic() {
-  if (isBallTouchingTopWall() && game.ball.direction.y < 0) {
+function BallPositionLogic(game) {
+  if (isBallTouchingTopWall(game) && game.ball.direction.y < 0) {
     game.ball.direction.y *= -1
   }
-  else if (isBallTouchingBottomWall() && game.ball.direction.y > 0) {
+  else if (isBallTouchingBottomWall(game) && game.ball.direction.y > 0) {
     game.ball.direction.y *= -1
   }
-  if (areColliding(game.ball.visual, game.playerPaddle1.frontEndData) && game.ball.direction.x < 0) {
+  if (areColliding(game.ball.frontEndData, game.playerPaddle1.frontEndData) && game.ball.direction.x < 0) {
     game.ball.direction.x *= -1
     game.ball.speed *= 1.1
   }
-  else if (areColliding(game.ball.visual, game.playerPaddle2.frontEndData) && game.ball.direction.x > 0) {
+  else if (areColliding(game.ball.frontEndData, game.playerPaddle2.frontEndData) && game.ball.direction.x > 0) {
     game.ball.direction.x *= -1
     game.ball.speed *= 1.1
   }
@@ -322,23 +352,34 @@ function areColliding(circle: any, rectangle: any) {
   return dx * dx + dy * dy <= circle.radius * circle.radius
 }
 
-function printAll() {
+function printAll(game) {
   console.log("Ball:")
-  console.log("x:" + game.ball.visual.x)
-  console.log("y:" + game.ball.visual.y)
-  console.log("radius:" + game.ball.visual.radius)
+  console.log("x:" + game.ball.frontEndData.x)
+  console.log("y:" + game.ball.frontEndData.y)
+  console.log("radius:" + game.ball.frontEndData.radius)
   console.log("")
   console.log("Paddle 1:")
-  console.log("id:" + game.playerPaddle1.id)
+  console.log("id:" + game.playerPaddle1.client.id)
   console.log("x:" + game.playerPaddle1.frontEndData.x)
   console.log("y:" + game.playerPaddle1.frontEndData.y)
   console.log("width:" + game.playerPaddle1.frontEndData.width)
   console.log("height:" + game.playerPaddle1.frontEndData.height)
   console.log("")
-  console.log("Player 2:" + game.playerPaddle2.id)
-  console.log("id:" + game.playerPaddle2.id)
+  console.log("Player 2:" + game.playerPaddle2.client.id)
+  console.log("id:" + game.playerPaddle2.client.id)
   console.log("x:" + game.playerPaddle2.frontEndData.x)
   console.log("y:" + game.playerPaddle2.frontEndData.y)
   console.log("width:" + game.playerPaddle2.frontEndData.width)
   console.log("height:" + game.playerPaddle2.frontEndData.height)
 }
+
+    // function RemovePlayerFromGame(playerClient: Socket)
+// {
+//   for (let game of games) {
+//     if (game.playerPaddle1.client.id == playerClient.id) {
+//       game.playerPaddle1 = null
+//     } else if (game.playerPaddle2.client.id == playerClient.id) {
+//       game.playerPaddle2 = null
+//     }
+//   }
+// }
