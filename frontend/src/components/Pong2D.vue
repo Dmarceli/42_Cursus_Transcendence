@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { type Rectangle, Paddle, type Circle, Ball } from '../types'
+import { type Rectangle, Paddle, type Circle, Ball, Score } from '../types'
 import { io } from 'socket.io-client'
 
 const socket = io(process.env.VUE_APP_BACKEND_URL);
@@ -19,16 +19,16 @@ let animation: number | null = null
 let ball: Circle | null = null
 let paddle1: Rectangle | null = null
 let paddle2: Rectangle | null = null
-let lastAnimationTime: DOMHighResTimeStamp | null = null
 let gameover: boolean | null = null
 const board_dims = {
   width: 1400,
   height: 700
 }
+let score: Score | null = null
 
 onMounted(() => {
   console.log('Mounted Pong');
-  socket.emit('PlayerEntered')
+  socket.emit('NewPlayer')
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
@@ -37,43 +37,41 @@ onMounted(() => {
 
 onUnmounted(() => {
   console.log('Unmounting Pong')
+  socket.emit('PlayerExited')
   window.removeEventListener('resize', onWidthChange)
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
 })
 
 socket.on('updateGame', game => {
-  if (ball == null || paddle1 == null || paddle2 == null)
-  {
+  if (ball == null || paddle1 == null || paddle2 == null || score == null) {
     init_values(game)
   }
-  else
-  {
+  else {
     ball.update(game.ball)
     paddle1.update(game.playerPaddle1)
     paddle2.update(game.playerPaddle2)
+    score.update(game.score)
   }
   render_animation()
 });
 
 function init_values(game: any) {
   if (gamecanvas.value != null) {
-    let current_wh_ratio = window.innerWidth/innerHeight
-    if (current_wh_ratio > 2)
-    {
+    let current_wh_ratio = window.innerWidth / innerHeight
+    if (current_wh_ratio > 2) {
       gamecanvas.value.height = window.innerHeight * 0.8
       gamecanvas.value.width = window.innerHeight * 0.8 * 2
-    } else
-    {
-      gamecanvas.value.height = window.innerWidth * 0.8 /2
+    } else {
+      gamecanvas.value.height = window.innerWidth * 0.8 / 2
       gamecanvas.value.width = window.innerWidth * 0.8
     }
     ctx.value = gamecanvas.value.getContext('2d')
     let conv_rate = gamecanvas.value.width / board_dims.width;
-
     ball = new Ball(game.ball, conv_rate)
     paddle1 = new Paddle(game.playerPaddle1, conv_rate)
     paddle2 = new Paddle(game.playerPaddle2, conv_rate)
+    score = new Score(game.score, gamecanvas.value)
   }
 }
 
@@ -85,18 +83,19 @@ function render_animation() {
     paddle2 != null &&
     gamecanvas.value != null
   ) {
-      if (animation != null && gameover) {
-        cancelAnimationFrame(animation)
-        emit('gameOver')
-        return
-      }
-      printAll()
-      resetBoard()
-      ball.draw(ctx.value)
-      paddle1.draw(ctx.value)
-      paddle2.draw(ctx.value)
+    if (animation != null && gameover) {
+      cancelAnimationFrame(animation)
+      emit('gameOver')
+      return
     }
+    // printAll()
+    resetBoard()
+    ball.draw(ctx.value)
+    paddle1.draw(ctx.value)
+    paddle2.draw(ctx.value)
+    score?.draw(ctx.value)
   }
+}
 
 function startBoard() {
   if (ctx.value != null && gamecanvas.value != null) {
@@ -117,10 +116,9 @@ function resetBoard() {
 }
 
 function onWidthChange() {
-  if (gamecanvas.value && ball)
-    {
-      ball.conv_rate=gamecanvas.value.width / 1700*0.8;
-    }
+  if (gamecanvas.value && ball) {
+    ball.conv_rate = gamecanvas.value.width / 1700 * 0.8;
+  }
   resetBoard()
   if (ctx.value != null) {
     ball?.draw(ctx.value)
@@ -156,12 +154,11 @@ function onKeyUp(event: KeyboardEvent) {
   handlers?.()
 }
 
-function printAll()
-{
+function printAll() {
   console.log("Ball:")
-  console.log("x:"+ball?.x)
-  console.log("y:"+ball?.y)
-  console.log("radius:"+ball?.radius)
+  console.log("x:" + ball?.x)
+  console.log("y:" + ball?.y)
+  console.log("radius:" + ball?.radius)
   console.log("Paddle 1:")
   console.log("x:" + paddle1?.x)
   console.log("y:" + paddle1?.y)

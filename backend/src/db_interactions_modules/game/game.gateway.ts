@@ -26,20 +26,24 @@ class Ball {
   collidingPaddle: boolean
   collidingWall: boolean
   constructor(x: number, y: number, radius: number) {
-    this.visual = { x: x, y: y, radius: radius }
-    this.visual.radius = y / 20
-    this.direction = { x: 0, y: 0 }
-    this.collidingPaddle=false
-    this.collidingWall=false
-    while (Math.abs(this.direction.x) <= 0.4 || Math.abs(this.direction.x) >= 0.9) {
-      const angle = randomNumberBetween(0, 2 * Math.PI)
-      this.direction = { x: Math.cos(angle), y: Math.sin(angle) }
-    }
-    this.speed = 10
+    this.init(x, y, radius)
   }
   updatePosition(): void {
     this.visual.x += this.direction.x * this.speed
     this.visual.y += this.direction.y * this.speed
+  }
+  init(x: number, y: number, radius: number): void
+  {
+    this.visual = { x: x, y: y, radius: radius }
+    this.visual.radius = y / 40
+    this.direction = { x: 0, y: 0 }
+    this.collidingPaddle = false
+    this.collidingWall = false
+    while (Math.abs(this.direction.x) <= 0.4 || Math.abs(this.direction.x) >= 0.9) {
+      const angle = randomNumberBetween(0, 2 * Math.PI)
+      this.direction = { x: Math.cos(angle), y: Math.sin(angle) }
+    }
+    this.speed = 5
   }
 }
 
@@ -47,12 +51,16 @@ function isBallInsideHorizontalWalls() {
   return game.ball.visual.y + game.ball.visual.radius < board_dims.height && game.ball.visual.y - game.ball.visual.radius > 0
 }
 
-function isBallInsideVerticalWalls() {
-  return game.ball.visual.x + game.ball.visual.radius < board_dims.width && game.ball.visual.x - game.ball.visual.radius > 0
+function ballTouchingLeftWall() {
+  return game.ball.visual.x - game.ball.visual.radius < 0
+}
+
+function ballTouchingRightWall() {
+  return game.ball.visual.x + game.ball.visual.radius > board_dims.width
 }
 
 class PlayerPaddle {
-  visual: {
+  frontEndData: {
     x: number
     y: number
     height: number
@@ -62,7 +70,17 @@ class PlayerPaddle {
   movingDown: Boolean
   movingUp: Boolean
   constructor(x: number, y: number, width: number, height: number) {
-    this.visual = {
+    this.init(x, y, width, height)
+  }
+  updatePosition(canvasHeight: number): void {
+    if (this.movingDown && this.frontEndData.y + this.frontEndData.height + 10 < canvasHeight) {
+      this.frontEndData.y += 10
+    } else if (this.movingUp && this.frontEndData.y > 0) {
+      this.frontEndData.y -= 10
+    }
+  }
+  init(x: number, y: number, width: number, height: number): void {
+    this.frontEndData = {
       x: x,
       y: y,
       width: width,
@@ -71,12 +89,15 @@ class PlayerPaddle {
     this.movingDown = false
     this.movingUp = false
   }
-  updatePosition(canvasmax: number): void {
-    if (this.movingDown && this.visual.y + this.visual.height + 10 < canvasmax) {
-      this.visual.y += 10
-    } else if (this.movingUp && this.visual.y > 0) {
-      this.visual.y -= 10
-    }
+}
+
+class Score {
+  player1: number
+  player2: number
+  constructor()
+  {
+    this.player1 = 0
+    this.player2 = 0
   }
 }
 
@@ -87,15 +108,23 @@ class Game {
   ball: Ball
   playerPaddle1: PlayerPaddle
   playerPaddle2: PlayerPaddle
-
+  score: Score
+  constructor() {
+    this.ball = new Ball(700, 350, 20)
+    this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
+    this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
+    this.score = new Score
+  }
+  resetPositions(): void
+  {
+    this.ball.init(700, 350, 20)
+    this.playerPaddle1.init(40, 300, 20, 100)
+    this.playerPaddle2.init(1340, 300, 20, 100)
+  }
 
 };
 
-let game: Game = {
-  ball: new Ball(200, 200, 20),
-  playerPaddle1: new PlayerPaddle(40, 300, 20, 100),
-  playerPaddle2: new PlayerPaddle(1340, 300, 20, 100),
-}
+let game = new Game
 
 let refreshIntervalid = null
 
@@ -117,21 +146,31 @@ export class GameGateway
   }
 
   afterInit(server: Server) {
-    this.UpdateAllPositions();
   }
 
   // Game
 
-  @SubscribeMessage('PlayerEntered')
+  @SubscribeMessage('NewPlayer')
   @UsePipes(new ValidationPipe())
-  async PlayerEntered(client: Socket): Promise<void> {
-    console.log("PlayerEntered")
-    if (!game.playerPaddle1.id)
-    {
-      game.playerPaddle1.id=client.id
-    } else if(!game.playerPaddle2.id)
-    {
-      game.playerPaddle2.id=client.id
+  async NewPlayer(client: Socket): Promise<void> {
+    console.log("NewPlayer")
+    this.UpdateAllPositions();
+    if (!game.playerPaddle1.id) {
+      game.playerPaddle1.id = client.id
+    } else if (!game.playerPaddle2.id) {
+      game.playerPaddle2.id = client.id
+    }
+    this.server.emit('updateGame', game);
+  }
+
+  @SubscribeMessage('PlayerExited')
+  @UsePipes(new ValidationPipe())
+  async PlayerExited(client: Socket): Promise<void> {
+    console.log("PlayerExited")
+    if (game.playerPaddle1.id == client.id) {
+      game.playerPaddle1.id = null
+    } else if (game.playerPaddle2.id == client.id) {
+      game.playerPaddle2.id = null
     }
     this.server.emit('updateGame', game);
   }
@@ -139,7 +178,7 @@ export class GameGateway
   @SubscribeMessage('keydown')
   @UsePipes(new ValidationPipe())
   async PlayerKeyDown(client: Socket, key: string): Promise<void> {
-    console.log("KEY Down" + client.id)
+    // console.log("KEY Down" + client.id)
     if (game.playerPaddle1.id === client.id) {
       if (key === "up") {
         game.playerPaddle1.movingUp = true
@@ -160,7 +199,7 @@ export class GameGateway
   @SubscribeMessage('keyup')
   @UsePipes(new ValidationPipe())
   async PlayerKeyUp(client: Socket, key: string): Promise<void> {
-    console.log("KEY UPP" + client.id)
+    // console.log("KEY UP" + client.id)
     if (game.playerPaddle1.id === client.id) {
       if (key === "up") {
         game.playerPaddle1.movingUp = false
@@ -184,21 +223,32 @@ export class GameGateway
       GameLogic();
       let gamevisual = {
         ball: game.ball.visual,
-        playerPaddle1: game.playerPaddle1.visual,
-        playerPaddle2: game.playerPaddle2.visual
+        playerPaddle1: game.playerPaddle1.frontEndData,
+        playerPaddle2: game.playerPaddle2.frontEndData,
+        score: game.score
       }
       // printAll()
       this.server.emit('updateGame', gamevisual)
-    }, 200
+    }, 15
     )
   }
 }
 
-function GameLogic()
-{
-  if (!isBallInsideVerticalWalls() && refreshIntervalid != null){
-    clearInterval(refreshIntervalid)
+function GameLogic() {
+  if (ballTouchingLeftWall()) {
+    console.log("game.ball.visual.x"+game.ball.visual.x)
+    console.log("game.ball.visual.radius"+game.ball.visual.radius)
+    game.score.player2 += 1
+    game.resetPositions()
+  } else if (ballTouchingRightWall()) {
+    game.score.player1 += 1
+    game.resetPositions()
+    game.ball.speed
   }
+  // console.log("SPPEED:"+game.ball.speed)
+  // if (refreshIntervalid != null) {
+  //   clearInterval(refreshIntervalid)
+  // }
 
   game.playerPaddle1.updatePosition(board_dims.height);
   game.playerPaddle2.updatePosition(board_dims.height);
@@ -206,20 +256,23 @@ function GameLogic()
   game.ball.updatePosition()
 }
 
-function BallPositionLogic()
-{
+function BallPositionLogic() {
   if (game.ball.collidingWall == false && !isBallInsideHorizontalWalls()) {
     game.ball.direction.y *= -1
-    game.ball.collidingWall=true
+    game.ball.collidingWall = true
   }
-  else{
+  else {
     game.ball.collidingWall = false
   }
   if (game.ball.collidingPaddle == false &&
-    (areColliding(game.ball.visual, game.playerPaddle1.visual) || areColliding(game.ball.visual, game.playerPaddle2.visual))
+    (areColliding(game.ball.visual, game.playerPaddle1.frontEndData) || areColliding(game.ball.visual, game.playerPaddle2.frontEndData))
   ) {
     game.ball.direction.x *= -1
     game.ball.speed *= 1.1
+    game.ball.collidingPaddle = true 
+  }
+  else {
+    game.ball.collidingPaddle = false 
   }
 }
 
@@ -241,24 +294,23 @@ function areColliding(circle: any, rectangle: any) {
   return dx * dx + dy * dy <= circle.radius * circle.radius
 }
 
-function printAll()
-{
+function printAll() {
   console.log("Ball:")
-  console.log("x:"+game.ball.visual.x)
-  console.log("y:"+game.ball.visual.y)
-  console.log("radius:"+game.ball.visual.radius)
+  console.log("x:" + game.ball.visual.x)
+  console.log("y:" + game.ball.visual.y)
+  console.log("radius:" + game.ball.visual.radius)
   console.log("")
   console.log("Paddle 1:")
   console.log("id:" + game.playerPaddle1.id)
-  console.log("x:" + game.playerPaddle1.visual.x)
-  console.log("y:" + game.playerPaddle1.visual.y)
-  console.log("width:" + game.playerPaddle1.visual.width)
-  console.log("height:" + game.playerPaddle1.visual.height)
+  console.log("x:" + game.playerPaddle1.frontEndData.x)
+  console.log("y:" + game.playerPaddle1.frontEndData.y)
+  console.log("width:" + game.playerPaddle1.frontEndData.width)
+  console.log("height:" + game.playerPaddle1.frontEndData.height)
   console.log("")
   console.log("Player 2:" + game.playerPaddle2.id)
   console.log("id:" + game.playerPaddle2.id)
-  console.log("x:" + game.playerPaddle2.visual.x)
-  console.log("y:" + game.playerPaddle2.visual.y)
-  console.log("width:" + game.playerPaddle2.visual.width)
-  console.log("height:" + game.playerPaddle2.visual.height)
+  console.log("x:" + game.playerPaddle2.frontEndData.x)
+  console.log("y:" + game.playerPaddle2.frontEndData.y)
+  console.log("width:" + game.playerPaddle2.frontEndData.width)
+  console.log("height:" + game.playerPaddle2.frontEndData.height)
 }

@@ -74,4 +74,37 @@ class Ball implements Circle {
   }
 }
 
-export { type Rectangle, Paddle, type Circle, Ball }
+class Score {
+  player1: number
+  player2: number
+  canvas_width: number
+  canvas_height: number
+  constructor(score_ref: any, canvas: any)
+  {
+    console.log("Canvas_width starts with "+canvas.width)
+    this.player1 = score_ref.player1
+    this.player2 = score_ref.player2
+    this.canvas_width = canvas.width
+    this.canvas_height = canvas.height
+  }
+  update(score_ref: any)
+  {
+    this.player1 = score_ref.player1
+    this.player2 = score_ref.player2
+  }
+  draw(context: CanvasRenderingContext2D): void
+  {
+    let fontSize = this.canvas_height/10
+    context.font = fontSize+"px Helvetica Neue";
+    context.fillStyle = "white";
+    let text = this.player1+"|"+this.player2
+    console.log("TEXT IS: "+text)
+    let text_width = context.measureText(text).width
+    let x = (this.canvas_width-text_width)/2
+    console.log("X is: "+x)
+    context.fillText(text, (this.canvas_width-text_width)/2, fontSize);
+  }
+}
+
+
+export { type Rectangle, Paddle, type Circle, Ball, Score }
