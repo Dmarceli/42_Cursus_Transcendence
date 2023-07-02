@@ -8,14 +8,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import Lobby from './Lobby.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from '../types'
 import { io } from 'socket.io-client'
+import { compileScript } from 'vue/compiler-sfc';
 
 const socket = io(process.env.VUE_APP_BACKEND_URL);
 
-const emit = defineEmits(['gameOver'])
+const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
 const gamecanvas = ref<HTMLCanvasElement | null>(null)
 let ctx = ref<CanvasRenderingContext2D | null>(null)
@@ -50,8 +51,9 @@ onUnmounted(() => {
 
 socket.on('updateGame', game => {
   lobbyPage.value=false
-  if (ball == null || paddle1 == null || paddle2 == null || score == null) {
+  if (ball == null || paddle1 == null || paddle2 == null || score == null || ctx == null) {
     init_values(game)
+    console.log("UPDATING")
   }
   else {
     ball.update(game.ball)
@@ -62,8 +64,12 @@ socket.on('updateGame', game => {
   render_animation()
 });
 
-socket.on('WaitingForPlayers', () => {
-  lobbyPage.value = true
+socket.on("PlayerWon", () => {
+    emit('PlayerWon')
+});
+
+socket.on("PlayerLost", () => {
+    emit('PlayerLost')
 });
 
 function init_values(game: any) {
@@ -93,11 +99,7 @@ function render_animation() {
     paddle2 != null &&
     gamecanvas.value != null
   ) {
-    if (animation != null && gameover) {
-      cancelAnimationFrame(animation)
-      emit('gameOver')
-      return
-    }
+
     // printAll()
     resetBoard()
     ball.draw(ctx.value)

@@ -124,10 +124,6 @@ class Game {
 
 let games = []
 
-// let game = new Game
-
-let refreshIntervalid = null
-
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -146,17 +142,13 @@ export class GameGateway
     let LobbyPlayer = null
     for (let game of games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
-        LobbyPlayer = game.playerPaddle2.client
+        game.playerPaddle2.client.emit("PlayerWon")
       } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
-        LobbyPlayer = game.playerPaddle1.client
+        game.playerPaddle1.client.emit("PlayerWon")
       }
     }
-    games = games.filter(RemoveGameWithClient(client))
-    if (LobbyPlayer != null)
-    {
-      console.log("GONNA READD")
-      AddPlayerToGame(LobbyPlayer)
-    }
+    if (client != null)
+      games = games.filter(RemoveGameWithClient(client))
   }
 
   afterInit(server: Server) {
@@ -227,15 +219,23 @@ export class GameGateway
 
   @UsePipes(new ValidationPipe())
   async UpdateAllPositions(): Promise<void> {
-    refreshIntervalid = setInterval(() => {
+    setInterval(() => {
+      summary()
       for (let game of games) {
         if (game.playerPaddle1.client !== null && game.playerPaddle2.client !== null)
         {
           UpdateGame(game);
-          if ((game.score.player1 > 4 || game.score.player2 > 4) && refreshIntervalid != null) {
-            let winner = game.score.player1 > 4 ? 1: 2
-            game.playerPaddle1.client?.emit('PlayerWon', winner)
-            game.playerPaddle2.client?.emit('PlayerWon', winner)
+          if ((game.score.player1 > 4 || game.score.player2 > 4)) {
+            if (game.score.player1 > 4)
+            {
+              game.playerPaddle1.client?.emit('PlayerWon')
+              game.playerPaddle2.client?.emit('PlayerLost')
+            }
+            else if (game.score.player2 > 4)
+            {
+              game.playerPaddle2.client?.emit('PlayerWon')
+              game.playerPaddle1.client?.emit('PlayerLost')
+            }
           }
           else
           {
@@ -250,15 +250,18 @@ export class GameGateway
             game.playerPaddle1.client?.emit('updateGame', gamevisual)
             game.playerPaddle2.client?.emit('updateGame', gamevisual)
           }
-          // printAll()
+          // printAll(game)
         }
         else
         {
+          console.log("Updating game for client"+game.playerPaddle1.client?.id)
+          console.log("Updating game for client"+game.playerPaddle2.client?.id)
           game.playerPaddle1.client?.emit('WaitingForPlayers')
           game.playerPaddle2.client?.emit('WaitingForPlayers')
         }
       }
     },15
+
     )
   }
 }
@@ -287,17 +290,6 @@ function RemoveGameWithClient(client) {
         return game.playerPaddle1.client.id != client.id && game.playerPaddle2.client.id != client.id;
     }
 }
-
-// function RemovePlayerFromGame(playerClient: Socket)
-// {
-//   for (let game of games) {
-//     if (game.playerPaddle1.client.id == playerClient.id) {
-//       game.playerPaddle1 = null
-//     } else if (game.playerPaddle2.client.id == playerClient.id) {
-//       game.playerPaddle2 = null
-//     }
-//   }
-// }
 
 function UpdateGame(game) {
   game.playerPaddle1.updatePosition(board_dims.height);
@@ -373,13 +365,7 @@ function printAll(game) {
   console.log("height:" + game.playerPaddle2.frontEndData.height)
 }
 
-    // function RemovePlayerFromGame(playerClient: Socket)
-// {
-//   for (let game of games) {
-//     if (game.playerPaddle1.client.id == playerClient.id) {
-//       game.playerPaddle1 = null
-//     } else if (game.playerPaddle2.client.id == playerClient.id) {
-//       game.playerPaddle2 = null
-//     }
-//   }
-// }
+function summary()
+{
+  console.log("THERE ARE "+games.length+" games")
+}
