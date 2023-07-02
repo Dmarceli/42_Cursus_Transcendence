@@ -16,15 +16,33 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import Login from "./components/LoginPage.vue"
+
+import { RouterLink, RouterView} from 'vue-router';
+import Login from "./components/LoginPage.vue";
 import { ref } from 'vue';
 
-let islogged = ref(false);
+const islogged = ref(false);
 
-function login()
-{
-  islogged.value=true
+function getCookieValueByName(name: any) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
+    }
+  }
+  return null;
+}
+
+let token  = getCookieValueByName('token');
+
+if (token) {
+  islogged.value = true;
+}
+
+function login() {
+  window.location.href = "http://localhost:3000/auth/login";
 }
 
 </script>
