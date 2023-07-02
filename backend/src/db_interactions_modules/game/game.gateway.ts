@@ -139,21 +139,11 @@ export class GameGateway
 
   handleDisconnect(client: Socket) {
     console.log(`Game detected disconnection of client: ${client.id}`);
-    let LobbyPlayer = null
-    for (let game of games) {
-      if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
-        game.playerPaddle2.client.emit("PlayerWon")
-      } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
-        game.playerPaddle1.client.emit("PlayerWon")
-      }
-    }
-    if (client != null)
-      games = games.filter(RemoveGameWithClient(client))
+    RemovePlayerFromGame(client)
   }
 
   afterInit(server: Server) {
     this.UpdateAllPositions();
-    // Logic should be here
   }
 
   // Game
@@ -169,6 +159,7 @@ export class GameGateway
   @UsePipes(new ValidationPipe())
   async PlayerExited(client: Socket): Promise<void> {
     console.log("PlayerExited")
+    RemovePlayerFromGame(client)
   }
 
   @SubscribeMessage('keydown')
@@ -220,7 +211,7 @@ export class GameGateway
   @UsePipes(new ValidationPipe())
   async UpdateAllPositions(): Promise<void> {
     setInterval(() => {
-      summary()
+      // console.log("THERE ARE "+games.length+" games")
       for (let game of games) {
         if (game.playerPaddle1.client !== null && game.playerPaddle2.client !== null)
         {
@@ -283,6 +274,19 @@ function AddPlayerToGame(playerClient: Socket) {
       return
     }
   }
+}
+
+function RemovePlayerFromGame(client: Socket)
+{
+    for (let game of games) {
+      if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
+        game.playerPaddle2.client.emit("PlayerWon")
+      } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
+        game.playerPaddle1.client.emit("PlayerWon")
+      }
+    }
+    if (client != null)
+      games = games.filter(RemoveGameWithClient(client))
 }
 
 function RemoveGameWithClient(client) {
@@ -363,9 +367,4 @@ function printAll(game) {
   console.log("y:" + game.playerPaddle2.frontEndData.y)
   console.log("width:" + game.playerPaddle2.frontEndData.width)
   console.log("height:" + game.playerPaddle2.frontEndData.height)
-}
-
-function summary()
-{
-  console.log("THERE ARE "+games.length+" games")
 }
