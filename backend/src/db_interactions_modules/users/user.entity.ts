@@ -30,7 +30,7 @@ export class User {
     @Column()
     xp_total: number;
     
-    @Column({default: true})
+    @Column({default: false})
     TwoFAEnabled: boolean
 
     @Column({nullable: true})
