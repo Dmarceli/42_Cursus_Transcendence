@@ -23,8 +23,6 @@ class Ball {
   }
   direction: { x: number; y: number }
   speed: number
-  collidingPaddle: boolean
-  collidingWall: boolean
   constructor(x: number, y: number, radius: number) {
     this.init(x, y, radius)
   }
@@ -32,13 +30,10 @@ class Ball {
     this.visual.x += this.direction.x * this.speed
     this.visual.y += this.direction.y * this.speed
   }
-  init(x: number, y: number, radius: number): void
-  {
+  init(x: number, y: number, radius: number): void {
     this.visual = { x: x, y: y, radius: radius }
     this.visual.radius = y / 40
     this.direction = { x: 0, y: 0 }
-    this.collidingPaddle = false
-    this.collidingWall = false
     while (Math.abs(this.direction.x) <= 0.4 || Math.abs(this.direction.x) >= 0.9) {
       const angle = randomNumberBetween(0, 2 * Math.PI)
       this.direction = { x: Math.cos(angle), y: Math.sin(angle) }
@@ -47,8 +42,12 @@ class Ball {
   }
 }
 
-function isBallInsideHorizontalWalls() {
-  return game.ball.visual.y + game.ball.visual.radius < board_dims.height && game.ball.visual.y - game.ball.visual.radius > 0
+function isBallTouchingTopWall() {
+  return game.ball.visual.y - game.ball.visual.radius < 0
+}
+
+function isBallTouchingBottomWall() {
+  return game.ball.visual.y + game.ball.visual.radius > board_dims.height
 }
 
 function ballTouchingLeftWall() {
@@ -94,8 +93,7 @@ class PlayerPaddle {
 class Score {
   player1: number
   player2: number
-  constructor()
-  {
+  constructor() {
     this.player1 = 0
     this.player2 = 0
   }
@@ -115,14 +113,15 @@ class Game {
     this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
     this.score = new Score
   }
-  resetPositions(): void
-  {
+  resetPositions(): void {
     this.ball.init(700, 350, 20)
     this.playerPaddle1.init(40, 300, 20, 100)
     this.playerPaddle2.init(1340, 300, 20, 100)
   }
 
 };
+
+let games = []
 
 let game = new Game
 
@@ -138,11 +137,11 @@ export class GameGateway
   @WebSocketServer() server: Server;
 
   handleConnection(client: Socket, ...args: any[]) {
-    console.log(`Connected ${client.id}`);
+    console.log(`Game gateway detected new client: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Disconnected: ${client.id}`);
+    console.log(`Game detected disconnection of client: ${client.id}`);
   }
 
   afterInit(server: Server) {
@@ -154,13 +153,21 @@ export class GameGateway
   @UsePipes(new ValidationPipe())
   async NewPlayer(client: Socket): Promise<void> {
     console.log("NewPlayer")
-    this.UpdateAllPositions();
-    if (!game.playerPaddle1.id) {
-      game.playerPaddle1.id = client.id
-    } else if (!game.playerPaddle2.id) {
-      game.playerPaddle2.id = client.id
+    // TODO: Replace with intraId
+    let Game = AddPlayerToLobby(client.id)
+    if (Game == null)
+    {
+      this.server.emit('WaitingForPlayers', game);
     }
-    this.server.emit('updateGame', game);
+    else {
+      this.UpdateAllPositions();
+      if (!game.playerPaddle1.id) {
+        game.playerPaddle1.id = client.id
+      } else if (!game.playerPaddle2.id) {
+        game.playerPaddle2.id = client.id
+      }
+      this.server.emit('updateGame', game);
+    }
   }
 
   @SubscribeMessage('PlayerExited')
@@ -234,45 +241,66 @@ export class GameGateway
   }
 }
 
-function GameLogic() {
-  if (ballTouchingLeftWall()) {
-    console.log("game.ball.visual.x"+game.ball.visual.x)
-    console.log("game.ball.visual.radius"+game.ball.visual.radius)
-    game.score.player2 += 1
-    game.resetPositions()
-  } else if (ballTouchingRightWall()) {
-    game.score.player1 += 1
-    game.resetPositions()
-    game.ball.speed
+function AddPlayerToLobby(playerId: string) {
+  if (!games.length) {
+    let game = new Game
+    game.playerPaddle1.id = playerId
+    games.push(game)
+    return null
   }
-  // console.log("SPPEED:"+game.ball.speed)
-  // if (refreshIntervalid != null) {
-  //   clearInterval(refreshIntervalid)
-  // }
+  for (let i = 0; i < games.length; i++) {
+    if (games[i].playerPaddle1.id && !games[i].playerPaddle2.id)
+    {
+      games[i].playerPaddle2.id = playerId
+      return (i)
+    }
+    else if (!games[i].playerPaddle1.id && games[i].playerPaddle2.id)
+    {
+      games[i].playerPaddle2.id = playerId
+      return (i)
+    }
+    else
+    {
+      return null
+    }
+  }
+}
 
+function GameLogic() {
+  ScoreLogic()
   game.playerPaddle1.updatePosition(board_dims.height);
   game.playerPaddle2.updatePosition(board_dims.height);
   BallPositionLogic();
   game.ball.updatePosition()
 }
 
+function ScoreLogic() {
+  if (ballTouchingLeftWall()) {
+    game.score.player2 += 1
+    game.resetPositions()
+  } else if (ballTouchingRightWall()) {
+    game.score.player1 += 1
+    game.resetPositions()
+  }
+  if ((game.score.player1 > 4 || game.score.player2 > 4) && refreshIntervalid != null) {
+    clearInterval(refreshIntervalid)
+  }
+}
+
 function BallPositionLogic() {
-  if (game.ball.collidingWall == false && !isBallInsideHorizontalWalls()) {
+  if (isBallTouchingTopWall() && game.ball.direction.y < 0) {
     game.ball.direction.y *= -1
-    game.ball.collidingWall = true
   }
-  else {
-    game.ball.collidingWall = false
+  else if (isBallTouchingBottomWall() && game.ball.direction.y > 0) {
+    game.ball.direction.y *= -1
   }
-  if (game.ball.collidingPaddle == false &&
-    (areColliding(game.ball.visual, game.playerPaddle1.frontEndData) || areColliding(game.ball.visual, game.playerPaddle2.frontEndData))
-  ) {
+  if (areColliding(game.ball.visual, game.playerPaddle1.frontEndData) && game.ball.direction.x < 0) {
     game.ball.direction.x *= -1
     game.ball.speed *= 1.1
-    game.ball.collidingPaddle = true 
   }
-  else {
-    game.ball.collidingPaddle = false 
+  else if (areColliding(game.ball.visual, game.playerPaddle2.frontEndData) && game.ball.direction.x > 0) {
+    game.ball.direction.x *= -1
+    game.ball.speed *= 1.1
   }
 }
 

@@ -1,11 +1,15 @@
 <template>
-  <div>
+  <div class="lobbypage" v-if="lobbyPage">
+    <Lobby></Lobby>
+  </div>
+  <div v-else>
     <canvas class="boards" ref="gamecanvas"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import Lobby from './Lobby.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from '../types'
 import { io } from 'socket.io-client'
 
@@ -25,6 +29,7 @@ const board_dims = {
   height: 700
 }
 let score: Score | null = null
+let lobbyPage = ref(true)
 
 onMounted(() => {
   console.log('Mounted Pong');
@@ -44,6 +49,8 @@ onUnmounted(() => {
 })
 
 socket.on('updateGame', game => {
+  console.log("YOOOOOOOOO")
+  lobbyPage.value=false
   if (ball == null || paddle1 == null || paddle2 == null || score == null) {
     init_values(game)
   }
@@ -54,6 +61,10 @@ socket.on('updateGame', game => {
     score.update(game.score)
   }
   render_animation()
+});
+
+socket.on('WaitingForPlayers', () => {
+
 });
 
 function init_values(game: any) {
@@ -167,3 +178,15 @@ function printAll() {
 }
 
 </script>
+
+<style>
+.lobbypage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 rem;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+</style>
