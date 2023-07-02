@@ -44,11 +44,11 @@ class Ball {
 }
 
 function isBallInsideHorizontalWalls() {
-  return game.ball.visual.y + game.ball.visual.radius < board_dims.width && game.ball.visual.y - game.ball.visual.radius > 0
+  return game.ball.visual.y + game.ball.visual.radius < board_dims.height && game.ball.visual.y - game.ball.visual.radius > 0
 }
 
 function isBallInsideVerticalWalls() {
-  return game.ball.visual.x + game.ball.visual.radius < board_dims.height && game.ball.visual.x - game.ball.visual.radius > 0
+  return game.ball.visual.x + game.ball.visual.radius < board_dims.width && game.ball.visual.x - game.ball.visual.radius > 0
 }
 
 class PlayerPaddle {
@@ -180,14 +180,14 @@ export class GameGateway
 
   @UsePipes(new ValidationPipe())
   async UpdateAllPositions(): Promise<void> {
-    let refreshIntervalid = setInterval(() => {
+    refreshIntervalid = setInterval(() => {
       GameLogic();
       let gamevisual = {
         ball: game.ball.visual,
         playerPaddle1: game.playerPaddle1.visual,
         playerPaddle2: game.playerPaddle2.visual
       }
-      printAll()
+      // printAll()
       this.server.emit('updateGame', gamevisual)
     }, 200
     )
@@ -216,7 +216,7 @@ function BallPositionLogic()
     game.ball.collidingWall = false
   }
   if (game.ball.collidingPaddle == false &&
-    (areColliding(game.ball, game.playerPaddle1) || areColliding(game.ball, game.playerPaddle2))
+    (areColliding(game.ball.visual, game.playerPaddle1.visual) || areColliding(game.ball.visual, game.playerPaddle2.visual))
   ) {
     game.ball.direction.x *= -1
     game.ball.speed *= 1.1

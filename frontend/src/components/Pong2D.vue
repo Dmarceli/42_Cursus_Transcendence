@@ -90,6 +90,7 @@ function render_animation() {
         emit('gameOver')
         return
       }
+      printAll()
       resetBoard()
       ball.draw(ctx.value)
       paddle1.draw(ctx.value)
