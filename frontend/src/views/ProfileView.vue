@@ -80,11 +80,11 @@ function handleNewAvatar(event: Event) {
 	<div class="profile">
     <!-- Avatar and Nick -->
     <div class="profile-header">
-      <button @click="openSettings" class="settingsButton">Edit Profile</button>
       <div class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
       </div>
       <h1 class="nickname" >{{ userProfile.nickname }}</h1>
+      <button @click="openSettings" class="settingsButton">Edit Profile</button>
     </div>
     <div class="profile-body">
       <!-- Statistics -->
@@ -171,6 +171,7 @@ function handleNewAvatar(event: Event) {
 .profile-header {
   display: flex;
   align-items: center;
+	justify-content: space-between;
   margin-bottom: 20px;
 }
 
