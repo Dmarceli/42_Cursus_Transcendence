@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Console } from 'console';
 import { Strategy, Profile } from 'passport-42';
 import { CreateUserDto } from 'src/db_interactions_modules/users/dtos/user.dto';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
