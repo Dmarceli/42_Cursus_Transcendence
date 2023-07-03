@@ -12,7 +12,6 @@ import { AppService } from '../../app.service';
 import { CreateMsgDto } from '../messages/dtos/message.dto';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 
-
 @WebSocketGateway({
   cors: {
     origin: '*',

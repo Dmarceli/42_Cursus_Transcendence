@@ -3,8 +3,14 @@
     <img src="../assets/racketas.svg" alt="Green Rackets" />
     <button @click="startmenu = false">Start Game</button>
   </div>
+  <div v-else-if="playerWon">
+    <h1>You won!!!!</h1>
+  </div>
+  <div v-else-if="playerLost">
+    <h1>You lost!!!!</h1>
+  </div>
   <div v-else class="board">
-    <Pong2D @game-over="startmenu = true" />
+    <Pong2D @player-lost="playerLost = true" @player-won="playerWon = true" />
   </div>
 </template>
 
@@ -13,6 +19,8 @@ import Pong2D from '../components/Pong2D.vue'
 import { ref } from 'vue'
 
 let startmenu = ref(true)
+let playerWon = ref(false)
+let playerLost = ref(false)
 </script>
 
 <style scoped>

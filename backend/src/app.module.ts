@@ -16,6 +16,7 @@ import { UserToChannelModule } from './db_interactions_modules/relations/user_to
 import { ConfigModule } from '@nestjs/config';
 import { Messages } from './db_interactions_modules/messages/messages.entity';
 import { MessagesModule } from './db_interactions_modules/messages/messages.module';
+import { GameGateway } from './db_interactions_modules/game/game.gateway';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -42,6 +43,6 @@ import { AuthModule } from './auth/auth.module';
     AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway],
+  providers: [AppService, AppGateway, GameGateway],
 })
 export class AppModule {}

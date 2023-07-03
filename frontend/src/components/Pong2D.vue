@@ -1,14 +1,22 @@
 <template>
-  <div>
+  <div class="lobbypage" v-if="lobbyPage">
+    <Lobby></Lobby>
+  </div>
+  <div v-else>
     <canvas class="boards" ref="gamecanvas"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { type Rectangle, Paddle, type Circle, Ball } from '../types'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import Lobby from './Lobby.vue'
+import { type Rectangle, Paddle, type Circle, Ball, Score } from '../types'
+import { io } from 'socket.io-client'
+import { compileScript } from 'vue/compiler-sfc';
 
-const emit = defineEmits(['gameOver'])
+const socket = io(process.env.VUE_APP_BACKEND_URL);
+
+const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
 const gamecanvas = ref<HTMLCanvasElement | null>(null)
 let ctx = ref<CanvasRenderingContext2D | null>(null)
@@ -16,111 +24,88 @@ let animation: number | null = null
 let ball: Circle | null = null
 let paddle1: Rectangle | null = null
 let paddle2: Rectangle | null = null
-let lastAnimationTime: DOMHighResTimeStamp | null = null
-let lastPaddleCollisionTime = 0
-let lastWallCollisionTime = 0
+let gameover: boolean | null = null
+const board_dims = {
+  width: 1400,
+  height: 700
+}
+let score: Score | null = null
+let lobbyPage = ref(true)
 
 onMounted(() => {
-  console.log('Mounted Pong')
+  console.log('Mounted Pong');
+  socket.emit('NewPlayer')
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
-  init_values()
-  start_animation()
+
 })
 
 onUnmounted(() => {
   console.log('Unmounting Pong')
+  socket.emit('PlayerExited')
   window.removeEventListener('resize', onWidthChange)
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
 })
 
-function isBallInsideHorizontalWalls() {
-  if (gamecanvas.value != null && ball != null) {
-    return ball.y + ball.radius < gamecanvas.value.height && ball.y - ball.radius > 0
-  } else {
-    return false
+socket.on('updateGame', game => {
+  lobbyPage.value=false
+  if (ball == null || paddle1 == null || paddle2 == null || score == null || ctx == null) {
+    init_values(game)
+    console.log("UPDATING")
   }
-}
-
-function isBallInsideVerticalWalls() {
-  if (gamecanvas.value != null && ball != null) {
-    return ball.x + ball.radius < gamecanvas.value.width && ball.x - ball.radius > 0
-  } else {
-    return false
+  else {
+    ball.update(game.ball)
+    paddle1.update(game.playerPaddle1)
+    paddle2.update(game.playerPaddle2)
+    score.update(game.score)
   }
-}
+  render_animation()
+});
 
-function areColliding(circle: Circle, rectangle: Rectangle) {
-  let closestX =
-    circle.x < rectangle.x
-      ? rectangle.x
-      : circle.x > rectangle.x + rectangle.width
-      ? rectangle.x + rectangle.width
-      : circle.x
-  let closestY =
-    circle.y < rectangle.y
-      ? rectangle.y
-      : circle.y > rectangle.y + rectangle.height
-      ? rectangle.y + rectangle.height
-      : circle.y
-  let dx = closestX - circle.x
-  let dy = closestY - circle.y
-  return dx * dx + dy * dy <= circle.radius * circle.radius
-}
+socket.on("PlayerWon", () => {
+    emit('PlayerWon')
+});
 
-function init_values() {
+socket.on("PlayerLost", () => {
+    emit('PlayerLost')
+});
+
+function init_values(game: any) {
   if (gamecanvas.value != null) {
-    gamecanvas.value.height = window.innerHeight * 0.8
-    gamecanvas.value.width = window.innerWidth * 0.8
+    let current_wh_ratio = window.innerWidth / innerHeight
+    if (current_wh_ratio > 2) {
+      gamecanvas.value.height = window.innerHeight * 0.8
+      gamecanvas.value.width = window.innerHeight * 0.8 * 2
+    } else {
+      gamecanvas.value.height = window.innerWidth * 0.8 / 2
+      gamecanvas.value.width = window.innerWidth * 0.8
+    }
     ctx.value = gamecanvas.value.getContext('2d')
-    ball = new Ball(gamecanvas.value)
-    paddle1 = new Paddle(gamecanvas.value, 20)
-    paddle2 = new Paddle(gamecanvas.value, gamecanvas.value.width - paddle1.x - paddle1.width)
+    let conv_rate = gamecanvas.value.width / board_dims.width;
+    ball = new Ball(game.ball, conv_rate)
+    paddle1 = new Paddle(game.playerPaddle1, conv_rate)
+    paddle2 = new Paddle(game.playerPaddle2, conv_rate)
+    score = new Score(game.score, gamecanvas.value)
   }
 }
 
-function start_animation() {
-  animation = requestAnimationFrame(animate)
-  function animate(time: DOMHighResTimeStamp) {
-    if (
-      ctx.value != null &&
-      ball != null &&
-      paddle1 != null &&
-      paddle2 != null &&
-      gamecanvas.value != null
-    ) {
-      if (lastAnimationTime != null) {
-        const delta = time - lastAnimationTime
-        if (animation != null && !isBallInsideVerticalWalls()) {
-          cancelAnimationFrame(animation)
-          emit('gameOver')
-          return
-        }
-        if (Date.now() > lastWallCollisionTime + 300 && !isBallInsideHorizontalWalls()) {
-          ball.direction.y *= -1
-          lastWallCollisionTime = Date.now()
-        }
-        if (
-          Date.now() > lastPaddleCollisionTime + 300 &&
-          (areColliding(ball, paddle1) || areColliding(ball, paddle2))
-        ) {
-          ball.direction.x *= -1
-          ball.speed *= 1.1
-          lastPaddleCollisionTime = Date.now()
-        }
-        ball.updatePosition(delta)
-        paddle1.updatePosition(gamecanvas.value.height)
-        paddle2.updatePosition(gamecanvas.value.height)
-        resetBoard()
-        ball.draw(ctx.value)
-        paddle1.draw(ctx.value)
-        paddle2.draw(ctx.value)
-      }
-      lastAnimationTime = time
-      animation = requestAnimationFrame(animate)
-    }
+function render_animation() {
+  if (
+    ctx.value != null &&
+    ball != null &&
+    paddle1 != null &&
+    paddle2 != null &&
+    gamecanvas.value != null
+  ) {
+
+    // printAll()
+    resetBoard()
+    ball.draw(ctx.value)
+    paddle1.draw(ctx.value)
+    paddle2.draw(ctx.value)
+    score?.draw(ctx.value)
   }
 }
 
@@ -143,7 +128,9 @@ function resetBoard() {
 }
 
 function onWidthChange() {
-  init_values()
+  if (gamecanvas.value && ball) {
+    ball.conv_rate = gamecanvas.value.width / 1700 * 0.8;
+  }
   resetBoard()
   if (ctx.value != null) {
     ball?.draw(ctx.value)
@@ -157,17 +144,11 @@ function onKeyDown(event: KeyboardEvent) {
     console.log(event.key)
     const handlers: any = {
       ArrowUp: () => {
-        paddle2 != null && (paddle2.movingUp = true)
+        socket.emit('keydown', "up")
       },
       ArrowDown: () => {
-        paddle2 != null && (paddle2.movingDown = true)
+        socket.emit('keydown', "down")
       },
-      w: () => {
-        paddle1 != null && (paddle1.movingUp = true)
-      },
-      s: () => {
-        paddle1 != null && (paddle1.movingDown = true)
-      }
     }[event.key]
     handlers?.()
   }
@@ -176,18 +157,37 @@ function onKeyDown(event: KeyboardEvent) {
 function onKeyUp(event: KeyboardEvent) {
   const handlers: any = {
     ArrowUp: () => {
-      paddle2 != null && (paddle2.movingUp = false)
+      socket.emit('keyup', "up")
     },
     ArrowDown: () => {
-      paddle2 != null && (paddle2.movingDown = false)
+      socket.emit('keyup', "down")
     },
-    w: () => {
-      paddle1 != null && (paddle1.movingUp = false)
-    },
-    s: () => {
-      paddle1 != null && (paddle1.movingDown = false)
-    }
   }[event.key]
   handlers?.()
 }
+
+function printAll() {
+  console.log("Ball:")
+  console.log("x:" + ball?.x)
+  console.log("y:" + ball?.y)
+  console.log("radius:" + ball?.radius)
+  console.log("Paddle 1:")
+  console.log("x:" + paddle1?.x)
+  console.log("y:" + paddle1?.y)
+  console.log("width:" + paddle1?.width)
+  console.log("height:" + paddle1?.height)
+}
+
 </script>
+
+<style>
+.lobbypage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 rem;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+</style>
