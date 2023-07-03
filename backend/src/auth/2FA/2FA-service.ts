@@ -9,7 +9,6 @@ import { Module } from '@nestjs/common';
 import { Repository, QueryFailedError } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { toDataURL } from 'qrcode';
-import { sign } from 'crypto';
 
 @Injectable()
 export class TwoFactorAuthService {
