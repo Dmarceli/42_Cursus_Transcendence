@@ -209,7 +209,7 @@ function handleNewAvatar(event: Event) {
   object-fit: cover;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 500px) {
   .avatar-container {
     width: 100px;
     height: 100px;
