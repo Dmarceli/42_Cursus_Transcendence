@@ -36,7 +36,6 @@ const getPlayerAvatar = (playerNick: string) => {
   }
   return '../assets/avatar.png';
 }
-
 const isSettingsOpen = ref(false);
 
 const updateNickname = ref(userProfile.value.nickname);
@@ -288,6 +287,7 @@ label[for="nickname"] {
 
 .profile-body {
   display: flex;
+
   flex-direction: column;
   align-items: stretch;
 }
@@ -331,7 +331,6 @@ label[for="nickname"] {
   left: -5px;
   font-size: 16px;
 }
-
 .statistics {
   flex: 1;
   margin-right: 20px;
