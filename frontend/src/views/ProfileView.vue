@@ -173,20 +173,50 @@ function handleNewAvatar(event: Event) {
   align-items: center;
 	justify-content: space-between;
   margin-bottom: 20px;
+  border: 2px solid hsla(160, 100%, 37%, 1);  padding: 20px;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .avatar-container {
   width: 20vw;
-  height: 20vh;
   max-width: 200px;
+  height: 20vw;
   max-height: 200px;
   border-radius: 50%;
   overflow: hidden;
   margin-right: 20px;
-  border: 2px solid hsla(160, 100%, 37%, 1); /* Customize the color if needed */
+  border: 2px solid white; /* Customize the color if needed */
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+}
+
+.avatar-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .avatar-container {
+    width: 100px;
+    height: 100px;
+    max-width: 100px;
+    max-height: 100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
 .avatar-container-settings {
