@@ -53,7 +53,6 @@
   //   });
 
   sortLeaderboard();
-
   const top10 = computed(() => leaderboard.value.slice(0, 10));
 </script>
 
