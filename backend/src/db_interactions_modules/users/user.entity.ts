@@ -30,6 +30,13 @@ export class User {
     @Column()
     xp_total: number;
     
+    @Column({default: false})
+    TwoFAEnabled: boolean
+
+    @Column({nullable: true})
+    TwoFASecret: string
+
+
     @CreateDateColumn()
     creation_date: Date;
 

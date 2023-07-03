@@ -27,13 +27,13 @@ exec_backend:
 				docker exec -ti backend bash
 
 exec_db:
-			docker exec -ti db  psql postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost/$(APP_DATABASE)
+	docker exec -ti db  psql postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost/$(APP_DATABASE)
 
 logs_frontend:
-			docker logs frontend
+	docker logs frontend
 
 logs_backend:
-			docker logs backend
+	docker logs backend
 
 logs_db:
 		docker logs db
