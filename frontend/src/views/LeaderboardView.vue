@@ -12,10 +12,14 @@
 	{ id: 1, name: 'Player 1', score: 100 },
 	{ id: 2, name: 'Player 2', score: 200 },
 	{ id: 3, name: 'Player 3', score: 150 },
-	{ id: 3, name: 'Player 4', score: 150 },
-	{ id: 3, name: 'Player 5', score: 0 },
-	{ id: 3, name: 'Player 6', score: 120 },
-	{ id: 3, name: 'Player 7', score: 300 },
+	{ id: 4, name: 'Player 4', score: 150 },
+	{ id: 5, name: 'Player 5', score: 0 },
+	{ id: 6, name: 'Player 6', score: 120 },
+	{ id: 7, name: 'Player 7', score: 300 },
+	{ id: 8, name: 'Player 8', score: 50 },
+	{ id: 9, name: 'Player 9', score: 100 },
+	{ id: 10, name: 'Player 10', score: 100},
+	{ id: 11, name: 'Player 11', score: 1000 }
 	]);
 
   const sortLeaderboard = () => {
@@ -49,11 +53,12 @@
   //   });
 
   sortLeaderboard();
+  const top10 = computed(() => leaderboard.value.slice(0, 10));
 </script>
 
 <template>
 	<div class="leaderboard">
-	  <h1>Leaderboard</h1>
+	  <h1>Leaderboard - Top 10</h1>
 	  <div class="board">
 	    <table>
 		    <thead>
@@ -64,7 +69,7 @@
 		      </tr>
 		    </thead>
 		    <tbody>
-          <tr v-for="(player, index) in leaderboard" :key="player.id" @click="openPlayerProfile(player)">
+          <tr v-for="(player, index) in top10" :key="player.id" @click="openPlayerProfile(player)">
             <td class="player-name">
               <span v-if="index === 0">🥇</span>
               <span v-else-if="index === 1">🥈</span>
@@ -89,16 +94,6 @@
     </div>
   </div>
 </template>
-          <!-- <tr v-for="(player, index) in leaderboard" :key="player.id">
-		  	    <td>{{ index + 1 }}</td>
-		  	    <td>{{ player.name }}</td>
-  		    	<td>{{ player.score }}</td>
-  		    </tr>
-  		  </tbody>
-      </table>
-    </div>
-  </div>
-</template> -->
   
 <style scoped>
 .leaderboard {

@@ -8,7 +8,7 @@ library.add(fas);
 
 const userProfile = ref({
   nickname: 'John Doe',
-  avatar: 'path/to/avatar.jpg',
+  avatar: 'avatar.png',
   gamesWon: 10,
   gamesLost: 5,
   winStreak: 1,
@@ -30,6 +30,12 @@ const lastGames = ref([
   // Add more game data here
 ]);
 
+const getPlayerAvatar = (playerNick: string) => {
+  if (playerNick === userProfile.value.nickname) {
+    return userProfile.value.avatar;
+  }
+  return '../assets/avatar.png';
+}
 const isSettingsOpen = ref(false);
 
 const updateNickname = ref(userProfile.value.nickname);
@@ -125,11 +131,23 @@ function handleNewAvatar(event: Event) {
       <table>
         <tbody>
           <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
-            <td>{{ game.user.nick }}</td>
+            <td>
+              <div class="history-avatar-container">
+                <img :src="getPlayerAvatar(game.user.nick)" alt="Avatar" class="history-avatar" />
+                <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="game.userWon" />
+              </div>
+              <span class="history-player-nick">{{ game.user.nick }}</span>
+            </td>
             <td class="user-score">{{ game.user.score }}</td>
             <td class="vs">-</td>
             <td class="opponent-score">{{ game.opponent.score }}</td>
-            <td>{{ game.opponent.nick }}</td>
+            <td>
+              <div class="history-avatar-container">
+                <img :src="getPlayerAvatar(game.opponent.nick)" alt="Avatar" class="history-avatar" />
+                <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!game.userWon" />
+              </div>
+              <span class="history-player-nick">{{ game.opponent.nick }}</span>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -269,11 +287,48 @@ label[for="nickname"] {
 
 .profile-body {
   display: flex;
+  flex-direction: column;
   align-items: stretch;
 }
 
 .game-history {
   flex: 1;
+}
+
+.history-avatar-container {
+  display: inline-block;
+  position: relative;
+  border-radius: 50%;
+  border: 1px solid white;
+}
+
+.history-avatar {
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.history-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+.history-player-nick {
+  font-size: 16px;
+  margin-left: 10px;
+}
+
+.crown {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  font-size: 16px;
 }
 
 .statistics {
@@ -298,7 +353,7 @@ table {
 }
 
 td {
-  padding: 10px;
+  padding: 5px;
   text-align: center;
   color: black;
 }
