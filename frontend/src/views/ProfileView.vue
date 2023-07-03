@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+
+library.add(fas);
 
 const userProfile = ref({
   nickname: 'John Doe',
@@ -84,7 +89,7 @@ function handleNewAvatar(event: Event) {
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
       </div>
       <h1 class="nickname" >{{ userProfile.nickname }}</h1>
-      <button @click="openSettings" class="settingsButton">Edit Profile</button>
+        <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" @click="openSettings" />
     </div>
     <div class="profile-body">
       <!-- Statistics -->
@@ -177,6 +182,7 @@ function handleNewAvatar(event: Event) {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .avatar-container {
@@ -225,7 +231,7 @@ function handleNewAvatar(event: Event) {
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 10px;
-  border: 2px solid hsla(160, 100%, 37%, 1);
+  border: 2px solid white;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -255,7 +261,8 @@ label[for="nickname"] {
 }
 
 .nickname {
-  text-align: right;
+  text-align: center;
+  flex: 1;
   font-size: 24px;
   color: white; /* Customize the color if needed */
 }
@@ -360,17 +367,17 @@ td {
   margin-bottom: 20px;
 }
 
-.settings-button {
+.settingsButton {
   position: absolute;
   top: 10px;
   right: 20px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 5px;
+  transition: all 0.2s ease-in-out; /* Add a smooth transition on hover */
+}
+
+
+.settingsButton:hover {
+  color: #c0c0c0; /* Change the color when hovering */
+  transform: scale(1.2); /* Make the icon 20% bigger on hover */
 }
 
 .settings-open {
