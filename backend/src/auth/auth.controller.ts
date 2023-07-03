@@ -82,7 +82,7 @@ export class AuthController {
   @Get('/gen2fa')
   async gen2FAcode(@Res() res: any) {
     //Pesquisa por nick
-    const user_ = await this.userService.findByNick("Nuno")
+    const user_ = await this.userService.findByNick("Daniel")
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
 
     const qrCode = require('qrcode')
@@ -98,7 +98,20 @@ export class AuthController {
     }
 
   }
+  
 
+  // TEMPORARY
+  @Get('/tempbypass')
+  async tempsecbypass(@Req() req: any, @Res() res: any) {
+    const user_ = await this.userService.findAll()
+    if (user_) {
+      const payload = await this.authService.login(user_[0])
+      res.cookie('token', payload.access_token)
+      res.status(200).json({ message: 'Verification successful', code: payload.access_token });
+    } else {
+      res.status(401).json({ message: 'Invalid verification code' });
+    }
+  }
   // @UseGuards(JwtAuthGuard)
   // @Post('logout')
   // async logout(@Req() req: any, @Res() res: any) {

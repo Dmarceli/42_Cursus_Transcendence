@@ -4,13 +4,14 @@
       <h1>Welcome to Raquetas</h1>
       <button class="button" @click="button42">Login with 42</button>
       <button class="button" @click="buttonGoogle">Login with Google</button>
+      <button class="button" @click="buttonBYPASS_TEMP">BYPASS</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 
-const emit = defineEmits(['clicked42', 'clickedgoogle'])
+const emit = defineEmits(['clicked42', 'clickedgoogle', 'clickedBYPASS'])
 
 function buttonGoogle() {
   emit('clickedgoogle')
@@ -18,7 +19,9 @@ function buttonGoogle() {
 function button42() {
   emit('clicked42')
 }
-
+function buttonBYPASS_TEMP() {
+  emit('clickedBYPASS')
+}
 </script>
 
 <style>
