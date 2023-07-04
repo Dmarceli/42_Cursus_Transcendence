@@ -16,12 +16,12 @@ export class AuthService {
    
   async login(user: User) {
     const payload = {
-      login: user.intra_nick,
+      user: user,
       id: user.id,
       TwoFAEnabled: user.TwoFAEnabled
     };
     return {
-      login: payload.login,
+      user: payload.user,
       id: payload.id,
       access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,/*expiresIn: '30s'*/expiresIn: '1d'}),
     };
