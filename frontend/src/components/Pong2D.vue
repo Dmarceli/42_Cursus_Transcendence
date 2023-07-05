@@ -2,8 +2,9 @@
   <div class="lobbypage" v-if="lobbyPage">
     <Lobby></Lobby>
   </div>
-  <div v-else>
-    <canvas class="boards" ref="gamecanvas"></canvas>
+  <div class="overlays" v-else>
+      <h1 v-if="userDisconnected">{{ reconnecting }}</h1>
+      <canvas ref="gamecanvas"></canvas>
   </div>
 </template>
 
@@ -12,12 +13,14 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import Lobby from './Lobby.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from '../types'
 import { io } from 'socket.io-client'
-import { compileScript } from 'vue/compiler-sfc';
+
+let reconnecting = ref("")
 
 const socket = io(process.env.VUE_APP_BACKEND_URL);
 
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
+let userDisconnected = ref(false)
 const gamecanvas = ref<HTMLCanvasElement | null>(null)
 let ctx = ref<CanvasRenderingContext2D | null>(null)
 let animation: number | null = null
@@ -31,6 +34,7 @@ const board_dims = {
 }
 let score: Score | null = null
 let lobbyPage = ref(true)
+let disconnectedId: number|null = null
 
 onMounted(() => {
   console.log('Mounted Pong');
@@ -50,7 +54,12 @@ onUnmounted(() => {
 })
 
 socket.on('updateGame', game => {
-  lobbyPage.value=false
+  userDisconnected.value = false
+  if (disconnectedId)
+  {
+    clearInterval(disconnectedId)
+  }
+  lobbyPage.value = false
   if (ball == null || paddle1 == null || paddle2 == null || score == null || ctx == null) {
     init_values(game)
     console.log("UPDATING")
@@ -65,11 +74,26 @@ socket.on('updateGame', game => {
 });
 
 socket.on("PlayerWon", () => {
-    emit('PlayerWon')
+  emit('PlayerWon')
 });
 
 socket.on("PlayerLost", () => {
-    emit('PlayerLost')
+  emit('PlayerLost')
+});
+
+socket.on("PlayerDisconnected", () => {
+  userDisconnected.value = true
+  let ellipsis = "";
+  disconnectedId = setInterval(() => {
+    reconnecting.value = "Waiting for other user to reconnect";
+    if (ellipsis.length < 3) {
+      ellipsis += "."
+    }
+    else {
+      ellipsis = ""
+    }
+    reconnecting.value += ellipsis
+  }, 800);
 });
 
 function init_values(game: any) {
@@ -189,5 +213,23 @@ function printAll() {
   margin: 0;
   height: 100%;
   width: 100%;
+}
+
+.overlays {
+  padding-top: 5%;
+  height: 90%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlays h1 {
+  position: absolute;
+  z-index: 2;
+}
+
+canvas {
+  z-index: 1;
 }
 </style>

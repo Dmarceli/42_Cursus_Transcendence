@@ -119,6 +119,13 @@ class Game {
     this.playerPaddle1.init(40, 300, 20, 100)
     this.playerPaddle2.init(1340, 300, 20, 100)
   }
+  reset(): void
+  {
+    this.ball = new Ball(700, 350, 20)
+    this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
+    this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
+    this.score = new Score
+  }
 
 };
 
@@ -150,7 +157,7 @@ export class GameGateway
   @SubscribeMessage('NewPlayer')
   @UsePipes(new ValidationPipe())
   async NewPlayer(client: Socket): Promise<void> {
-    console.log("NewPlayer"+client.id)
+    console.log("NewPlayer " + client.id)
     // TODO: Replace with intraId
     AddPlayerToGame(client)
   }
@@ -187,17 +194,19 @@ export class GameGateway
   @SubscribeMessage('keyup')
   @UsePipes(new ValidationPipe())
   async PlayerKeyUp(client: Socket, key: string): Promise<void> {
-    // console.log("KEY UP" + client.id)
+    console.log("KEY UP" + client.id)
+    console.log("THERE ARE " + games.length + " games")
     for (let game of games) {
-
-      if (game.playerPaddle1.client.id === client.id) {
+      console.log(game.playerPaddle1.client?.id);
+      console.log(game.playerPaddle2.client?.id + "\n\n");
+      if (game.playerPaddle1.client?.id === client.id) {
         if (key === "up") {
           game.playerPaddle1.movingUp = false
         }
         else if (key === "down") {
           game.playerPaddle1.movingDown = false
         }
-      } else if (game.playerPaddle2.client.id === client.id) {
+      } else if (game.playerPaddle2.client?.id === client.id) {
         if (key === "up") {
           game.playerPaddle2.movingUp = false
         }
@@ -211,25 +220,25 @@ export class GameGateway
   @UsePipes(new ValidationPipe())
   async UpdateAllPositions(): Promise<void> {
     setInterval(() => {
-      // console.log("THERE ARE "+games.length+" games")
+      // console.log("THERE ARE " + games.length + " games")
       for (let game of games) {
-        if (game.playerPaddle1.client !== null && game.playerPaddle2.client !== null)
-        {
+        // console.log(game.playerPaddle1.client?.id);
+        // console.log(game.playerPaddle2.client?.id+"\n\n");
+        if (game.playerPaddle1.client && game.playerPaddle2.client) {
+          // console.log("HJERE")
           UpdateGame(game);
           if ((game.score.player1 > 4 || game.score.player2 > 4)) {
-            if (game.score.player1 > 4)
-            {
+            if (game.score.player1 > 4) {
               game.playerPaddle1.client?.emit('PlayerWon')
               game.playerPaddle2.client?.emit('PlayerLost')
             }
-            else if (game.score.player2 > 4)
-            {
+            else if (game.score.player2 > 4) {
               game.playerPaddle2.client?.emit('PlayerWon')
               game.playerPaddle1.client?.emit('PlayerLost')
             }
+            game.reset()
           }
-          else
-          {
+          else {
             let gamevisual = {
               ball: game.ball.frontEndData,
               playerPaddle1: game.playerPaddle1.frontEndData,
@@ -243,55 +252,55 @@ export class GameGateway
           }
           // printAll(game)
         }
-        else
-        {
+        else {
           game.playerPaddle1.client?.emit('WaitingForPlayers')
           game.playerPaddle2.client?.emit('WaitingForPlayers')
         }
       }
-    },15
+    }, 15
 
     )
   }
 }
 
 function AddPlayerToGame(playerClient: Socket) {
+  console.log("LETS ADD PLAYER")
+  // TODO: REMOVE THIS IF AND ADD AFTER FOR LOOP
   if (!games.length) {
+    console.log("No length")
     let game = new Game
     game.playerPaddle1.client = playerClient
     games.push(game)
     return
   }
   for (let i = 0; i < games.length; i++) {
-    if (games[i].playerPaddle1.client && !games[i].playerPaddle2.client) {
-      games[i].playerPaddle2.client = playerClient
+    console.log(!games[i].playerPaddle1.client)
+    console.log(!games[i].playerPaddle2.client)
+    if (games[i].playerPaddle1.client == playerClient || games[i].playerPaddle2.client == playerClient) {
+      console.log("ALREADY IN THE GAME")
       return
     }
-    else if (!games[i].playerPaddle1.client && games[i].playerPaddle2.client) {
+    if (!games[i].playerPaddle1.client) {
+      games[i].playerPaddle1.client = playerClient
+      return
+    }
+    else if (!games[i].playerPaddle2.client) {
       games[i].playerPaddle2.client = playerClient
       return
     }
   }
 }
 
-function RemovePlayerFromGame(client: Socket)
-{
-    for (let game of games) {
-      if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
-        game.playerPaddle2.client?.emit("PlayerWon")
-      } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
-        game.playerPaddle1.client?.emit("PlayerWon")
-      }
+function RemovePlayerFromGame(client: Socket) {
+  for (let game of games) {
+    if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
+      game.playerPaddle1.client = null
+      game.playerPaddle2.client?.emit("PlayerDisconnected")
+    } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
+      game.playerPaddle1.client?.emit("PlayerDisconnected")
+      game.playerPaddle2.client = null
     }
-    // TODO: Fix. Sometimes doesn't work
-    if (client != null)
-      games = games.filter(RemoveGameWithClient(client))
-}
-
-function RemoveGameWithClient(client) {
-    return function(game) {
-        return game.playerPaddle1.client.id != client.id && game.playerPaddle2.client.id != client.id;
-    }
+  }
 }
 
 function UpdateGame(game) {
