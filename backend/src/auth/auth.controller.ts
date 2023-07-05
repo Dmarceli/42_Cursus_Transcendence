@@ -93,7 +93,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/gen2fa')
   async gen2FAcode(@Res() res: any, @getUserIDFromToken() user:User) {
-    console.log("user", user)
     const user_ = await this.userService.findByLogin(user['login'])
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
     const qrCode = require('qrcode')

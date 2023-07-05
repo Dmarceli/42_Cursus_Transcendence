@@ -21,8 +21,12 @@ export class ChannelsService {
       throw new ConflictException('Duplicate key value found.');
     }
   }
-}
+  }
 
+  async getChannelByID(channelID:number){
+    return this.ChannelsRepository.findOne({where: {id :channelID}})
+  }
+  
   async all_channel(){
     return await this.ChannelsRepository.find({
      // 0 is private message, it's supposed to not appear

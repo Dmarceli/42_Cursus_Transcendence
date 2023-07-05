@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TypeOrmModule.forFeature([Channel])
 ],
   controllers: [ChannelsController],
-  providers: [ChannelsService]
+  providers: [ChannelsService],
+  exports : [ChannelsService]
 })
 export class ChannelsModule {}
