@@ -246,6 +246,7 @@ const leaveChannel = async (channelid) => {
       {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body:  JSON.stringify({id: parseInt(channelid)})
