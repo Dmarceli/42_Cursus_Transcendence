@@ -49,15 +49,14 @@ export class UserToChannelService {
   }
 
   async findChannelsByID(us_id:number){
-    const channel= await this.UserToChannelRepository.find(
+    const channels = await this.UserToChannelRepository.find(
       {
         where: {user_id: {id: us_id}, is_banned : false},
         relations: {user_id: true}
       }
     )
-    return channel
+    return channels
   }
-
 
 
   //  async createMessage(UserToChannel: UserToChannel): Promise<UserToChannel> {

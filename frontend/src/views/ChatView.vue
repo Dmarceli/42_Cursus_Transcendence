@@ -6,6 +6,7 @@
         <div v-for="channel in channels" :key="channel.id"
           :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
           {{ channel.channel_name }}
+          <button @click="leaveChannel(channel.id)">Leave</button>
         </div>
       </div>
       <div v-if="side_info === 1">

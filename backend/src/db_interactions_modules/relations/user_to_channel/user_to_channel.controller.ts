@@ -38,6 +38,12 @@ export class UserToChannelController {
   }
   
 
+  @Get('/joinedchannels')
+  async getJoinedChannels(@getUserIDFromToken() user: User, @Res() res: any) {
+    const userChannels = await this.userToChannelService.findChannelsByID(user.id);
+    return res.status(200).json(userChannels);
+  }
+
 
   @Get('/getusersonchannel/:id')
   findAll(@Param('id') ch_id: number) {
