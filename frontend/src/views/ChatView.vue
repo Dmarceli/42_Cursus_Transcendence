@@ -6,7 +6,7 @@
         <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
           :class="['channel', { 'selected': joinedchannel === selected_channel }]" @click="chooseChannel(joinedchannel.id)">
           {{ joinedchannel.channel_id.channel_name }}
-          <button @click="leaveChannel(joinedchannel.id)">Leave</button>
+          <button @click="leaveChannel(joinedchannel.channel_id.id)">Leave</button>
         </div>
       </div>
       <div v-if="side_info === 1">
@@ -73,7 +73,7 @@
       </div>
       <div class="button-container" v-if="side_info !== 3">
         <button :class="['channel-button', 'bar-button', { 'highlighted': side_info === 0 }]"
-          @click="getChannelsJoined()"></button>
+          @click="getChannelsJoined(); side_info = 0"></button>
         <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]"
           @click="getFriends()"></button>
         <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]"
@@ -218,12 +218,10 @@ const getChannels = async () => {
 
 
 const getChannelsJoined = async () => {
-  side_info.value = 0;
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinedchannels'
     const response = await fetch(url,
       {
-        
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -251,14 +249,15 @@ const leaveChannel = async (channelid) => {
         },
         body:  JSON.stringify({id: parseInt(channelid)})
       });
-    if (response.ok) {
-      getChannelsJoined();
+      if (response.ok) {
+      await getChannelsJoined();
     } else {
       console.log('Error:', response.status);
     }
   } catch (error) {
     console.log('Error:', error);
   }
+  await getChannelsJoined();
 }
 
 const joinChannel = async (channelid) => {
@@ -274,13 +273,15 @@ const joinChannel = async (channelid) => {
         body: JSON.stringify({id: parseInt(channelid)})
       });
     if (response.ok) {
-      getChannelsJoined();
+      await getChannelsJoined();
     } else {
       console.log('Error:', response.status);
     }
   } catch (error) {
     console.log('Error:', error);
-  }
+  }      
+  await getChannelsJoined();
+    
 }
 
 
