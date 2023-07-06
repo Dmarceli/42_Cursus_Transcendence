@@ -397,3 +397,48 @@
   text-decoration: none;
   cursor: pointer;
 }
+
+
+.unread-messages{
+  background-color: rgb(243, 25, 25);
+  width: 21%;
+  color: whitesmoke;
+  border-radius: 50%;
+  padding: 5px;
+  text-align: center;
+}
+
+.channel-info{
+  align-items: center;
+  justify-content: center;
+}
+
+.channel-name{
+  text-align: left;
+  font-family: 'Roboto', sans-serif;
+  font-size: xx-large;
+  width: 100%;
+  justify-content: space-between;
+  display: flex;
+  align-items: center;
+}
+
+.more-options {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  width:4%;
+  height: 100%;
+  background-image: url(../src/assets/moreoptions.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  border: none;
+  filter: invert(100%);
+}
+
+.more-options:hover{
+  cursor: pointer;
+}

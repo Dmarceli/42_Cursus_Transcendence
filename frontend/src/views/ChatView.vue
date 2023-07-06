@@ -2,11 +2,14 @@
   <div class="Chat">
     <div class="channels-list">
       <div v-if="side_info === 0">
-          <div class="list-header">JOINED CHANNELS</div>
+        <div class="list-header">JOINED CHANNELS</div>
         <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
-          :class="['channel', { 'selected': joinedchannel === selected_channel }]" @click="chooseChannel(joinedchannel.id)">
+          :class="['channel', { 'selected': joinedchannel === selected_channel }]"
+          @click="chooseChannel(joinedchannel.channel_id.id)">
           {{ joinedchannel.channel_id.channel_name }}
-          <button @click="leaveChannel(joinedchannel.channel_id.id)">Leave</button>
+          <div class="unread-messages" v-if="unreadMessages[joinedchannel.channel_id.id] > 0">
+            {{ unreadMessages[joinedchannel.channel_id.id] }}
+          </div>
         </div>
       </div>
       <div v-if="side_info === 1">
@@ -82,13 +85,19 @@
       </div>
     </div>
     <div id="chat-container" ref="chatContainer">
-      <div id="msg-container" ref="msgsContainer">
+        <div class="channel-name">{{ getChannelName(selected_channel) }}
+          <button class="more-options" @click="moreChannelOptions()"></button>
+        </div>
+        <div v-if="showChannelOptions">
+          <button @click="leaveChannel(selected_channel)">Leave</button>
+      </div>
+      <div v-else id="msg-container" ref="msgsContainer">
         <div v-for="message in messages" :key="message.id" :class="[getMessageClass(message.author.nick), 'message']">
           <strong>[{{ message.author?.nick }}]:</strong> {{ message.message }}
           <div class="message-time">{{ formatTime(message.time) }}</div>
         </div>
       </div>
-      <div class="msg-input">
+      <div  v-if="!showChannelOptions" class="msg-input">
         <form @submit.prevent="sendMessage">
           <input v-model="messageText" placeholder="Message" class="input-field">
           <button type="submit" class="send-button">Send</button>
@@ -117,8 +126,9 @@ let User_Friends = ref([]);
 let selected_channel = null;
 let side_info = ref(0);
 let showModal = ref(false);
-
-
+const unreadMessages = ref([]);
+let showChannelOptions = ref(false);
+let usersInChannel = ref([])
 
 function getCookieValueByName(name) {
   const cookies = document.cookie.split(';');
@@ -134,7 +144,13 @@ function getCookieValueByName(name) {
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
 let userId = decodedToken.id;
-const users_Name = decodedToken.login;
+const users_Name = decodedToken.user.nick || decodedToken.login;
+
+
+const getChannelName = (channelId) => {
+  const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelId);
+  return channel ? channel.channel_id.channel_name : '';
+};
 
 
 const check_user = async () => {
@@ -152,6 +168,7 @@ const check_user = async () => {
   }
 };
 
+
 const getMessageClass = (author) => {
   if (author == users_Name) {
     return 'message-sent';
@@ -161,18 +178,20 @@ const getMessageClass = (author) => {
 
 
 const getMessages = async () => {
-  try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/chat/msg_in_channel/' + selected_channel
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
-      messages.value = data;
-      scrollToBottom();
-    } else {
-      console.log('Error:', response.status);
+  if (selected_channel) {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/chat/msg_in_channel/' + selected_channel
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        messages.value = data;
+        scrollToBottom();
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
     }
-  } catch (error) {
-    console.log('Error:', error);
   }
 };
 
@@ -197,6 +216,31 @@ const getUsers = async () => {
     console.log('Error:', error);
   }
 };
+
+const getUsersInGivenChannel = async (channel_ID) => {
+  side_info.value = 1;
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/usersinchannel/' + channel_ID ;
+    const response = await fetch(url,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    if (response.ok) {
+      const data = await response.json();
+      usersInChannel.value = data;
+      console.log(usersInChannel)
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
+
 
 
 
@@ -247,9 +291,9 @@ const leaveChannel = async (channelid) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body:  JSON.stringify({id: parseInt(channelid)})
+        body: JSON.stringify({ id: parseInt(channelid) })
       });
-      if (response.ok) {
+    if (response.ok) {
       await getChannelsJoined();
     } else {
       console.log('Error:', response.status);
@@ -270,7 +314,7 @@ const joinChannel = async (channelid) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({id: parseInt(channelid)})
+        body: JSON.stringify({ id: parseInt(channelid) })
       });
     if (response.ok) {
       await getChannelsJoined();
@@ -279,9 +323,9 @@ const joinChannel = async (channelid) => {
     }
   } catch (error) {
     console.log('Error:', error);
-  }      
+  }
   await getChannelsJoined();
-    
+
 }
 
 
@@ -292,7 +336,6 @@ const scrollToBottom = () => {
       container.scrollTop = container.scrollHeight;
     });
   } catch (error) {
-    console.log('Error:', error);
   }
 };
 
@@ -344,8 +387,9 @@ const search = () => {
 }
 
 const chooseChannel = (channel) => {
-  getChannelsJoined();
   selected_channel = channel;
+  unreadMessages.value[channel] = 0;
+  getChannelsJoined();
   getMessages();
 }
 
@@ -367,8 +411,8 @@ const createChannel = async () => {
     if (response.ok) {
       const data = await response.json();
       joinChannel(data.id);
-      await getChannelsJoined();
       chooseChannel(data.id);
+      await getChannelsJoined();
     } else {
       console.log('Error:', response.status);
     }
@@ -378,7 +422,10 @@ const createChannel = async () => {
   showModal.value = false;
 };
 
-
+const moreChannelOptions = () => {
+  showChannelOptions.value = !showChannelOptions.value;
+  getUsersInGivenChannel(selected_channel);
+}
 const isFriend = (friendId) => {
   return User_Friends.value.some((friendship) => {
     return friendship.id === friendId
@@ -420,6 +467,7 @@ const addFriend = async (friendId) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ user1Id: parseInt(userId), user2Id: parseInt(friendId) }),
     });
@@ -465,8 +513,18 @@ onBeforeMount(() => {
 });
 
 socket.on('recMessage', message => {
-  getMessages()
+  if (message.channelId === selected_channel) {
+    scrollToBottom();
+  } else {
+    if (typeof unreadMessages.value[message.channelId] === 'undefined') {
+      unreadMessages.value[message.channelId] = 0;
+    }
+    unreadMessages.value[message.channelId]++;
+  }
+  console.log(unreadMessages.value[message.channelId]);
+  getMessages();
 });
+
 
 watch(messages, () => {
   scrollToBottom();

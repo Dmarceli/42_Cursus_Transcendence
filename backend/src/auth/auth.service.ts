@@ -30,12 +30,13 @@ export class AuthService {
 
   googleLogin(@Req() req:any) {
     const payload = {
-      login: req.user.intra_nick,
-      id: req.user.id
+      user: req.user,
+      id: req.user.id, 
+      TwoFAEnabled: req.user.TwoFAEnabled
     };
     return {
-      message: 'User information from google',
-      user: req.user,
+      user: payload.user,
+      id: payload.id,
       access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,/*expiresIn: '30s'*/expiresIn: '1d'}),
     }
   }
