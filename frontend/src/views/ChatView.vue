@@ -3,10 +3,10 @@
     <div class="channels-list">
       <div v-if="side_info === 0">
           <div class="list-header">JOINED CHANNELS</div>
-        <div v-for="channel in channels" :key="channel.id"
-          :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
-          {{ channel.channel_name }}
-          <button @click="leaveChannel(channel.id)">Leave</button>
+        <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
+          :class="['channel', { 'selected': joinedchannel === selected_channel }]" @click="chooseChannel(joinedchannel.id)">
+          {{ joinedchannel.channel_id.channel_name }}
+          <button @click="leaveChannel(joinedchannel.id)">Leave</button>
         </div>
       </div>
       <div v-if="side_info === 1">
@@ -60,6 +60,8 @@
         <div v-for="channel in channels" :key="channel.id"
           :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
           {{ channel.channel_name }}
+          <button v-if="isChannelJoined(channel.id)" @click="leaveChannel(channel.id)">Leave</button>
+          <button v-else @click="joinChannel(channel.id)">join</button>
         </div>
         <form @submit.prevent="searchQuery">
           <div class="search-input-container">
@@ -71,7 +73,7 @@
       </div>
       <div class="button-container" v-if="side_info !== 3">
         <button :class="['channel-button', 'bar-button', { 'highlighted': side_info === 0 }]"
-          @click="getChannels()"></button>
+          @click="getChannelsJoined()"></button>
         <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]"
           @click="getFriends()"></button>
         <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]"
@@ -109,6 +111,7 @@ const messageText = ref('');
 const searchText = ref('');
 const messages = ref([]);
 const channels = ref([]);
+const joinedchannels = ref([]);
 const users = ref([]);
 let User_Friends = ref([]);
 let selected_channel = null;
@@ -198,7 +201,7 @@ const getUsers = async () => {
 
 
 const getChannels = async () => {
-  side_info.value = 0;
+
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/channels/all'
     const response = await fetch(url);
@@ -212,6 +215,73 @@ const getChannels = async () => {
     console.log('Error:', error);
   }
 };
+
+
+const getChannelsJoined = async () => {
+  side_info.value = 0;
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinedchannels'
+    const response = await fetch(url,
+      {
+        
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    if (response.ok) {
+      const data = await response.json();
+      joinedchannels.value = data;
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
+const leaveChannel = async (channelid) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/leavechannel'
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body:  JSON.stringify({id: parseInt(channelid)})
+      });
+    if (response.ok) {
+      getChannelsJoined();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+}
+
+const joinChannel = async (channelid) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinchannel'
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({id: parseInt(channelid)})
+      });
+    if (response.ok) {
+      getChannelsJoined();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+}
+
 
 const scrollToBottom = () => {
   try {
@@ -267,10 +337,12 @@ const sendMessage = () => {
 const search = () => {
   getUsers();
   getChannels()
+  getChannelsJoined();
   side_info.value = 3;
 }
 
 const chooseChannel = (channel) => {
+  getChannelsJoined();
   selected_channel = channel;
   getMessages();
 }
@@ -292,7 +364,8 @@ const createChannel = async () => {
     });
     if (response.ok) {
       const data = await response.json();
-      await getChannels();
+      joinChannel(data.id);
+      await getChannelsJoined();
       chooseChannel(data.id);
     } else {
       console.log('Error:', response.status);
@@ -309,6 +382,14 @@ const isFriend = (friendId) => {
     return friendship.id === friendId
   });
 };
+
+
+const isChannelJoined = (givenID) => {
+  return joinedchannels.value.some((channel) => {
+    return channel['channel_id']['id'] === givenID;
+  });
+};
+
 
 
 const getFriends = async () => {
@@ -376,6 +457,7 @@ const removeFriend = async (friend) => {
 };
 
 onBeforeMount(() => {
+  getChannelsJoined();
   getChannels();
   getFriends();
 });

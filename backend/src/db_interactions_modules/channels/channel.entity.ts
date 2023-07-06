@@ -19,7 +19,7 @@ import {
     @Column({unique: true})
     channel_name: string;
 
-    @Column({nullable: true})
+    @Column({nullable: true, select: false})
     password: string;
     
     // @ManyToMany(() => User)

@@ -42,6 +42,7 @@ export class UserToChannelService {
       {
         where: {channel_id: {id: ch_id}, is_banned : false},
         relations: {user_id: true}
+        
       }
     )
     console.log(channel)
@@ -52,7 +53,7 @@ export class UserToChannelService {
     const channels = await this.UserToChannelRepository.find(
       {
         where: {user_id: {id: us_id}, is_banned : false},
-        relations: {user_id: true}
+        relations: {channel_id:true}
       }
     )
     return channels
