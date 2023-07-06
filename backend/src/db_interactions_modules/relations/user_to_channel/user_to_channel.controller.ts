@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res } from '@nestjs/common';
 import { UserToChannelService } from './user_to_channel.service';
-import { get } from 'http';
 import { CreateUserToChannDto } from './dtos/user_to_channel.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
@@ -29,11 +28,16 @@ export class UserToChannelController {
     this.userToChannelService.joinchannel(channel, user);
     return res.status(200).json({message : 'Joined Channel'}) 
   }
-    
-  @Delete('/leavechannel/:id_us/:id_ch')
-    remove(@Param('id_us') id_us: number,@Param('id_ch') id_ch: number ) {
-      return this.userToChannelService.leavechannel(id_us,id_ch);
-    }
+  
+
+  @Post('/leavechannel')
+  async leave(@Body() channelID: any, @getUserIDFromToken() user: User, @Res() res: any) {
+    const user_ = await this.userService.findByLogin(user['login']);
+    this.userToChannelService.leavechannel(user.id, channelID.id);
+    return res.status(200).json({ message: 'Left channel' });
+  }
+  
+
 
   @Get('/getusersonchannel/:id')
   findAll(@Param('id') ch_id: number) {
