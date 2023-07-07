@@ -445,17 +445,33 @@
   align-items: center;
   justify-content: center;
   width:4%;
-  height: 100%;
+  height: 60%;
   background-image: url(../src/assets/remove_friend.svg);
-  background-size: cover;
+  background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   background-color: transparent;
   border: none;
-  filter: invert(100%);
 }
 
+.leave-button{
+  width:70px;
+  height: 70px;
+  background-image: url(../src/assets/leave.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  filter: invert(100%);
+  border:none;
+  position:absolute;
+  bottom:0;
+  right:0;
+}
 
+.leave-button:hover{
+  cursor: pointer;
+}
 
 .more-options:hover{
   cursor: pointer;

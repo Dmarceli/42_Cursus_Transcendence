@@ -4,7 +4,7 @@
       <div v-if="side_info === 0">
         <div class="list-header">JOINED CHANNELS</div>
         <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
-          :class="['channel', { 'selected': joinedchannel === selected_channel }]"
+          :class="['channel', { 'selected': joinedchannel.channel_id.id === selected_channel }]"
           @click="chooseChannel(joinedchannel.channel_id.id)">
           {{ joinedchannel.channel_id.channel_name }}
           <div class="unread-messages" v-if="unreadMessages[joinedchannel.channel_id.id] > 0">
@@ -61,10 +61,9 @@
         </div>
         <div class="list-header">CHANNELS LIST</div>
         <div v-for="channel in channels" :key="channel.id"
-          :class="['channel', { 'selected': channel.id === selected_channel }]" @click="chooseChannel(channel.id)">
+          :class="['channel', { 'selected': channel.id === selected_channel }]">
           {{ channel.channel_name }}
-          <button v-if="isChannelJoined(channel.id)" @click="leaveChannel(channel.id)">Leave</button>
-          <button v-else @click="joinChannel(channel.id)">join</button>
+          <button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel.id)">join</button>
         </div>
         <form @submit.prevent="searchQuery">
           <div class="search-input-container">
@@ -96,7 +95,7 @@
               {{ usersInChannel.user_id.intra_nick }}
             </div>
         </div>
-        <button @click="leaveChannel(selected_channel)">Leave</button>
+        <button class="leave-button" @click="leaveChannel(selected_channel)"></button>
       </div>
       <div v-else id="msg-container" ref="msgsContainer">
         <div v-for="message in messages" :key="message.id" :class="[getMessageClass(message.author.nick), 'message']">
@@ -290,26 +289,32 @@ const getChannelsJoined = async () => {
 };
 
 const leaveChannel = async (channelid) => {
-  try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/leavechannel'
-    const response = await fetch(url,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ id: parseInt(channelid) })
-      });
-    if (response.ok) {
-      await getChannelsJoined();
-    } else {
-      console.log('Error:', response.status);
+  if(confirm("Are you sure you wanto to leave this channel?"))
+  {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/leavechannel'
+      const response = await fetch(url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ id: parseInt(channelid) })
+        });
+      if (response.ok) {
+        await getChannelsJoined();
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
     }
-  } catch (error) {
-    console.log('Error:', error);
+    selected_channel = null;
+    showChannelOptions.value = !showChannelOptions.value;
+    messages.value = null;
+    await getChannelsJoined();
   }
-  await getChannelsJoined();
 }
 
 const joinChannel = async (channelid) => {
@@ -435,6 +440,8 @@ const moreChannelOptions = () => {
   showChannelOptions.value = !showChannelOptions.value;
   getUsersInGivenChannel(selected_channel);
 }
+
+
 const isFriend = (friendId) => {
   return User_Friends.value.some((friendship) => {
     return friendship.id === friendId

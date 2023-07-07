@@ -14,10 +14,15 @@ export class UserToChannelService {
   ) { }
 
   async joinchannel(channel: Channel, user: User) {
+    let is_user_owner = false;
+    const channels_users_count = (await this.usersonchannel(channel.id)).length
+    if (!channels_users_count){
+      is_user_owner = true;
+    }
     return await this.UserToChannelRepository.save({
       user_id: user,
       channel_id: channel,
-      is_owner: false,
+      is_owner: is_user_owner,
       is_admin: false,
       is_muted: false,
       is_banned: false,
