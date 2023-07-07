@@ -44,7 +44,7 @@ export class AuthController {
     else {
       res.cookie('token', payload.access_token)
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
-      res.setHeader('location', process.env.BACKEND_URL)
+      res.setHeader('Location', process.env.BACKEND_URL)
     }    
     res.redirect(process.env.FRONTEND_URL)
   }
@@ -73,7 +73,7 @@ export class AuthController {
     else {
       res.cookie('token', payload.access_token)
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
-      res.setHeader('location', process.env.BACKEND_URL)
+      res.setHeader('Location', process.env.BACKEND_URL)
     }
 
     res.redirect(process.env.FRONTEND_URL)
