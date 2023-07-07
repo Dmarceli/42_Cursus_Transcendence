@@ -70,6 +70,7 @@ export class AuthController {
     }
     else {
       res.cookie('token', payload.access_token)
+      res.setHeader('Access-Control-Allow-Origin:', process.env.BACKEND_URL)
     }
 
     res.redirect(process.env.FRONTEND_URL)
