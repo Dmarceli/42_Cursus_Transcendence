@@ -44,13 +44,12 @@ export class UserToChannelController {
     return res.status(200).json(userChannels);
   }
 
-  @Get('/usersinchannel/:id')
+  @Get('/usersinchannel/:channelId')
   async getUsersInChannel(@Param('channelId') channelId: number , @Res() res: any) {
     const users = await this.userToChannelService.usersonchannel(channelId);
     return res.status(200).json(users);
   }
   
-
   @Get('/getusersonchannel/:id')
   findAll(@Param('id') ch_id: number) {
     return this.userToChannelService.usersonchannel(ch_id);

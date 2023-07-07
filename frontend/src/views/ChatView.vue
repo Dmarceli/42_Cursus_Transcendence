@@ -85,11 +85,18 @@
       </div>
     </div>
     <div id="chat-container" ref="chatContainer">
-        <div class="channel-name">{{ getChannelName(selected_channel) }}
-          <button class="more-options" @click="moreChannelOptions()"></button>
+      <div v-if="selected_channel" class="channel-name">{{ getChannelName(selected_channel) }}
+        <button class="more-options" :class="{'more-options close': showChannelOptions}" @click="moreChannelOptions()"></button>
+      </div>
+      <div v-if="showChannelOptions">
+        <div id="user-list-container">
+          <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }}  Users in {{ getChannelName(selected_channel) }}</h2>
+            <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
+              <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
+              {{ usersInChannel.user_id.intra_nick }}
+            </div>
         </div>
-        <div v-if="showChannelOptions">
-          <button @click="leaveChannel(selected_channel)">Leave</button>
+        <button @click="leaveChannel(selected_channel)">Leave</button>
       </div>
       <div v-else id="msg-container" ref="msgsContainer">
         <div v-for="message in messages" :key="message.id" :class="[getMessageClass(message.author.nick), 'message']">
@@ -97,7 +104,7 @@
           <div class="message-time">{{ formatTime(message.time) }}</div>
         </div>
       </div>
-      <div  v-if="!showChannelOptions" class="msg-input">
+      <div v-if="!showChannelOptions" class="msg-input">
         <form @submit.prevent="sendMessage">
           <input v-model="messageText" placeholder="Message" class="input-field">
           <button type="submit" class="send-button">Send</button>
@@ -128,7 +135,9 @@ let side_info = ref(0);
 let showModal = ref(false);
 const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
-let usersInChannel = ref([])
+
+
+
 
 function getCookieValueByName(name) {
   const cookies = document.cookie.split(';');
@@ -151,6 +160,10 @@ const getChannelName = (channelId) => {
   const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelId);
   return channel ? channel.channel_id.channel_name : '';
 };
+
+const  getChannelUserCount  = (channel) => {
+  return channel.length
+}
 
 
 const check_user = async () => {
@@ -217,10 +230,10 @@ const getUsers = async () => {
   }
 };
 
+const usersInChannels = ref([]);
 const getUsersInGivenChannel = async (channel_ID) => {
-  side_info.value = 1;
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/usersinchannel/' + channel_ID ;
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/usersinchannel/' + channel_ID;
     const response = await fetch(url,
       {
         headers: {
@@ -230,8 +243,7 @@ const getUsersInGivenChannel = async (channel_ID) => {
       });
     if (response.ok) {
       const data = await response.json();
-      usersInChannel.value = data;
-      console.log(usersInChannel)
+      usersInChannels.value = data;
     } else {
       console.log('Error:', response.status);
     }
@@ -239,10 +251,6 @@ const getUsersInGivenChannel = async (channel_ID) => {
     console.log('Error:', error);
   }
 };
-
-
-
-
 
 const getChannels = async () => {
 
@@ -391,6 +399,7 @@ const chooseChannel = (channel) => {
   unreadMessages.value[channel] = 0;
   getChannelsJoined();
   getMessages();
+  getUsersInGivenChannel(channel)
 }
 
 const createChannel = async () => {

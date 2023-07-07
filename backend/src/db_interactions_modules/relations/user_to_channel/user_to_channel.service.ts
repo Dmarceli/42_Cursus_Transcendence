@@ -37,17 +37,14 @@ export class UserToChannelService {
     return await this.UserToChannelRepository.remove(channel_to_leave)
   }
 
-  async usersonchannel(ch_id:number){
-    const channel= await this.UserToChannelRepository.find(
-      {
-        where: {channel_id: {id: ch_id}, is_banned : false},
-        relations: {user_id: true}
-      }
-    )
-    console.log(channel)
-    return channel
+  async usersonchannel(ch_id: number) {
+    const usersInChannel = await this.UserToChannelRepository.find({
+      where: { channel_id: { id: ch_id }},
+     relations: ['user_id', 'channel_id'],
+    });
+    return usersInChannel
   }
-
+  
   async findChannelsByID(us_id:number){
     const channels = await this.UserToChannelRepository.find(
       {
