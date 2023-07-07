@@ -42,7 +42,7 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
-      res.cookie('token', payload.access_token)
+      res.cookie('token', payload.access_token, {secure: true})
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
     }    
@@ -71,7 +71,7 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
-      res.cookie('token', payload.access_token)
+      res.cookie('token', payload.access_token, {secure: true})
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
     }
