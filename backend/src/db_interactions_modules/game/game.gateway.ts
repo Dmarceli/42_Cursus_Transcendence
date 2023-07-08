@@ -119,8 +119,7 @@ class Game {
     this.playerPaddle1.init(40, 300, 20, 100)
     this.playerPaddle2.init(1340, 300, 20, 100)
   }
-  reset(): void
-  {
+  reset(): void {
     this.ball = new Ball(700, 350, 20)
     this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
     this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
@@ -325,12 +324,18 @@ function BallPositionLogic(game) {
   else if (isBallTouchingBottomWall(game) && game.ball.direction.y > 0) {
     game.ball.direction.y *= -1
   }
-  if (areColliding(game.ball.frontEndData, game.playerPaddle1.frontEndData) && game.ball.direction.x < 0) {
-    game.ball.direction.x *= -1
+  if (areColliding(game.ball.frontEndData, game.playerPaddle1.frontEndData)) {
+    updateBallAngle(game.ball, game.playerPaddle1.frontEndData)
+    if (game.ball.direction.x < 0) {
+      game.ball.direction.x *= -1
+    }
     game.ball.speed *= 1.1
   }
-  else if (areColliding(game.ball.frontEndData, game.playerPaddle2.frontEndData) && game.ball.direction.x > 0) {
-    game.ball.direction.x *= -1
+  else if (areColliding(game.ball.frontEndData, game.playerPaddle2.frontEndData)) {
+    updateBallAngle(game.ball, game.playerPaddle2.frontEndData)
+    if (game.ball.direction.x > 0) {
+      game.ball.direction.x *= -1
+    }
     game.ball.speed *= 1.1
   }
 }
@@ -351,6 +356,15 @@ function areColliding(circle: any, rectangle: any) {
   let dx = closestX - circle.x
   let dy = closestY - circle.y
   return dx * dx + dy * dy <= circle.radius * circle.radius
+}
+
+function updateBallAngle(ball: Ball, paddle: any) {
+  let halfPaddleSize = paddle.height / 2
+  let paddleMid = paddle.y + halfPaddleSize
+  let collidePoint = ball.frontEndData.y - paddleMid
+  let angleRad = (collidePoint / halfPaddleSize) * Math.PI / 4
+  ball.direction.x = Math.cos(angleRad)
+  ball.direction.y = Math.sin(angleRad)
 }
 
 function printAll(game) {
