@@ -14,19 +14,28 @@
     padding: 5px;
     display: flex;
     flex-direction: column;
-    height: 300px;
     justify-content: baseline;
     flex-grow: 1;
     overflow-y: auto;
     height: 100vh;
 }
+
+@media (max-width: 767px) {
+	.Chat{
+	    height: 90vh;
+	}
+	#chat-container{
+		height: 90vh;
+	}
+}
+
   
 .message {
   padding: 10px;
   margin-bottom: 10px;
   background-color: #45a049;
   border-radius: 10px;
-  width: 33%;
+  min-width: 33vw;
 }
 
 .message-sent {
@@ -35,7 +44,7 @@
 
 .message-received {
   align-self: flex-start;
-  background-color: #0089d8;
+  background-color: #4d68b2;
 }
   
 .msg-input {
@@ -100,11 +109,11 @@
 }
 
 .channel{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px;
+	border-bottom: 1px solid #ccc;
 }
 
 .channel:hover{
@@ -113,12 +122,21 @@
 }
 
 .channels-list {
-  width: 200px;
-  border: 1px solid #ccc;
-  overflow-y: scroll;
-  overflow-x: auto;
-  padding: 10px;
-  position: relative;
+	width: 160px;
+	border: 1px solid #ccc;
+	overflow-y: scroll;
+	padding: 10px;
+	position: relative;
+	transition: max-width 0.7s ease-in-out, opacity 0.7s ease-in-out;
+	max-width: 100%; 
+}
+
+
+.channels-list.collapsed {
+	max-width: 0; 
+	padding: 0;
+	opacity: 0;
+	/* display: none; */
 }
 
 .create-channel-button {
@@ -162,16 +180,16 @@
 }
 
 .button-container {
-  display: flex;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 5%;
-  margin-left: 10px;
-  background-color: #555;
-  border-radius: 15px;
-
+	display: flex;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 5%;
+	margin-left: 10px;
+	background-color: #555;
+	border-radius: 15px;
+	min-width: 90%;
 }
 
 
@@ -400,12 +418,13 @@
 
 
 .unread-messages{
-  background-color: rgb(243, 25, 25);
-  width: 21%;
-  color: whitesmoke;
-  border-radius: 50%;
-  padding: 5px;
-  text-align: center;
+	background-color: rgb(243, 25, 25);
+	width: 20px;
+	height: 20px;
+	color: whitesmoke;
+	border-radius: 50%;
+	padding: 5px;
+	text-align: center;
 }
 
 .channel-info{
@@ -413,11 +432,38 @@
   justify-content: center;
 }
 
+.chat-container-header{
+	display: flex;
+}
+
+.hamburguer-button,
+.full-hamburguer-button {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  width: 4%;
+  height: 100%;
+  border: none;
+  filter: invert(100%);
+  transition: background-image 0.5s ease;
+}
+
+.hamburguer-button {
+  background-image: url(../src/assets/burguer.svg);
+}
+
+.full-hamburguer-button {
+  background-image: url(../src/assets/full_burguer.svg);
+}
+
+
+
 .channel-name{
   text-align: left;
   font-family: 'Roboto', sans-serif;
   font-size: xx-large;
-  width: 100%;
+  width: 70%;
   justify-content: space-between;
   display: flex;
   text-align: center;
@@ -425,14 +471,12 @@
 }
 
 .more-options {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px;
+  position: absolute;
+  right: 10px; 
   width:4%;
   height: 100%;
   background-image: url(../src/assets/moreoptions.svg);
-  background-size: cover;
+  background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   background-color: transparent;
@@ -440,19 +484,29 @@
   filter: invert(100%);
 }
 
-.close{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width:4%;
-  height: 60%;
+.close-moreoptions{
   background-image: url(../src/assets/remove_friend.svg);
+  position: absolute;
+  right: 10px; 
+  width:4%;
+  height: 50%;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   background-color: transparent;
   border: none;
+  filter: invert(75%);
 }
+
+@media (max-width: 767px) {
+	.hamburguer-button,
+	.full-hamburguer-button 
+	.more-options
+	.close-moreoption{
+	   width:20%;
+	}
+}
+
 
 .leave-button{
   width:70px;
@@ -490,7 +544,6 @@
   justify-content: space-between;
   padding: 10px;
   border-bottom: 1px solid #ccc;
-
 }
 
 .usersInChannel:hover{
@@ -501,4 +554,9 @@
 .userHeader{
   text-align: center;
   font-size: xx-large;
+}
+
+
+.submitform{
+	display: flex;
 }

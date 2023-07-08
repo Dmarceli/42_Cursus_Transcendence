@@ -1,6 +1,6 @@
 <template>
   <div class="Chat">
-    <div class="channels-list">
+	<div class="channels-list" :class="{'collapsed': !showSideInfo}">
       <div v-if="side_info === 0">
         <div class="list-header">JOINED CHANNELS</div>
         <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
@@ -84,9 +84,12 @@
       </div>
     </div>
     <div id="chat-container" ref="chatContainer">
-      <div v-if="selected_channel" class="channel-name">{{ getChannelName(selected_channel) }}
-        <button class="more-options" :class="{'more-options close': showChannelOptions}" @click="moreChannelOptions()"></button>
+	<div class="chat-container-header">
+		<button :class="['hamburguer-button', {'full-hamburguer-button': showSideInfo}]" @click="toggleChannelList"></button>
+      	<div v-if="selected_channel" class="channel-name">{{ getChannelName(selected_channel) }}
+        <button class="more-options" :class="{'more-options close-moreoptions': showChannelOptions}" @click="moreChannelOptions()"></button>
       </div>
+	</div>
       <div v-if="showChannelOptions">
         <div id="user-list-container">
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }}  Users in {{ getChannelName(selected_channel) }}</h2>
@@ -104,7 +107,7 @@
         </div>
       </div>
       <div v-if="!showChannelOptions" class="msg-input">
-        <form @submit.prevent="sendMessage">
+        <form class="submitform" @submit.prevent="sendMessage">
           <input v-model="messageText" placeholder="Message" class="input-field">
           <button type="submit" class="send-button">Send</button>
         </form>
@@ -135,8 +138,11 @@ let showModal = ref(false);
 const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 
+let showSideInfo = ref(true);
 
-
+function toggleChannelList() {
+	showSideInfo.value = !showSideInfo.value;
+}
 
 function getCookieValueByName(name) {
   const cookies = document.cookie.split(';');
@@ -149,10 +155,11 @@ function getCookieValueByName(name) {
   }
   return null;
 }
+
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
 let userId = decodedToken.id;
-const users_Name = decodedToken.user.nick || decodedToken.login;
+const users_Name =  decodedToken.user['intra_nick'];
 
 
 const getChannelName = (channelId) => {
