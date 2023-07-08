@@ -367,8 +367,6 @@ function areColliding(circle: any, rectangle: any) {
   return dx * dx + dy * dy <= circle.radius * circle.radius
 }
 
-
-
 function printAll(game) {
   console.log("Ball:")
   console.log("x:" + game.ball.frontEndData.x)
