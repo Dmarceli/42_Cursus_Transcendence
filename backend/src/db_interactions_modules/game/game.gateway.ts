@@ -30,6 +30,15 @@ class Ball {
     this.frontEndData.x += this.direction.x * this.speed
     this.frontEndData.y += this.direction.y * this.speed
   }
+  updateAngle(paddle: any): void
+  {
+    let halfPaddleSize = paddle.height / 2
+    let paddleMid = paddle.y + halfPaddleSize
+    let collidePoint = this.frontEndData.y - paddleMid
+    let angleRad = (collidePoint / halfPaddleSize) * Math.PI / 4
+    this.direction.x = Math.cos(angleRad)
+    this.direction.y = Math.sin(angleRad)
+  }
   init(x: number, y: number, radius: number): void {
     this.frontEndData = { x: x, y: y, radius: radius }
     this.frontEndData.radius = y / 40
@@ -325,14 +334,14 @@ function BallPositionLogic(game) {
     game.ball.direction.y *= -1
   }
   if (areColliding(game.ball.frontEndData, game.playerPaddle1.frontEndData)) {
-    updateBallAngle(game.ball, game.playerPaddle1.frontEndData)
+    game.ball.updateAngle(game.playerPaddle1.frontEndData)
     if (game.ball.direction.x < 0) {
       game.ball.direction.x *= -1
     }
     game.ball.speed *= 1.1
   }
   else if (areColliding(game.ball.frontEndData, game.playerPaddle2.frontEndData)) {
-    updateBallAngle(game.ball, game.playerPaddle2.frontEndData)
+    game.ball.updateAngle(game.playerPaddle2.frontEndData)
     if (game.ball.direction.x > 0) {
       game.ball.direction.x *= -1
     }
@@ -358,14 +367,7 @@ function areColliding(circle: any, rectangle: any) {
   return dx * dx + dy * dy <= circle.radius * circle.radius
 }
 
-function updateBallAngle(ball: Ball, paddle: any) {
-  let halfPaddleSize = paddle.height / 2
-  let paddleMid = paddle.y + halfPaddleSize
-  let collidePoint = ball.frontEndData.y - paddleMid
-  let angleRad = (collidePoint / halfPaddleSize) * Math.PI / 4
-  ball.direction.x = Math.cos(angleRad)
-  ball.direction.y = Math.sin(angleRad)
-}
+
 
 function printAll(game) {
   console.log("Ball:")
