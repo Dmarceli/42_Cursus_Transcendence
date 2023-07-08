@@ -30,7 +30,6 @@ let playerLost = ref(false)
 
 function handleStartMenu()
 {
-  console.log("WE HEREEE\n\n")
   playerWon.value = false
   playerLost.value = false 
   startmenu.value = false

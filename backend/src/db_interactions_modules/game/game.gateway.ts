@@ -194,11 +194,11 @@ export class GameGateway
   @SubscribeMessage('keyup')
   @UsePipes(new ValidationPipe())
   async PlayerKeyUp(client: Socket, key: string): Promise<void> {
-    console.log("KEY UP" + client.id)
-    console.log("THERE ARE " + games.length + " games")
+    // console.log("KEY UP" + client.id)
+    // console.log("THERE ARE " + games.length + " games")
     for (let game of games) {
-      console.log(game.playerPaddle1.client?.id);
-      console.log(game.playerPaddle2.client?.id + "\n\n");
+      // console.log(game.playerPaddle1.client?.id);
+      // console.log(game.playerPaddle2.client?.id + "\n\n");
       if (game.playerPaddle1.client?.id === client.id) {
         if (key === "up") {
           game.playerPaddle1.movingUp = false
@@ -282,7 +282,7 @@ function AddPlayerToGame(playerClient: Socket) {
     }
   }
   console.log("Adding new game to array")
-  console.log("Game length before: "+games.length)
+  // console.log("Game length before: "+games.length)
   let game = new Game
   game.playerPaddle1.client = playerClient
   games.push(game)
