@@ -1,12 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller,UseGuards,Req, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { friend } from './friend.entity';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { friendService } from './friend.service';
 import { CreateFriendDto } from './dtos/friend.dto';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { JwtService } from '@nestjs/jwt';
+import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
+import { User } from 'src/db_interactions_modules/users/user.entity';
 
+
+@UseGuards(JwtAuthGuard)
 @Controller('friends')
 export class friendsController {
-  constructor(private readonly friendService: friendService) {}
+  constructor(
+    private readonly friendService: friendService,
+    private jwtService: JwtService
+    ) {}
   
  @Post('/create')
   create(@Body() createFriendDto: CreateFriendDto) {
@@ -18,9 +27,11 @@ export class friendsController {
     return this.friendService.findAll();
   }
 
-  @Get('/:id')
-  findOne(@Param('id') id: string) {
-    return this.friendService.findByUserId(+id);
+  @Get()
+  findOne(@Req() req:any, @getUserIDFromToken() user:User) {
+    console.log(user)
+    return this.friendService.findByUserId(user.id);
+
   }
   
     @Delete('/deletefriends/:id1/:id2')

@@ -9,6 +9,12 @@
   <div v-else-if="playerLost">
     <h1>You lost!!!!</h1>
   </div>
+  <div v-else-if="playerWon">
+    <h1>You won!!!!</h1>
+  </div>
+  <div v-else-if="playerLost">
+    <h1>You lost!!!!</h1>
+  </div>
   <div v-else class="board">
     <Pong2D  @player-lost="playerLost = true" @player-won="playerWon = true" />
   </div>

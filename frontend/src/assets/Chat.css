@@ -397,11 +397,3 @@
   text-decoration: none;
   cursor: pointer;
 }
-
-.list-fade-enter-active, .list-fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.list-fade-enter, .list-fade-leave-to {
-  opacity: 0;
-}

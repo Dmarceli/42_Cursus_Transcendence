@@ -2,15 +2,25 @@
   <div class="loginpage">
     <div class="welcome">
       <h1>Welcome to Raquetas</h1>
-      <button class="button" @click="buttonClick">Login</button>
+      <button class="button" @click="button42">Login with 42</button>
+      <button class="button" @click="buttonGoogle">Login with Google</button>
+      <button class="button" @click="buttonBYPASS_TEMP">BYPASS</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const emit = defineEmits(['isbuttonclicked'])
-function buttonClick() {
-  emit('isbuttonclicked')
+
+const emit = defineEmits(['clicked42', 'clickedgoogle', 'clickedBYPASS'])
+
+function buttonGoogle() {
+  emit('clickedgoogle')
+}
+function button42() {
+  emit('clicked42')
+}
+function buttonBYPASS_TEMP() {
+  emit('clickedBYPASS')
 }
 </script>
 
@@ -32,7 +42,7 @@ function buttonClick() {
     rgba(44, 187, 99, 0.15) 0 8px 16px, rgba(44, 187, 99, 0.15) 0 16px 32px;
   color: green;
   cursor: pointer;
-  display: inline-block;
+  display: flex;
   font-family: CerebriSans-Regular, -apple-system, system-ui, Roboto, sans-serif;
   padding: 7px 20px;
   text-align: center;
@@ -43,7 +53,7 @@ function buttonClick() {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  width: 100px;
+  width: 200px;
   height: 40px;
   margin-top: 1rem;
 }

@@ -42,12 +42,23 @@ export class UsersService {
   }
 
   async findByLogin(intra_nick_ :string) {
+    if(!intra_nick_)
+      return null;
     const resp= await this.userRepository.findOne(
       {where: {intra_nick: intra_nick_}}
      );
      return resp;
    }
 
+
+  async findByNick(nick_ :string) {
+    if(!nick_)
+      return null;
+    const resp= await this.userRepository.findOne(
+      {where: {nick: nick_}}
+     );
+     return resp;
+   }
   // findOne(id: number) {
   //   return `This action returns a #${id} user`;
   // }
