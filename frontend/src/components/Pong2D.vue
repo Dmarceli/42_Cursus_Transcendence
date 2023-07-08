@@ -1,16 +1,16 @@
 <template>
   <div class="lobbypage" v-if="lobbyPage">
-    <Lobby></Lobby>
+    <LobbyPage></LobbyPage>
   </div>
   <div class="overlays" v-else>
-      <h1 v-if="userDisconnected">{{ reconnecting }}</h1>
-      <canvas ref="gamecanvas"></canvas>
+    <h1 v-if="userDisconnected">{{ reconnecting }}</h1>
+    <canvas ref="gamecanvas"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
-import Lobby from './Lobby.vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import LobbyPage from './LobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from '../types'
 import { io } from 'socket.io-client'
 
@@ -23,18 +23,17 @@ const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 let userDisconnected = ref(false)
 const gamecanvas = ref<HTMLCanvasElement | null>(null)
 let ctx = ref<CanvasRenderingContext2D | null>(null)
-let animation: number | null = null
 let ball: Circle | null = null
 let paddle1: Rectangle | null = null
 let paddle2: Rectangle | null = null
-let gameover: boolean | null = null
+let conv_rate: number | null = null
 const board_dims = {
   width: 1400,
   height: 700
 }
 let score: Score | null = null
 let lobbyPage = ref(true)
-let disconnectedId: number|null = null
+let disconnectedId: number | null = null
 
 onMounted(() => {
   console.log('Mounted Pong');
@@ -55,12 +54,15 @@ onUnmounted(() => {
 
 socket.on('updateGame', game => {
   userDisconnected.value = false
-  if (disconnectedId)
-  {
+  if (disconnectedId) {
     clearInterval(disconnectedId)
   }
   lobbyPage.value = false
-  if (ball == null || paddle1 == null || paddle2 == null || score == null || ctx == null) {
+  if (gamecanvas.value) {
+    ctx.value = gamecanvas.value.getContext('2d')
+  }
+  update_conversion_rate()
+  if (ball == null || paddle1 == null || paddle2 == null || score == null || ctx.value == null) {
     init_values(game)
     console.log("UPDATING")
   }
@@ -98,6 +100,18 @@ socket.on("PlayerDisconnected", () => {
 
 function init_values(game: any) {
   if (gamecanvas.value != null) {
+    ctx.value = gamecanvas.value.getContext('2d')
+  }
+  if (conv_rate != null) {
+    score = new Score(game.score, conv_rate)
+    ball = new Ball(game.ball, conv_rate)
+    paddle1 = new Paddle(game.playerPaddle1, conv_rate)
+    paddle2 = new Paddle(game.playerPaddle2, conv_rate)
+  }
+}
+
+function update_conversion_rate() {
+  if (gamecanvas.value != null) {
     let current_wh_ratio = window.innerWidth / innerHeight
     if (current_wh_ratio > 2) {
       gamecanvas.value.height = window.innerHeight * 0.8
@@ -106,12 +120,7 @@ function init_values(game: any) {
       gamecanvas.value.height = window.innerWidth * 0.8 / 2
       gamecanvas.value.width = window.innerWidth * 0.8
     }
-    ctx.value = gamecanvas.value.getContext('2d')
-    let conv_rate = gamecanvas.value.width / board_dims.width;
-    ball = new Ball(game.ball, conv_rate)
-    paddle1 = new Paddle(game.playerPaddle1, conv_rate)
-    paddle2 = new Paddle(game.playerPaddle2, conv_rate)
-    score = new Score(game.score, gamecanvas.value)
+    conv_rate = gamecanvas.value.width / board_dims.width;
   }
 }
 
@@ -141,8 +150,8 @@ function startBoard() {
 }
 
 function clearBoard() {
-  if (gamecanvas.value != null) {
-    ctx.value?.clearRect(0, 0, gamecanvas.value.width, gamecanvas.value.height)
+  if (gamecanvas.value && conv_rate && ctx.value) {
+    ctx.value.clearRect(0, 0, gamecanvas.value.width * conv_rate, gamecanvas.value.height * conv_rate)
   }
 }
 
@@ -152,14 +161,13 @@ function resetBoard() {
 }
 
 function onWidthChange() {
-  if (gamecanvas.value && ball) {
-    ball.conv_rate = gamecanvas.value.width / 1700 * 0.8;
-  }
-  resetBoard()
-  if (ctx.value != null) {
-    ball?.draw(ctx.value)
-    paddle1?.draw(ctx.value)
-    paddle2?.draw(ctx.value)
+  update_conversion_rate()
+  if (conv_rate)
+  {
+    ball?.updateConvRate(conv_rate)
+    paddle1?.updateConvRate(conv_rate)
+    paddle2?.updateConvRate(conv_rate)
+    score?.update_dims(conv_rate)
   }
 }
 

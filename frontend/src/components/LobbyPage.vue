@@ -6,7 +6,6 @@
 import { onMounted, ref } from 'vue';
 
 let ellipsis = ref("")
-// let animation = null
 
 onMounted(() => {
   setInterval(() => {

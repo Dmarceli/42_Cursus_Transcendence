@@ -265,14 +265,6 @@ export class GameGateway
 
 function AddPlayerToGame(playerClient: Socket) {
   console.log("LETS ADD PLAYER")
-  // TODO: REMOVE THIS IF AND ADD AFTER FOR LOOP
-  if (!games.length) {
-    console.log("No length")
-    let game = new Game
-    game.playerPaddle1.client = playerClient
-    games.push(game)
-    return
-  }
   for (let i = 0; i < games.length; i++) {
     console.log(!games[i].playerPaddle1.client)
     console.log(!games[i].playerPaddle2.client)
@@ -289,6 +281,11 @@ function AddPlayerToGame(playerClient: Socket) {
       return
     }
   }
+  console.log("Adding new game to array")
+  console.log("Game length before: "+games.length)
+  let game = new Game
+  game.playerPaddle1.client = playerClient
+  games.push(game)
 }
 
 function RemovePlayerFromGame(client: Socket) {
