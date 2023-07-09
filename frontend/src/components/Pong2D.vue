@@ -11,8 +11,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import LobbyPage from './LobbyPage.vue'
-import { type Rectangle, Paddle, type Circle, Ball, Score } from '../types'
+import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
 import socket from '../socket'
+import jwt_decode from 'jwt-decode';
 
 let reconnecting = ref("")
 
@@ -32,6 +33,16 @@ const board_dims = {
 let score: Score | null = null
 let lobbyPage = ref(true)
 let disconnectedId: number | null = null
+let token: string | null = null;
+let decodedToken: TokenType;
+let userId: string | null = null;
+let users_Name: string | null = null;
+
+interface TokenType
+{
+  id: string
+  login: string
+}
 
 onMounted(() => {
   console.log('Mounted Pong');
@@ -39,7 +50,13 @@ onMounted(() => {
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
-
+  token = getCookieValueByName('token');
+  if (token)
+    decodedToken = jwt_decode(token);
+  userId = decodedToken.id;
+  users_Name = decodedToken.login;
+  console.log("userId "+userId)
+  console.log("users_name "+users_Name)
 })
 
 onUnmounted(() => {
@@ -208,6 +225,19 @@ function printAll() {
   console.log("height:" + paddle1?.height)
 }
 
+// TODO: Move to utility.ts
+function getCookieValueByName(name: string) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
+    }
+  }
+  return null;
+}
+
 </script>
 
 <style>
@@ -238,4 +268,4 @@ function printAll() {
 canvas {
   z-index: 1;
 }
-</style>
+</style>./types

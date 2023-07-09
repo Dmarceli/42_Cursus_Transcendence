@@ -6,6 +6,23 @@ const board_dims = {
   width: 1400,
   height: 700
 }
+function areColliding(circle: any, rectangle: any) {
+  let closestX =
+    circle.x < rectangle.x
+      ? rectangle.x
+      : circle.x > rectangle.x + rectangle.width
+        ? rectangle.x + rectangle.width
+        : circle.x
+  let closestY =
+    circle.y < rectangle.y
+      ? rectangle.y
+      : circle.y > rectangle.y + rectangle.height
+        ? rectangle.y + rectangle.height
+        : circle.y
+  let dx = closestX - circle.x
+  let dy = closestY - circle.y
+  return dx * dx + dy * dy <= circle.radius * circle.radius
+}
 
 export class Game {
   ball: Ball
@@ -50,7 +67,7 @@ export class Game {
     return this.ball.frontEndData.x + this.ball.frontEndData.radius > board_dims.width
   }
 
-  Update() {
+  update() {
     this.playerPaddle1.updatePosition(board_dims.height);
     this.playerPaddle2.updatePosition(board_dims.height);
     this.UpdateBallPosition();
@@ -73,7 +90,7 @@ export class Game {
     else if (this.isBallTouchingBottomWall() && this.ball.direction.y > 0) {
       this.ball.direction.y *= -1
     }
-    if (this.areColliding(this.ball.frontEndData, this.playerPaddle1.frontEndData) && !this.isColliding) {
+    if (areColliding(this.ball.frontEndData, this.playerPaddle1.frontEndData) && !this.isColliding) {
       this.ball.updateAngle(this.playerPaddle1.frontEndData)
       if (this.ball.direction.x < 0 && this.ball.frontEndData.x > this.playerPaddle1.frontEndData.x + this.playerPaddle1.frontEndData.width
         || this.ball.direction.x > 0 && this.ball.frontEndData.x < this.playerPaddle1.frontEndData.x + this.playerPaddle1.frontEndData.width) {
@@ -82,7 +99,7 @@ export class Game {
       this.ball.speed *= 1.1
       this.isColliding = true
     }
-    else if (this.areColliding(this.ball.frontEndData, this.playerPaddle2.frontEndData) && !this.isColliding) {
+    else if (areColliding(this.ball.frontEndData, this.playerPaddle2.frontEndData) && !this.isColliding) {
       this.ball.updateAngle(this.playerPaddle2.frontEndData)
       if (this.ball.direction.x > 0 && this.ball.frontEndData.x < this.playerPaddle2.frontEndData.x ||
         this.ball.direction.x < 0 && this.ball.frontEndData.x > this.playerPaddle2.frontEndData.x) {
@@ -96,41 +113,27 @@ export class Game {
     }
     this.ball.updatePosition()
   }
-  areColliding(circle: any, rectangle: any) {
-    let closestX =
-      circle.x < rectangle.x
-        ? rectangle.x
-        : circle.x > rectangle.x + rectangle.width
-          ? rectangle.x + rectangle.width
-          : circle.x
-    let closestY =
-      circle.y < rectangle.y
-        ? rectangle.y
-        : circle.y > rectangle.y + rectangle.height
-          ? rectangle.y + rectangle.height
-          : circle.y
-    let dx = closestX - circle.x
-    let dy = closestY - circle.y
-    return dx * dx + dy * dy <= circle.radius * circle.radius
+  emit() {
+    if (this.score.player1 > 4) {
+      this.finish(this.playerPaddle1, this.playerPaddle2)
+    }
+    else if (this.score.player2 > 4) {
+      this.finish(this.playerPaddle2, this.playerPaddle1)
+    }
+    else {
+      let gamevisual = {
+        ball: this.ball.frontEndData,
+        playerPaddle1: this.playerPaddle1.frontEndData,
+        playerPaddle2: this.playerPaddle2.frontEndData,
+        score: this.score
+      }
+      this.playerPaddle1.client?.emit('updateGame', gamevisual)
+      this.playerPaddle2.client?.emit('updateGame', gamevisual)
+    }
   }
-  print() {
-    console.log("Ball:")
-    console.log("x:" + this.ball.frontEndData.x)
-    console.log("y:" + this.ball.frontEndData.y)
-    console.log("radius:" + this.ball.frontEndData.radius)
-    console.log("")
-    console.log("Paddle 1:")
-    console.log("id:" + this.playerPaddle1.client.id)
-    console.log("x:" + this.playerPaddle1.frontEndData.x)
-    console.log("y:" + this.playerPaddle1.frontEndData.y)
-    console.log("width:" + this.playerPaddle1.frontEndData.width)
-    console.log("height:" + this.playerPaddle1.frontEndData.height)
-    console.log("")
-    console.log("Player 2:" + this.playerPaddle2.client.id)
-    console.log("id:" + this.playerPaddle2.client.id)
-    console.log("x:" + this.playerPaddle2.frontEndData.x)
-    console.log("y:" + this.playerPaddle2.frontEndData.y)
-    console.log("width:" + this.playerPaddle2.frontEndData.width)
-    console.log("height:" + this.playerPaddle2.frontEndData.height)
+  finish(winner: PlayerPaddle, loser: PlayerPaddle) {
+    winner.client?.emit('PlayerWon')
+    loser.client?.emit('PlayerLost')
+    this.reset()
   }
 };

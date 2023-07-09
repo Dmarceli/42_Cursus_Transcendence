@@ -113,8 +113,6 @@ let selected_channel = null;
 let side_info = ref(0);
 let showModal = ref(false);
 
-
-
 function getCookieValueByName(name) {
   const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i++) {

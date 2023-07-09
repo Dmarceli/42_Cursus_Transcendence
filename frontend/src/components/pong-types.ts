@@ -109,5 +109,4 @@ class Score {
   }
 }
 
-
 export { type Rectangle, Paddle, type Circle, Ball, Score }

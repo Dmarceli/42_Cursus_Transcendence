@@ -81,28 +81,8 @@ export class GameService {
         setInterval(() => {
           for (let game of this.games) {
             if (game.playerPaddle1.client && game.playerPaddle2.client) {
-              game.Update();
-              if ((game.score.player1 > 4 || game.score.player2 > 4)) {
-                if (game.score.player1 > 4) {
-                  game.playerPaddle1.client?.emit('PlayerWon')
-                  game.playerPaddle2.client?.emit('PlayerLost')
-                }
-                else if (game.score.player2 > 4) {
-                  game.playerPaddle2.client?.emit('PlayerWon')
-                  game.playerPaddle1.client?.emit('PlayerLost')
-                }
-                game.reset()
-              }
-              else {
-                let gamevisual = {
-                  ball: game.ball.frontEndData,
-                  playerPaddle1: game.playerPaddle1.frontEndData,
-                  playerPaddle2: game.playerPaddle2.frontEndData,
-                  score: game.score
-                }
-                game.playerPaddle1.client?.emit('updateGame', gamevisual)
-                game.playerPaddle2.client?.emit('updateGame', gamevisual)
-              }
+              game.update();
+              game.emit();
             }
             else {
               game.playerPaddle1.client?.emit('WaitingForPlayers')
