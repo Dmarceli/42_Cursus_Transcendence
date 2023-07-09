@@ -93,8 +93,9 @@
       <div v-if="showChannelOptions">
         <div id="user-list-container">
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }}  Users in {{ getChannelName(selected_channel) }}</h2>
-            <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
-              <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
+          <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
+            <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
+            <button v-if="isUserMorePowerful(usersInChannels, usersInChannel)" @click="kickUser(usersInChannel.user_id.intra_nick)">Kick</button>
               {{ usersInChannel.user_id.intra_nick }}
             </div>
         </div>
@@ -346,6 +347,34 @@ const joinChannel = async (channelid) => {
   }
   await getChannelsJoined();
 
+}
+
+// ADMIN COMMANDS \\
+
+
+const isUserMorePowerful = (userList, target) => {
+  for (const userId in userList) {
+    const entry = userList[userId];
+    if (entry['user_id']['intra_nick'] === users_Name) {
+      if(entry['is_owner'])
+        return true
+      else if (entry['is_admin'])
+      {
+        if(target['is_owner']){
+          return false
+        }
+        else {
+          return true
+        }
+      }
+    }
+  }
+  return false
+}
+
+
+const kickUser = (User) => {
+  console.log(User);
 }
 
 
