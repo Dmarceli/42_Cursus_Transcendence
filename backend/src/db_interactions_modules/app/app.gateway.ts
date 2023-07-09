@@ -11,6 +11,7 @@ import { Socket, Server } from 'socket.io';
 import { AppService } from '../../app.service';
 import { CreateMsgDto } from '../messages/dtos/message.dto';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
+import { GameService } from '../game/game.service';
 
 @WebSocketGateway({
   cors: {
@@ -20,7 +21,7 @@ import { UsePipes, ValidationPipe } from '@nestjs/common';
  export class AppGateway
  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
- constructor(private appService: AppService) {}
+ constructor(private appService: AppService, private gameService: GameService) {}
  
  @WebSocketServer() server: Server;
  
@@ -33,14 +34,35 @@ import { UsePipes, ValidationPipe } from '@nestjs/common';
  }
  
  afterInit(server: Server) {
-   
+  this.gameService.UpdateAllPositions()
  }
  
  handleDisconnect(client: Socket) {
    console.log(`Disconnected: ${client.id}`);
+   this.gameService.RemovePlayerFromGame(client)
  }
  
  handleConnection(client: Socket, ...args: any[]) {
    console.log(`Connected ${client.id}`);
  }
+
+// Game Service
+  @SubscribeMessage('NewPlayer')
+  handleNewPlayer(client: Socket) {
+    this.gameService.AddPlayerToGame(client)
+  }
+  @SubscribeMessage('PlayerExited')
+  handlePlayerExited(client: Socket) {
+    this.gameService.RemovePlayerFromGame(client)
+  }
+  @SubscribeMessage('keydown')
+  handlePlayerKeyDown(client: Socket, key: string)
+  {
+    this.gameService.PlayerKeyDown(client, key)
+  }
+  @SubscribeMessage('keyup')
+  handlePlayerKeyUp(client: Socket, key: string)
+  {
+    this.gameService.PlayerKeyUp(client, key)
+  }
 }
