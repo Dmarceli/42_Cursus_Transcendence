@@ -14,6 +14,8 @@ import LobbyPage from './LobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
 import socket from '../socket'
 import jwt_decode from 'jwt-decode';
+// import {getCookieValueByName} from '../App.vue'
+import {getCookieValueByName} from '../App.vue'
 
 let reconnecting = ref("")
 
@@ -223,19 +225,6 @@ function printAll() {
   console.log("y:" + paddle1?.y)
   console.log("width:" + paddle1?.width)
   console.log("height:" + paddle1?.height)
-}
-
-// TODO: Move to utility.ts
-function getCookieValueByName(name: string) {
-  const cookies = document.cookie.split(';');
-  for (let i = 0; i < cookies.length; i++) {
-    let cookie = cookies[i].trim();
-    if (cookie.startsWith(`${name}=`)) {
-      cookie = cookie.substring(name.length + 1);
-      return (cookie);
-    }
-  }
-  return null;
 }
 
 </script>
