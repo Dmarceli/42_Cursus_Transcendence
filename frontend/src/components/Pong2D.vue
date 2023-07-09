@@ -12,11 +12,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import LobbyPage from './LobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from '../types'
-import { io } from 'socket.io-client'
+import socket from '../socket'
 
 let reconnecting = ref("")
-
-const socket = io(process.env.VUE_APP_BACKEND_URL);
 
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
