@@ -1,5 +1,6 @@
 <script setup lang="ts">
 	import { ref, computed } from 'vue';
+  import Carousel from '../components/ActiveGameCarousel.vue'
   	
   interface Player {
     id: number;
@@ -92,6 +93,10 @@
       </div>
       <div class="modal-overlay" @click="closeModal"></div>
     </div>
+  </div>
+  <div>
+    <h1>Active Games</h1>
+    <Carousel />
   </div>
 </template>
   
