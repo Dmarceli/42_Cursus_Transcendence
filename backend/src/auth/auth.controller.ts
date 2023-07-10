@@ -32,7 +32,7 @@ export class AuthController {
   @Get('/callback_intra')
   async callbackIntra(@Req() req: any, @Res() res: any) {
     const payload = await this.authService.login(req.user);
-    if (payload.user.TwoFAEnabled && payload.user.TwoFASecret) {
+    if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
         login: payload.user.intra_nick,
         id: -1,
@@ -61,7 +61,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     const payload = this.authService.googleLogin(req)
-    if (payload.user.TwoFAEnabled && payload.user.TwoFASecret) {
+    if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
         login: payload.user.intra_nick,
         id: -1,

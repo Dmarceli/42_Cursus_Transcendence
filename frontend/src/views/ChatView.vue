@@ -167,7 +167,7 @@ function getCookieValueByName(name) {
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
 let userId = decodedToken.id;
-const users_Name =  decodedToken.user['intra_nick'];
+const users_Name =  decodedToken.user['nick'];
 
 
 const getChannelName = (channelId) => {
@@ -361,6 +361,8 @@ const joinChannel = async (channelid) => {
 
 const isUserMorePowerful = (userList, target) => {
   for (const userId in userList) {
+    if(target['user_id']['intra_nick'] === users_Name)
+      return false;
     const entry = userList[userId];
     if (entry['user_id']['intra_nick'] === users_Name) {
       if(entry['is_owner'])
@@ -578,7 +580,6 @@ socket.on('recMessage', message => {
     }
     unreadMessages.value[message.channelId]++;
   }
-  console.log(unreadMessages.value[message.channelId]);
   getMessages();
 });
 
