@@ -5,7 +5,8 @@ import { UserToChannel } from './user_to_channel.entity';
 import { CreateUserToChannDto } from './dtos/user_to_channel.dto';
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { Channel } from 'src/db_interactions_modules/channels/channel.entity';
-
+import { Response } from 'express';
+import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class UserToChannelService {
@@ -60,12 +61,27 @@ export class UserToChannelService {
     return channels
   }
 
+ async kick_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response) {
+  const caller_privileges= await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+  console.log(caller_privileges)
+  const user_to_kick= await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+  console.log(user_to_kick)
+  if((caller_privileges.is_admin || caller_privileges.is_owner) && !user_to_kick.is_owner){
+    const channel_to_leave = await this.UserToChannelRepository.find({
+        where: {
+          user_id: { id: id_us },
+          channel_id: { id: id_ch }
+        }
+        ,
+        relations: ['user_id', 'channel_id']
+      });
+  
+      await this.UserToChannelRepository.remove(channel_to_leave)
+      return res.status(200).json()
 
-  //  async createMessage(UserToChannel: UserToChannel): Promise<UserToChannel> {
-  //    return await this.UserToChannelRepository.save(UserToChannel);
-  //  }
-
-  //  async getMessages(): Promise<UserToChannel[]> {
-  //    return await this.UserToChannelRepository.find();
-  //  }
+  }
+  else{
+    return res.status(403).json("USER NOT AUTHORIZED TO KICK")
+  }
+  }
 }
