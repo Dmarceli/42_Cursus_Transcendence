@@ -55,7 +55,7 @@ export class UserToChannelService {
     const channels = await this.UserToChannelRepository.find(
       {
         where: {user_id: {id: us_id}, is_banned : false},
-        relations: {channel_id:true}
+        relations: {channel_id:true, user_id: true}
       }
     )
     return channels
@@ -83,5 +83,15 @@ export class UserToChannelService {
   else{
     return res.status(403).json("USER NOT AUTHORIZED TO KICK")
   }
+  }
+
+
+  async getBannedChannelList(id_us: number){
+    return await this.UserToChannelRepository.find(
+      {
+        where: {user_id: {id: id_us}, is_banned : true},
+        relations: {channel_id:true, user_id: true}
+      }
+    )
   }
 }

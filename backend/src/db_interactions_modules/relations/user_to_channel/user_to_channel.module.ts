@@ -15,6 +15,7 @@ import { UsersService } from 'src/db_interactions_modules/users/users.service';
         TypeOrmModule.forFeature([UserToChannel, Channel, User])
     ],
     controllers: [UserToChannelController],
-    providers: [UserToChannelService, ChannelsService, UsersService]
+    providers: [UserToChannelService, ChannelsService, UsersService],
+    exports:[UserToChannelService]
 })
 export class UserToChannelModule { }

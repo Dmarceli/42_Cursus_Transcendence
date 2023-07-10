@@ -95,7 +95,7 @@
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }}  Users in {{ getChannelName(selected_channel) }}</h2>
           <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
-            <button v-if="isUserMorePowerful(usersInChannels, usersInChannel)" @click="kickUser(usersInChannel.user_id.intra_nick)">Kick</button>
+            <button v-if="isUserMorePowerful(usersInChannels, usersInChannel)" @click="kickUser(usersInChannel.user_id.id)">Kick</button>
               {{ usersInChannel.user_id.intra_nick }}
             </div>
         </div>
@@ -149,7 +149,6 @@ function enableModal() {
   getUsers();
   side_info.value = 2;
   showModal.value = true
-  console.log("bati")
 }
 
 function getCookieValueByName(name) {
@@ -270,7 +269,12 @@ const getChannels = async () => {
 
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/channels/all'
-    const response = await fetch(url);
+    const response = await fetch(url,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     if (response.ok) {
       const data = await response.json();
       channels.value = data;
@@ -382,8 +386,28 @@ const isUserMorePowerful = (userList, target) => {
 }
 
 
-const kickUser = (User) => {
-  console.log(User);
+const kickUser = async (KickedUserID) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/kick/' + KickedUserID + '/from/' +  selected_channel
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    if (response.ok) {
+      await getChannelsJoined();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+  await getChannelsJoined();
+  await getUsersInGivenChannel(selected_channel)
+
 }
 
 
@@ -462,6 +486,7 @@ const createChannel = async () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ type: 1, channel_name: channelName, password: channelPassword }),
     });
