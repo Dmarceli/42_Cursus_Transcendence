@@ -36,7 +36,7 @@
             <label for="channelName">Password:</label>
             <input class="input-field" placeholder="(optional)" type="text" id="channelPassword" name="channelPassword">
             <label for="inviteUser">Invite Users:</label>
-            <select class="input-field" v-model="selectedUsers" id="inviteUser" name="inviteUser" multiple>
+            <select class="input-field"  id="inviteUser" name="inviteUser" multiple>
               <option value="" disabled>Select users</option>
               <option v-for="user in users" :key="user.id" :value="user.id">{{ user.nick }}</option>
             </select>
@@ -79,7 +79,7 @@
         <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]"
           @click="getFriends()"></button>
         <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]"
-          @click="createChannel()"></button>
+          @click="enableModal()"></button>
         <button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]" @click="search()"></button>
       </div>
     </div>
@@ -143,6 +143,13 @@ let showSideInfo = ref(true);
 
 function toggleChannelList() {
 	showSideInfo.value = !showSideInfo.value;
+}
+
+function enableModal() {
+  getUsers();
+  side_info.value = 2;
+  showModal.value = true
+  console.log("bati")
 }
 
 function getCookieValueByName(name) {
@@ -444,9 +451,7 @@ const chooseChannel = (channel) => {
 }
 
 const createChannel = async () => {
-  getUsers();
-  side_info.value = 2;
-  showModal.value = true;
+  
   let channelName = document.getElementById("channelName").value;
   let channelPassword = document.getElementById("channelPassword").value;
   try {
