@@ -29,9 +29,7 @@ export class friendsController {
 
   @Get()
   findOne(@Req() req:any, @getUserIDFromToken() user:User) {
-    console.log(user)
     return this.friendService.findByUserId(user.id);
-
   }
   
     @Delete('/deletefriends/:id1/:id2')
