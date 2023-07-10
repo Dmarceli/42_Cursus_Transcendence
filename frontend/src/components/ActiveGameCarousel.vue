@@ -1,16 +1,16 @@
 <template>
   <transition name ="carousel-transition">
     <div class="carousel">
-      <div class="carousel-arrows">
-        <font-awesome-icon class="carousel-arrow" :icon="['fas', 'circle-chevron-left']" @click="prevPage"></font-awesome-icon> 
-      </div>
       <div class="carousel-container">
-        <div class="carousel-item" v-for="game in currentGames" :key="game.id">
-          <h3>{{ game.name }}</h3>
+        <div class="carousel-arrows">
+          <font-awesome-icon class="carousel-arrow-left" :icon="['fas', 'circle-chevron-left']" @click="prevPage"></font-awesome-icon> 
         </div>
-      </div>
-      <div class="carousel-arrows">
-        <font-awesome-icon class="carousel-arrow" :icon="['fas', 'circle-chevron-right']" @click="nextPage"></font-awesome-icon> 
+        <div class="carousel-arrows">
+          <font-awesome-icon class="carousel-arrow-right" :icon="['fas', 'circle-chevron-right']" @click="nextPage"></font-awesome-icon> 
+          <div class="carousel-item" v-for="game in currentGames" :key="game.id">
+            <h3>{{ game.name }}</h3>
+          </div>
+        </div>
       </div>
       <div class="carousel-dots">
         <span
@@ -89,6 +89,7 @@ const goToPage = (page: number) => {
 
 .carousel-container {
   display: flex;
+  justify-content: center;
   overflow: hidden;
 }
 
@@ -106,18 +107,35 @@ const goToPage = (page: number) => {
 .carousel-arrows {
   display: flex;
   align-items: center;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-.carousel-arrow {
+.carousel-arrow.left {
+  left: 0;
   font-size: 24px;
   cursor: pointer;
   margin: 0 10px;
   color: hsla(160, 100%, 37%, 1);
   transition: color 0.3s;
+  justify-content: flex-end;
+}
+
+.carousel-arrow.right {
+  right: 0;
+  bottom: 0;
+  font-size: 24px;
+  cursor: pointer;
+  margin: 0 10px;
+  color: hsla(160, 100%, 37%, 1);
+  transition: color 0.3s;
+  justify-content: flex-end;
 }
 
 .carousel-arrow:hover {
   opacity: 60%;
+  cursor: pointer;
 }
 
 .carousel-dots {
