@@ -7,6 +7,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { query } from 'express';
 import { TwoFactorAuthService } from './2FA/2FA-service';
 import { JwtService } from '@nestjs/jwt';
+import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
+import { User } from 'src/db_interactions_modules/users/user.entity';
 
 @Controller('/auth')
 export class AuthController {
@@ -30,9 +32,19 @@ export class AuthController {
   @Get('/callback_intra')
   async callbackIntra(@Req() req: any, @Res() res: any) {
     const payload = await this.authService.login(req.user);
-    res.cookie('token', payload.access_token,)
-    res.redirect('http://localhost:5173/')
-    // return payload;
+    if (payload.user.TwoFAEnabled && payload.user.TwoFASecret) {
+      const payload2FA = {
+        login: payload.user.intra_nick,
+        id: -1,
+        TwoFAEnabled: true
+      };
+      let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
+      res.cookie('token', "2FA" + access_token2FA)
+    }
+    else {
+      res.cookie('token', payload.access_token)
+    }    
+    res.redirect(process.env.FRONTEND_URL)
   }
 
   /*******************************************/
@@ -60,7 +72,7 @@ export class AuthController {
       res.cookie('token', payload.access_token)
     }
 
-    res.redirect('http://localhost:5173/')
+    res.redirect(process.env.FRONTEND_URL)
   }
 
   @Post('/check2fa')
@@ -78,13 +90,12 @@ export class AuthController {
     }
   }
 
-
+  @UseGuards(JwtAuthGuard)
   @Get('/gen2fa')
-  async gen2FAcode(@Res() res: any) {
-    //Pesquisa por nick
-    const user_ = await this.userService.findByNick("Daniel")
+  async gen2FAcode(@Res() res: any, @getUserIDFromToken() user:User) {
+    console.log("user", user)
+    const user_ = await this.userService.findByLogin(user['login'])
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
-
     const qrCode = require('qrcode')
     const qrCodeData = url_.otpAuthUrl;
     try {
