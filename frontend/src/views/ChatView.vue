@@ -94,14 +94,12 @@
         <div id="user-list-container">
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }}  Users in {{ getChannelName(selected_channel) }}</h2>
           <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
-            <template v-if="!usersInChannel.is_banned">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)"> 
               <button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
               <button @click="banUser(usersInChannel.user_id.id)">Ban</button>
             </div>
             {{ usersInChannel.user_id.intra_nick }}
-            </template>
           </div>
           </div>
         <button class="leave-button" @click="leaveChannel(selected_channel)"></button>

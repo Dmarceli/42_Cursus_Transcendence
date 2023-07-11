@@ -48,7 +48,8 @@ export class UserToChannelService {
       where: { channel_id: { id: ch_id }},
      relations: ['user_id', 'channel_id'],
     });
-    return usersInChannel
+    const filteredUsersInChannel = usersInChannel.filter(userInChannel => !userInChannel.is_banned);
+    return filteredUsersInChannel;
   }
   
   async findChannelsByID(us_id:number){
