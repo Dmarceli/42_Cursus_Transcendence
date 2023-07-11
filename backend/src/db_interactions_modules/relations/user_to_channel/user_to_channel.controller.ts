@@ -64,10 +64,11 @@ export class UserToChannelController {
   kick_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.kick_from_channel(us_id,ch_id,user.id,res );
   }
-  // @Get('/:id')
-  // findOne(@Param('id') id: string) {
-  //   return this.friendService.findByUserId(+id);
-  // }
+  
+  @Post('/ban/:userid/from/:channelid')
+  ban_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+    return this.userToChannelService.ban_from_channel(us_id,ch_id,user.id,res );
+  }
   
 
 }

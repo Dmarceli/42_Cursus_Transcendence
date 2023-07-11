@@ -63,9 +63,7 @@ export class UserToChannelService {
 
  async kick_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response) {
   const caller_privileges= await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
-  console.log(caller_privileges)
   const user_to_kick= await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
-  console.log(user_to_kick)
   if((caller_privileges.is_admin || caller_privileges.is_owner) && !user_to_kick.is_owner){
     const channel_to_leave = await this.UserToChannelRepository.find({
         where: {
@@ -85,6 +83,26 @@ export class UserToChannelService {
   }
   }
 
+
+  async ban_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response){
+    const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    const user_to_ban = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    if((caller_privileges.is_admin || caller_privileges.is_owner) && !user_to_ban.is_owner){
+      const channel_to_leave = await this.UserToChannelRepository.find({
+        where: {
+          user_id: { id: id_us },
+          channel_id: { id: id_ch }
+        }
+        ,
+        relations: ['user_id', 'channel_id']
+      });
+      await this.UserToChannelRepository.update(channel_to_leave[0], { is_banned: true })
+      return res.status(200).json()
+    }
+    else{
+      return res.status(403).json("USER NOT AUTHORIZED TO Ban")
+    }
+  }
 
   async getBannedChannelList(id_us: number){
     return await this.UserToChannelRepository.find(
