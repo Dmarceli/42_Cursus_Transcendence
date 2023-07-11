@@ -98,6 +98,7 @@
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)"> 
               <button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
               <button @click="banUser(usersInChannel.user_id.id)">Ban</button>
+              <button @click="MuteUser(usersInChannel.user_id.id)">Mute</button>
               <button @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</button>
             </div>
             {{ usersInChannel.user_id.intra_nick }}
@@ -111,12 +112,13 @@
           <div class="message-time">{{ formatTime(message.time) }}</div>
         </div>
       </div>
-      <div v-if="!showChannelOptions" class="msg-input">
+      <div v-if="!showChannelOptions && !isUserMutedOnChannel(usersInChannels)" class="msg-input">
         <form class="submitform" @submit.prevent="sendMessage">
           <input v-model="messageText" placeholder="Message" class="input-field">
           <button type="submit" class="send-button">Send</button>
         </form>
       </div>
+      <div style="color: red;text-align: center;" v-if="isUserMutedOnChannel(usersInChannels) && !showChannelOptions">YOU ARE MUTED</div>
     </div>
   </div>
 </template>
@@ -182,6 +184,18 @@ const  getChannelUserCount  = (channel) => {
   return channel.length
 }
 
+const isUserMutedOnChannel = (userList) => {
+  for (const userId in userList) {
+    const entry = userList[userId];
+    if (entry['user_id']['nick'] === users_Name) {
+      if(entry['is_muted'])
+        return true
+      else
+        return false
+    }
+  }
+  return false
+}
 
 const check_user = async () => {
   try {
@@ -369,10 +383,10 @@ const joinChannel = async (channelid) => {
 
 const isUserMorePowerful = (userList, target) => {
   for (const userId in userList) {
-    if(target['user_id']['intra_nick'] === users_Name)
+    if(target['user_id']['nick'] === users_Name)
       return false;
     const entry = userList[userId];
-    if (entry['user_id']['intra_nick'] === users_Name) {
+    if (entry['user_id']['nick'] === users_Name) {
       if(entry['is_owner'])
         return true
       else if (entry['is_admin'])
@@ -472,6 +486,28 @@ const ToggleAdminUser = async (actionToUserID) => {
   await getChannelsJoined();
   await getUsersInGivenChannel(selected_channel)
 }
+
+const MuteUser  = async (userToMute) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/mute/' + userToMute + '/from/' +  selected_channel
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    if (response.ok) {
+      await getChannelsJoined();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+}
+
 
 const scrollToBottom = () => {
   try {

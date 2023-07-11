@@ -69,7 +69,11 @@ export class UserToChannelController {
   ban_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.ban_from_channel(us_id,ch_id,user.id,res );
   }
-
+  
+  @Post('/mute/:userid/from/:channelid')
+  mute_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+    return this.userToChannelService.mute_from_channel(us_id,ch_id,user.id,res );
+  }
   @Post('/giveadmin/:userid/on/:channelid/:action')
   //{{SERVER_IP}}:3000/usertochannel/giveadmin/1/on/1/take - remove
   //{{SERVER_IP}}:3000/usertochannel/giveadmin/1/on/1/give - dá admin
