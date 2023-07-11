@@ -24,7 +24,7 @@ import { verify } from 'crypto';
 
 const islogged = ref(false);
 
-export function getCookieValueByName(name: any) {
+function getCookieValueByName(name: any) {
   const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i++) {
     let cookie = cookies[i].trim();
