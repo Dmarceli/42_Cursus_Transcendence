@@ -14,6 +14,7 @@ const board_dims = {
   width: 1400,
   height: 700
 }
+let isColliding: Boolean = false;
 
 class Ball {
   frontEndData: {
@@ -29,6 +30,14 @@ class Ball {
   updatePosition(): void {
     this.frontEndData.x += this.direction.x * this.speed
     this.frontEndData.y += this.direction.y * this.speed
+  }
+  updateAngle(paddle: any): void {
+    let halfPaddleSize = paddle.height / 2
+    let paddleMid = paddle.y + halfPaddleSize
+    let collidePoint = this.frontEndData.y - paddleMid
+    let angleRad = (collidePoint / halfPaddleSize) * Math.PI / 4
+    this.direction.x = Math.cos(angleRad)
+    this.direction.y = Math.sin(angleRad)
   }
   init(x: number, y: number, radius: number): void {
     this.frontEndData = { x: x, y: y, radius: radius }
@@ -119,6 +128,12 @@ class Game {
     this.playerPaddle1.init(40, 300, 20, 100)
     this.playerPaddle2.init(1340, 300, 20, 100)
   }
+  reset(): void {
+    this.ball = new Ball(700, 350, 20)
+    this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
+    this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
+    this.score = new Score
+  }
 
 };
 
@@ -150,7 +165,7 @@ export class GameGateway
   @SubscribeMessage('NewPlayer')
   @UsePipes(new ValidationPipe())
   async NewPlayer(client: Socket): Promise<void> {
-    console.log("NewPlayer"+client.id)
+    console.log("NewPlayer " + client.id)
     // TODO: Replace with intraId
     AddPlayerToGame(client)
   }
@@ -188,16 +203,18 @@ export class GameGateway
   @UsePipes(new ValidationPipe())
   async PlayerKeyUp(client: Socket, key: string): Promise<void> {
     // console.log("KEY UP" + client.id)
+    // console.log("THERE ARE " + games.length + " games")
     for (let game of games) {
-
-      if (game.playerPaddle1.client.id === client.id) {
+      // console.log(game.playerPaddle1.client?.id);
+      // console.log(game.playerPaddle2.client?.id + "\n\n");
+      if (game.playerPaddle1.client?.id === client.id) {
         if (key === "up") {
           game.playerPaddle1.movingUp = false
         }
         else if (key === "down") {
           game.playerPaddle1.movingDown = false
         }
-      } else if (game.playerPaddle2.client.id === client.id) {
+      } else if (game.playerPaddle2.client?.id === client.id) {
         if (key === "up") {
           game.playerPaddle2.movingUp = false
         }
@@ -211,25 +228,25 @@ export class GameGateway
   @UsePipes(new ValidationPipe())
   async UpdateAllPositions(): Promise<void> {
     setInterval(() => {
-      // console.log("THERE ARE "+games.length+" games")
+      // console.log("THERE ARE " + games.length + " games")
       for (let game of games) {
-        if (game.playerPaddle1.client !== null && game.playerPaddle2.client !== null)
-        {
+        // console.log(game.playerPaddle1.client?.id);
+        // console.log(game.playerPaddle2.client?.id+"\n\n");
+        if (game.playerPaddle1.client && game.playerPaddle2.client) {
+          // console.log("HJERE")
           UpdateGame(game);
           if ((game.score.player1 > 4 || game.score.player2 > 4)) {
-            if (game.score.player1 > 4)
-            {
+            if (game.score.player1 > 4) {
               game.playerPaddle1.client?.emit('PlayerWon')
               game.playerPaddle2.client?.emit('PlayerLost')
             }
-            else if (game.score.player2 > 4)
-            {
+            else if (game.score.player2 > 4) {
               game.playerPaddle2.client?.emit('PlayerWon')
               game.playerPaddle1.client?.emit('PlayerLost')
             }
+            game.reset()
           }
-          else
-          {
+          else {
             let gamevisual = {
               ball: game.ball.frontEndData,
               playerPaddle1: game.playerPaddle1.frontEndData,
@@ -243,55 +260,52 @@ export class GameGateway
           }
           // printAll(game)
         }
-        else
-        {
+        else {
           game.playerPaddle1.client?.emit('WaitingForPlayers')
           game.playerPaddle2.client?.emit('WaitingForPlayers')
         }
       }
-    },15
+    }, 15
 
     )
   }
 }
 
 function AddPlayerToGame(playerClient: Socket) {
-  if (!games.length) {
-    let game = new Game
-    game.playerPaddle1.client = playerClient
-    games.push(game)
-    return
-  }
+  console.log("LETS ADD PLAYER")
   for (let i = 0; i < games.length; i++) {
-    if (games[i].playerPaddle1.client && !games[i].playerPaddle2.client) {
-      games[i].playerPaddle2.client = playerClient
+    console.log(!games[i].playerPaddle1.client)
+    console.log(!games[i].playerPaddle2.client)
+    if (games[i].playerPaddle1.client == playerClient || games[i].playerPaddle2.client == playerClient) {
+      console.log("ALREADY IN THE GAME")
       return
     }
-    else if (!games[i].playerPaddle1.client && games[i].playerPaddle2.client) {
+    if (!games[i].playerPaddle1.client) {
+      games[i].playerPaddle1.client = playerClient
+      return
+    }
+    else if (!games[i].playerPaddle2.client) {
       games[i].playerPaddle2.client = playerClient
       return
     }
   }
+  console.log("Adding new game to array")
+  // console.log("Game length before: "+games.length)
+  let game = new Game
+  game.playerPaddle1.client = playerClient
+  games.push(game)
 }
 
-function RemovePlayerFromGame(client: Socket)
-{
-    for (let game of games) {
-      if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
-        game.playerPaddle2.client?.emit("PlayerWon")
-      } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
-        game.playerPaddle1.client?.emit("PlayerWon")
-      }
+function RemovePlayerFromGame(client: Socket) {
+  for (let game of games) {
+    if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
+      game.playerPaddle1.client = null
+      game.playerPaddle2.client?.emit("PlayerDisconnected")
+    } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
+      game.playerPaddle1.client?.emit("PlayerDisconnected")
+      game.playerPaddle2.client = null
     }
-    // TODO: Fix. Sometimes doesn't work
-    if (client != null)
-      games = games.filter(RemoveGameWithClient(client))
-}
-
-function RemoveGameWithClient(client) {
-    return function(game) {
-        return game.playerPaddle1.client.id != client.id && game.playerPaddle2.client.id != client.id;
-    }
+  }
 }
 
 function UpdateGame(game) {
@@ -319,13 +333,27 @@ function BallPositionLogic(game) {
   else if (isBallTouchingBottomWall(game) && game.ball.direction.y > 0) {
     game.ball.direction.y *= -1
   }
-  if (areColliding(game.ball.frontEndData, game.playerPaddle1.frontEndData) && game.ball.direction.x < 0) {
-    game.ball.direction.x *= -1
+  if (areColliding(game.ball.frontEndData, game.playerPaddle1.frontEndData) && !isColliding) {
+    game.ball.updateAngle(game.playerPaddle1.frontEndData)
+    if (game.ball.direction.x < 0 && game.ball.frontEndData.x > game.playerPaddle1.frontEndData.x + game.playerPaddle1.frontEndData.width
+      || game.ball.direction.x > 0 && game.ball.frontEndData.x < game.playerPaddle1.frontEndData.x + game.playerPaddle1.frontEndData.width ) {
+      game.ball.direction.x *= -1
+    }
     game.ball.speed *= 1.1
+    isColliding = true
   }
-  else if (areColliding(game.ball.frontEndData, game.playerPaddle2.frontEndData) && game.ball.direction.x > 0) {
-    game.ball.direction.x *= -1
+  else if (areColliding(game.ball.frontEndData, game.playerPaddle2.frontEndData) && !isColliding) {
+    game.ball.updateAngle(game.playerPaddle2.frontEndData)
+    if (game.ball.direction.x > 0 && game.ball.frontEndData.x < game.playerPaddle2.frontEndData.x ||
+      game.ball.direction.x < 0 && game.ball.frontEndData.x > game.playerPaddle2.frontEndData.x) {
+      game.ball.direction.x *= -1
+    }
     game.ball.speed *= 1.1
+    isColliding = true
+  }
+  else {
+    isColliding = false
+
   }
 }
 

@@ -1,4 +1,7 @@
-import { randomNumberBetween } from './helpers/geometry'
+const board_dims = {
+  width: 1400,
+  height: 700
+}
 
 interface Rectangle {
   x: number
@@ -7,6 +10,7 @@ interface Rectangle {
   width: number
   conv_rate: number
   update(paddleref: any): void
+  updateConvRate(conv_rate: number): void
   draw(context: CanvasRenderingContext2D): void
 }
 
@@ -17,17 +21,20 @@ class Paddle implements Rectangle {
   width: number
   conv_rate: number
   constructor(paddleref: any, conv: number) {
-    this.conv_rate=conv
+    this.conv_rate = conv
     this.height = paddleref.height * this.conv_rate
     this.width = paddleref.width * this.conv_rate
     this.x = paddleref.x * this.conv_rate
     this.y = paddleref.y * this.conv_rate
   }
   update(paddleref: any): void {
-    this.height = paddleref.height*this.conv_rate
-    this.width = paddleref.width*this.conv_rate
-    this.x = paddleref.x*this.conv_rate
-    this.y = paddleref.y*this.conv_rate
+    this.height = paddleref.height * this.conv_rate
+    this.width = paddleref.width * this.conv_rate
+    this.x = paddleref.x * this.conv_rate
+    this.y = paddleref.y * this.conv_rate
+  }
+  updateConvRate(conv_rate: number): void {
+    this.conv_rate = conv_rate
   }
   draw(context: CanvasRenderingContext2D): void {
     context.fillStyle = 'hsla(0, 0%, 100%, 1)'
@@ -51,19 +58,18 @@ class Ball implements Circle {
   radius: number
   conv_rate: number
   constructor(ballref: any, conv_rate: number) {
-    this.conv_rate=conv_rate
-    this.x = ballref.x*conv_rate
-    this.y = ballref.y*conv_rate
-    this.radius = ballref.radius*conv_rate
+    this.conv_rate = conv_rate
+    this.x = ballref.x * conv_rate
+    this.y = ballref.y * conv_rate
+    this.radius = ballref.radius * conv_rate
   }
   update(ballref: any): void {
-    this.x = ballref.x*this.conv_rate
-    this.y = ballref.y*this.conv_rate
-    this.radius = ballref.radius*this.conv_rate
+    this.x = ballref.x * this.conv_rate
+    this.y = ballref.y * this.conv_rate
+    this.radius = ballref.radius * this.conv_rate
   }
-  updateConvRate(conv_rate: number): void 
-  {
-    this.conv_rate=conv_rate
+  updateConvRate(conv_rate: number): void {
+    this.conv_rate = conv_rate
   }
 
   draw(context: CanvasRenderingContext2D): void {
@@ -75,34 +81,31 @@ class Ball implements Circle {
 }
 
 class Score {
-  player1: number
-  player2: number
-  canvas_width: number
-  canvas_height: number
-  constructor(score_ref: any, canvas: any)
-  {
-    console.log("Canvas_width starts with "+canvas.width)
-    this.player1 = score_ref.player1
-    this.player2 = score_ref.player2
-    this.canvas_width = canvas.width
-    this.canvas_height = canvas.height
+  board_width: number
+  board_height: number
+  text: string
+  fontSize: number
+
+  constructor(score_ref: any, conv_rate: number) {
+    this.board_width = board_dims.width * conv_rate
+    this.board_height = board_dims.height * conv_rate
+    this.fontSize = this.board_height/10
+    this.text = score_ref.player1+"|"+score_ref.player2
   }
-  update(score_ref: any)
-  {
-    this.player1 = score_ref.player1
-    this.player2 = score_ref.player2
+  update(score_ref: any) {
+    this.text = score_ref.player1+"|"+score_ref.player2
   }
-  draw(context: CanvasRenderingContext2D): void
-  {
-    let fontSize = this.canvas_height/10
-    context.font = fontSize+"px Helvetica Neue";
+  update_dims(conv_rate: number): void {
+    this.board_width = board_dims.width * conv_rate
+    this.board_height = board_dims.height * conv_rate
+    this.fontSize = this.board_height/10
+  }
+  draw(context: CanvasRenderingContext2D): void {
+    context.font = this.fontSize + "px Helvetica Neue";
     context.fillStyle = "white";
-    let text = this.player1+"|"+this.player2
-    // console.log("TEXT IS: "+text)
-    let text_width = context.measureText(text).width
-    let x = (this.canvas_width-text_width)/2
-    console.log("X is: "+x)
-    context.fillText(text, (this.canvas_width-text_width)/2, fontSize);
+    const text_width = context.measureText(this.text).width
+    const x = (this.board_width - text_width) / 2
+    context.fillText(this.text, x, this.fontSize);
   }
 }
 
