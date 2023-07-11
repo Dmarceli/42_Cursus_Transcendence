@@ -63,7 +63,7 @@
         <div v-for="channel in channels" :key="channel.id"
           :class="['channel', { 'selected': channel.id === selected_channel }]">
           {{ channel.channel_name }}
-          <button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel.id)">join</button>
+          <button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel)">join</button>
         </div>
         <form @submit.prevent="searchQuery">
           <div class="search-input-container">
@@ -128,6 +128,7 @@
 import { io } from 'socket.io-client'
 import { ref, onBeforeMount, watch, nextTick } from 'vue';
 import jwt_decode from 'jwt-decode';
+import {Md5} from 'ts-md5';
 
 const socket = io(process.env.VUE_APP_BACKEND_URL);
 const msgsContainer = ref(null);
@@ -354,7 +355,12 @@ const leaveChannel = async (channelid) => {
   }
 }
 
-const joinChannel = async (channelid) => {
+const joinChannel = async (channel, ownerPWD) => {
+  let pass = ownerPWD
+  if(channel.type == 2 && !ownerPWD){
+    let input = await window.prompt("Channel Password:");
+    pass = Md5.hashStr(input);
+  }
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinchannel'
     const response = await fetch(url,
@@ -364,7 +370,7 @@ const joinChannel = async (channelid) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ id: parseInt(channelid) })
+        body: JSON.stringify({ id: parseInt(channel.id) , pass: pass })
       });
     if (response.ok) {
       await getChannelsJoined();
@@ -578,6 +584,8 @@ const createChannel = async () => {
   
   let channelName = document.getElementById("channelName").value;
   let channelPassword = document.getElementById("channelPassword").value;
+  let ch_type = channelPassword ? 2 : 1;
+  const pass = Md5.hashStr(channelPassword);
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/channels/create';
     const response = await fetch(url, {
@@ -586,11 +594,11 @@ const createChannel = async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ type: 1, channel_name: channelName, password: channelPassword }),
+      body: JSON.stringify({ type: ch_type, channel_name: channelName, password: pass}),
     });
     if (response.ok) {
       const data = await response.json();
-      joinChannel(data.id);
+      joinChannel(data, pass);
       chooseChannel(data.id);
       await getChannelsJoined();
     } else {

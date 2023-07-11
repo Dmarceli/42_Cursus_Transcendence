@@ -12,13 +12,21 @@ import { channel } from 'diagnostics_channel';
 export class UserToChannelService {
   constructor(
     @InjectRepository(UserToChannel) private UserToChannelRepository: Repository<UserToChannel>,
+    @InjectRepository(Channel) private ChannelRepository: Repository<Channel> ,
   ) { }
 
-  async joinchannel(channel: Channel, user: User) {
+
+
+  async joinchannel(channel: Channel, user: User, pass: string) {
     let is_user_owner = false;
     const channels_users_count = (await this.usersonchannel(channel.id)).length
     if (!channels_users_count){
       is_user_owner = true;
+    }
+    if(channel.type == 2){
+      const password =  await this.ChannelRepository.findOne({where:{id: channel.id}, select:{password: true}});
+      if (password.password != pass)
+        return
     }
     return await this.UserToChannelRepository.save({
       user_id: user,

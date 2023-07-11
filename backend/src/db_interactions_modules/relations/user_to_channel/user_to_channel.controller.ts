@@ -20,12 +20,11 @@ export class UserToChannelController {
  @Post('/joinchannel')
   async create(@Body() channelID: any, @getUserIDFromToken() user:User, @Res() res: any) {
     const channel = await this.channelService.getChannelByID(channelID.id)
-    console.log(channelID)
-    if (!channel){
+    if (!channel || !channelID.id || !channelID ){
       return res.status(202).json({ message: 'Channel Doesnt exist' });
     }
     const user_ = await this.userService.findByLogin(user['login'])
-    this.userToChannelService.joinchannel(channel, user);
+    this.userToChannelService.joinchannel(channel, user, channelID.pass);
     return res.status(200).json({message : 'Joined Channel'}) 
   }
   
