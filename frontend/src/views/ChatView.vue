@@ -98,6 +98,7 @@
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)"> 
               <button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
               <button @click="banUser(usersInChannel.user_id.id)">Ban</button>
+              <button @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</button>
             </div>
             {{ usersInChannel.user_id.intra_nick }}
           </div>
@@ -415,6 +416,43 @@ const kickUser = async (KickedUserID) => {
 const banUser = async (bannedUserID) => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/ban/' + bannedUserID + '/from/' +  selected_channel
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    if (response.ok) {
+      await getChannelsJoined();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+  await getChannelsJoined();
+  await getUsersInGivenChannel(selected_channel)
+}
+
+const is_already_admin = async(actionToUserID) => {
+  for (const userId in usersInChannels.value) {
+    if(usersInChannels.value[userId].user_id.id == actionToUserID){
+     if(!usersInChannels.value[userId].is_admin)
+        return "give"
+     else
+        return "take"
+    }
+  }
+}
+
+const ToggleAdminUser = async (actionToUserID) => {
+  let action = await is_already_admin(actionToUserID)
+  console.log(await action)
+  try {
+    
+    let url = await process.env.VUE_APP_BACKEND_URL + '/usertochannel/giveadmin/' + actionToUserID + '/on/' +  selected_channel + "/" + action
     const response = await fetch(url,
       {
         method: 'POST',

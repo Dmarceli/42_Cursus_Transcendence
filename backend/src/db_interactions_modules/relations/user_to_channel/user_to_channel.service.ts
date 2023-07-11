@@ -105,6 +105,30 @@ export class UserToChannelService {
     }
   }
 
+
+    async give_admin_to_user(id_us: number, id_ch: number, caller_id: number, res: Response, opt: string){
+    const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    const user_to_ban = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    if((caller_privileges.is_admin || caller_privileges.is_owner)){
+      const channel_to_leave = await this.UserToChannelRepository.find({
+        where: {
+          user_id: { id: id_us },
+          channel_id: { id: id_ch }
+        }
+        ,
+        relations: ['user_id', 'channel_id']
+      });
+      let new_admin_value = false 
+      if(opt == "give")
+        new_admin_value= true
+      await this.UserToChannelRepository.update(channel_to_leave[0], { is_admin: new_admin_value })
+      return res.status(200).json()
+    }
+    else{
+      return res.status(403).json("USER NOT AUTHORIZED TO GIVE ADMIN")
+    }
+  }
+
   async getBannedChannelList(id_us: number){
     return await this.UserToChannelRepository.find(
       {
