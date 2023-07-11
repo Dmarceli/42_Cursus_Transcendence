@@ -6,6 +6,7 @@ export class PlayerPaddle {
         y: number
         height: number
         width: number
+        nick: string
     }
     client: Socket | null
     movingDown: Boolean
@@ -28,6 +29,7 @@ export class PlayerPaddle {
             y: y,
             width: width,
             height: height,
+            nick: ""
         };
         this.movingDown = false
         this.movingUp = false

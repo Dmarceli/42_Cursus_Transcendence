@@ -48,8 +48,8 @@ import { GameService } from '../game/game.service';
 
 // Game Service
   @SubscribeMessage('NewPlayer')
-  handleNewPlayer(client: Socket) {
-    this.gameService.AddPlayerToGame(client)
+  handleNewPlayer(client: Socket, intra_nick: string) {
+    this.gameService.AddPlayerToGame(client, intra_nick)
   }
   @SubscribeMessage('PlayerExited')
   handlePlayerExited(client: Socket) {

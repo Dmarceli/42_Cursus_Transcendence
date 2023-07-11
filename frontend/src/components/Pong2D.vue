@@ -14,8 +14,6 @@ import LobbyPage from './LobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
 import socket from '../socket'
 import jwt_decode from 'jwt-decode';
-// import {getCookieValueByName} from '../App.vue'
-import {getCookieValueByName} from '../App.vue'
 
 let reconnecting = ref("")
 
@@ -48,17 +46,18 @@ interface TokenType
 
 onMounted(() => {
   console.log('Mounted Pong');
-  socket.emit('NewPlayer')
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
   token = getCookieValueByName('token');
   if (token)
     decodedToken = jwt_decode(token);
+  console.log(decodedToken)
   userId = decodedToken.id;
-  users_Name = decodedToken.login;
+  users_Name = decodedToken.user.intra_nick;
   console.log("userId "+userId)
   console.log("users_name "+users_Name)
+  socket.emit('NewPlayer', users_Name)
 })
 
 onUnmounted(() => {
@@ -81,7 +80,6 @@ socket.on('updateGame', game => {
   update_conversion_rate()
   if (ball == null || paddle1 == null || paddle2 == null || score == null || ctx.value == null) {
     init_values(game)
-    console.log("UPDATING")
   }
   else {
     ball.update(game.ball)
@@ -227,6 +225,18 @@ function printAll() {
   console.log("height:" + paddle1?.height)
 }
 
+function getCookieValueByName(name: any) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
+    }
+  }
+  return null;
+}
+
 </script>
 
 <style>
@@ -257,4 +267,4 @@ function printAll() {
 canvas {
   z-index: 1;
 }
-</style>./types
+</style>
