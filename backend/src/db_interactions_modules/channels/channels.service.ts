@@ -16,14 +16,20 @@ export class ChannelsService {
 
 
  async create(createChannelDto: ChannelCreateDto) {
-  try {
-    const response = await this.ChannelsRepository.save(createChannelDto)// Perform the database operation that may cause a duplicate key exception
-    return response
-  } catch (error) {
-    if (error instanceof QueryFailedError) {
+  
+    const all_channels = await this.ChannelsRepository.findOne({where: {type: MoreThan(0), channel_name: createChannelDto.channel_name}})
+    if(all_channels){
       throw new ConflictException('Duplicate key value found.');
+     return;
     }
-  }
+    let pwd = createChannelDto.password;
+    if(createChannelDto.type != 2){
+      pwd = null;
+    }    
+    const response = await this.ChannelsRepository.save({...createChannelDto, password: pwd})
+    return response
+  
+  
   }
 
   async getChannelByID(channelID:number){

@@ -55,6 +55,7 @@
               Games Lost: {{ user.lost_games }}<br>
             </span>
             {{ user.nick }}
+            <button  class="direct-message" @click="Dmessage(user.id)">DM</button>
             <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
             <button v-else class="friend-remove" @click="removeFriend(user)"></button>
           </div>
@@ -514,6 +515,28 @@ const MuteUser  = async (userToMute) => {
   }
 }
 
+
+const Dmessage = async (User_ID) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/privatemessage/' + User_ID;
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    if (response.ok) {
+      const data = await response.json();
+      chooseChannel(data.id)
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
 
 const scrollToBottom = () => {
   try {

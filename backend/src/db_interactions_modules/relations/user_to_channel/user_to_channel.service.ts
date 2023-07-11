@@ -13,6 +13,7 @@ export class UserToChannelService {
   constructor(
     @InjectRepository(UserToChannel) private UserToChannelRepository: Repository<UserToChannel>,
     @InjectRepository(Channel) private ChannelRepository: Repository<Channel> ,
+    @InjectRepository(User) private UserRepository: Repository<User> 
   ) { }
 
 
@@ -165,5 +166,25 @@ export class UserToChannelService {
         relations: {channel_id:true, user_id: true}
       }
     )
+  }
+
+
+    async privatemessage_channel(us_id: number, caller_id: number){
+    const caller_user = await this.UserRepository.findOne({ where : {id: caller_id}});
+    const user_to_chat = await this.UserRepository.findOne({ where : {id: us_id}});
+    if(!caller_user || !user_to_chat)
+      return;
+     
+    let user_lower_id = caller_user.id < user_to_chat.id ? caller_user : user_to_chat
+    let user_higher_id =  user_lower_id == caller_user ? user_to_chat : caller_user
+    const channel= await this.ChannelRepository.findOne({
+      where: {type : 0,channel_name : user_lower_id.id.toString() + "-" + user_higher_id.id.toString()}
+    })
+    if(channel)
+      return channel;
+    const created_channel = await this.ChannelRepository.save({type: 0, channel_name: user_lower_id.id.toString() + "-" + user_higher_id.id.toString()})
+    const joinchannels = await this.UserToChannelRepository.save({is_owner: false, is_admin: false, is_banned: false, is_muted:false, user_id: user_lower_id, channel_id: created_channel});
+    const joinchannels2 = await this.UserToChannelRepository.save({is_owner: false, is_admin: false, is_banned: false, is_muted:false, user_id: user_higher_id, channel_id: created_channel});
+    return created_channel;
   }
 }

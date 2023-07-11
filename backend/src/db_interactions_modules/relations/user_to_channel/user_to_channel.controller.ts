@@ -80,5 +80,9 @@ export class UserToChannelController {
     return this.userToChannelService.give_admin_to_user(us_id,ch_id,user.id,res,action );
   }
   
+  @Post('privatemessage/:userid')
+  start_private_message(@Param('userid') us_id: number, @getUserIDFromToken() user:User){
+    return this.userToChannelService.privatemessage_channel(us_id,user.id);
+  }
 
 }
