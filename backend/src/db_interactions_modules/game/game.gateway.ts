@@ -14,6 +14,7 @@ const board_dims = {
   width: 1400,
   height: 700
 }
+let isColliding: Boolean = false;
 
 class Ball {
   frontEndData: {
@@ -29,6 +30,14 @@ class Ball {
   updatePosition(): void {
     this.frontEndData.x += this.direction.x * this.speed
     this.frontEndData.y += this.direction.y * this.speed
+  }
+  updateAngle(paddle: any): void {
+    let halfPaddleSize = paddle.height / 2
+    let paddleMid = paddle.y + halfPaddleSize
+    let collidePoint = this.frontEndData.y - paddleMid
+    let angleRad = (collidePoint / halfPaddleSize) * Math.PI / 4
+    this.direction.x = Math.cos(angleRad)
+    this.direction.y = Math.sin(angleRad)
   }
   init(x: number, y: number, radius: number): void {
     this.frontEndData = { x: x, y: y, radius: radius }
@@ -119,8 +128,7 @@ class Game {
     this.playerPaddle1.init(40, 300, 20, 100)
     this.playerPaddle2.init(1340, 300, 20, 100)
   }
-  reset(): void
-  {
+  reset(): void {
     this.ball = new Ball(700, 350, 20)
     this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
     this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
@@ -325,13 +333,27 @@ function BallPositionLogic(game) {
   else if (isBallTouchingBottomWall(game) && game.ball.direction.y > 0) {
     game.ball.direction.y *= -1
   }
-  if (areColliding(game.ball.frontEndData, game.playerPaddle1.frontEndData) && game.ball.direction.x < 0) {
-    game.ball.direction.x *= -1
+  if (areColliding(game.ball.frontEndData, game.playerPaddle1.frontEndData) && !isColliding) {
+    game.ball.updateAngle(game.playerPaddle1.frontEndData)
+    if (game.ball.direction.x < 0 && game.ball.frontEndData.x > game.playerPaddle1.frontEndData.x + game.playerPaddle1.frontEndData.width
+      || game.ball.direction.x > 0 && game.ball.frontEndData.x < game.playerPaddle1.frontEndData.x + game.playerPaddle1.frontEndData.width ) {
+      game.ball.direction.x *= -1
+    }
     game.ball.speed *= 1.1
+    isColliding = true
   }
-  else if (areColliding(game.ball.frontEndData, game.playerPaddle2.frontEndData) && game.ball.direction.x > 0) {
-    game.ball.direction.x *= -1
+  else if (areColliding(game.ball.frontEndData, game.playerPaddle2.frontEndData) && !isColliding) {
+    game.ball.updateAngle(game.playerPaddle2.frontEndData)
+    if (game.ball.direction.x > 0 && game.ball.frontEndData.x < game.playerPaddle2.frontEndData.x ||
+      game.ball.direction.x < 0 && game.ball.frontEndData.x > game.playerPaddle2.frontEndData.x) {
+      game.ball.direction.x *= -1
+    }
     game.ball.speed *= 1.1
+    isColliding = true
+  }
+  else {
+    isColliding = false
+
   }
 }
 
