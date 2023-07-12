@@ -6,7 +6,7 @@
         <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
           :class="['channel', { 'selected': joinedchannel.channel_id.id === selected_channel }]"
           @click="chooseChannel(joinedchannel.channel_id.id)">
-          {{ joinedchannel.channel_id.channel_name }}
+          {{ getChannelName(joinedchannel.channel_id.id) }}
           <div class="unread-messages" v-if="unreadMessages[joinedchannel.channel_id.id] > 0">
             {{ unreadMessages[joinedchannel.channel_id.id] }}
           </div>
@@ -159,6 +159,8 @@ function enableModal() {
   showModal.value = true
 }
 
+
+
 function getCookieValueByName(name) {
   const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i++) {
@@ -177,12 +179,27 @@ let userId = decodedToken.id;
 const users_Name =  decodedToken.user['nick'];
 
 
+const getChannelType = (channelID) => {
+	const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelID)
+	console.log(channel.type);
+}
+
 const getChannelName = (channelId) => {
-  const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelId);
-  return channel ? channel.channel_id.channel_name : '';
+ 	const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelId);
+	if(channel['channel_id']['type'] == 0)
+	{
+		const channelname = channel['channel_id']['channel_name'];
+		const user1ID = channelname.split('-')[0];
+		const user2ID = channelname.split('-')[1];
+		const pmwith = user1ID == userId ? user2ID : user1ID;
+	    const user = users.value.find((user) => user.id === parseInt(pmwith));
+		return user.intra_nick;
+	}
+  	return channel ? channel.channel_id.channel_name : '';
 };
 
 const  getChannelUserCount  = (channel) => {
+console.log(channel)
   return channel.length
 }
 
@@ -242,7 +259,6 @@ const getMessages = async () => {
 };
 
 const getUsers = async () => {
-  side_info.value = 1;
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers';
     const response = await fetch(url,
@@ -720,9 +736,10 @@ const removeFriend = async (friend) => {
 };
 
 onBeforeMount(() => {
-  getChannelsJoined();
-  getChannels();
-  getFriends();
+	getUsers();	
+	getChannelsJoined();
+	getChannels();
+	getFriends();
 });
 
 socket.on('recMessage', message => {
