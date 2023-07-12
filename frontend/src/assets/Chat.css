@@ -34,18 +34,25 @@
   padding: 10px;
   margin-bottom: 10px;
   background-color: #45a049;
-  border-radius: 10px;
+  /* border-radius: 10px; */
   min-width: 33vw;
 }
 
 .message-sent {
+  background-color: #72b24d;
+  color: white;
+  padding: 10px;
   align-self: flex-end;
+  border-radius: 15px 15px 0 15px ;
 }
 
 .message-received {
   align-self: flex-start;
-  background-color: #4d68b2;
+  background-color: #1a2077;
+  padding: 10px;
+  border-radius: 15px 15px 15px 0 ;
 }
+
   
 .msg-input {
   margin-top: 10px;
@@ -105,6 +112,7 @@
 
 .selected {
   background-color: #555;
+  color: white;
   font-weight: bold;
 }
 
@@ -241,19 +249,6 @@
   height: 20px;
   cursor: pointer;
 }
-
-@media (prefers-color-scheme: light) {
-  .channel-button,
-  .people-button,
-  .new-button,
-  .back-button,
-  .add-friend,
-  .button-container,
-  .search-button {
-    filter: invert(100%);
-  }
-}
-
 
 .channel-button {
   background-image: url('../src/assets/channels.svg');
@@ -587,4 +582,18 @@
   border-radius: 50%;
   object-fit: cover;
   margin-right: 10px;
+}
+
+@media (prefers-color-scheme: light) {
+  .channel-button,
+  .people-button,
+  .new-button,
+  .search-button,
+  .add-friend {
+    filter: invert(100%);
+  }
+  .more-options,
+  .hamburguer-button{
+    filter: invert(0%);
+  }
 }

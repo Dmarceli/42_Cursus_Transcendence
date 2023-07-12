@@ -2,7 +2,7 @@
   <div class="Chat">
     <div class="channels-list" :class="{ 'collapsed': !showSideInfo }">
       <div v-if="side_info === 0">
-        <div class="list-header">JOINED CHANNELS</div>
+        <div class="list-header">Conversations</div>
         <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
           :class="['channel', { 'selected': joinedchannel.channel_id.id === selected_channel }]"
           @click="chooseChannel(joinedchannel.channel_id.id)">
@@ -117,9 +117,9 @@
                 <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="alone-user-avatar">
                 <h1>{{ usersInChannel.user_id.intra_nick }}</h1>
                 <h2>{{ usersInChannel.user_id.nick }}</h2>
-                <p>Games Won: {{ usersInChannel.user_id.won_games }} </p>
-                <p>Games Lost: {{ usersInChannel.user_id.lost_games }} </p>
-                <p>Total xp: {{ usersInChannel.user_id.xp_total }} </p>
+                <p>Games Won : {{ usersInChannel.user_id.won_games }} </p>
+                <p>Games Lost : {{ usersInChannel.user_id.lost_games }} </p>
+                <p>Total XP : {{ usersInChannel.user_id.xp_total }} </p>
               </div>
             </div>
           </span>
@@ -195,7 +195,8 @@ function getCookieValueByName(name) {
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
 let userId = decodedToken.id;
-const users_Name = decodedToken.user['nick'];
+const users_Name = decodedToken.user['intra_nick'];
+const users_Nick = decodedToken.user['nick'];
 
 
 const getChannelType = (channelID) => {
@@ -250,7 +251,7 @@ const check_user = async () => {
 
 
 const getMessageClass = (author) => {
-  if (author == users_Name) {
+  if (author == users_Nick) {
     return 'message-sent';
   }
   return 'message-received';
