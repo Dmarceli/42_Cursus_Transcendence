@@ -385,6 +385,7 @@ const leaveChannel = async (channelid) => {
     selected_channel = null;
     showChannelOptions.value = !showChannelOptions.value;
     messages.value = null;
+	showSideInfo.value = true;
     await getChannelsJoined();
   }
 }

@@ -20,6 +20,15 @@
     height: 100vh;
 }
 
+@media (max-width: 1024px){
+	.Chat{
+	    height: 90vh;
+	}
+	#chat-container{
+		height: 90vh;
+	}
+}
+
 @media (max-width: 767px) {
 	.Chat{
 	    height: 90vh;
@@ -33,9 +42,9 @@
 .message {
   padding: 10px;
   margin-bottom: 10px;
-  background-color: #45a049;
-  /* border-radius: 10px; */
   min-width: 33vw;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
 }
 
 .message-sent {
@@ -122,9 +131,9 @@
 	justify-content: space-between;
 	padding: 10px;
 	border-bottom: 1px solid #ccc;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .channel:hover{
