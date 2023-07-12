@@ -1,6 +1,6 @@
 <template>
   <div class="Chat">
-	<div class="channels-list" :class="{'collapsed': !showSideInfo}">
+    <div class="channels-list" :class="{ 'collapsed': !showSideInfo }">
       <div v-if="side_info === 0">
         <div class="list-header">JOINED CHANNELS</div>
         <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
@@ -36,7 +36,7 @@
             <label for="channelName">Password:</label>
             <input class="input-field" placeholder="(optional)" type="text" id="channelPassword" name="channelPassword">
             <label for="inviteUser">Invite Users:</label>
-            <select class="input-field"  id="inviteUser" name="inviteUser" multiple>
+            <select class="input-field" id="inviteUser" name="inviteUser" multiple>
               <option value="" disabled>Select users</option>
               <option v-for="user in users" :key="user.id" :value="user.id">{{ user.nick }}</option>
             </select>
@@ -55,7 +55,7 @@
               Games Lost: {{ user.lost_games }}<br>
             </span>
             {{ user.nick }}
-            <button  class="direct-message" @click="Dmessage(user.id)">DM</button>
+            <button class="direct-message" @click="Dmessage(user.id)">DM</button>
             <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
             <button v-else class="friend-remove" @click="removeFriend(user)"></button>
           </div>
@@ -79,24 +79,26 @@
           @click="getChannelsJoined(); side_info = 0"></button>
         <button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]"
           @click="getFriends()"></button>
-        <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]"
-          @click="enableModal()"></button>
+        <button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]" @click="enableModal()"></button>
         <button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]" @click="search()"></button>
       </div>
     </div>
     <div id="chat-container" ref="chatContainer">
-	<div class="chat-container-header">
-		<button :class="['hamburguer-button', {'full-hamburguer-button': showSideInfo}]" @click="toggleChannelList"></button>
-      	<div v-if="selected_channel" class="channel-name">{{ getChannelName(selected_channel) }}
-        <button class="more-options" :class="{'more-options close-moreoptions': showChannelOptions}" @click="moreChannelOptions()"></button>
+      <div class="chat-container-header">
+        <button :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]"
+          @click="toggleChannelList"></button>
+        <div v-if="selected_channel" class="channel-name">{{ getChannelName(selected_channel) }}
+          <button class="more-options" :class="{ 'more-options close-moreoptions': showChannelOptions }"
+            @click="moreChannelOptions()"></button>
+        </div>
       </div>
-	</div>
-      <div v-if="showChannelOptions">
+      <div v-if="showChannelOptions && getChannelType(selected_channel)">
         <div id="user-list-container">
-          <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }}  Users in {{ getChannelName(selected_channel) }}</h2>
+          <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{ getChannelName(selected_channel)
+          }}</h2>
           <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
-            <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)"> 
+            <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
               <button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
               <button @click="banUser(usersInChannel.user_id.id)">Ban</button>
               <button @click="MuteUser(usersInChannel.user_id.id)">Mute</button>
@@ -104,8 +106,24 @@
             </div>
             {{ usersInChannel.user_id.intra_nick }}
           </div>
-          </div>
+        </div>
         <button class="leave-button" @click="leaveChannel(selected_channel)"></button>
+      </div>
+      <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
+        <div v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
+          <span v-if="usersInChannel.user_id.intra_nick !== users_Name">
+            <div class="userInfo-container">
+              <div class="userInfo">
+                <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="alone-user-avatar">
+                <h1>{{ usersInChannel.user_id.intra_nick }}</h1>
+                <h2>{{ usersInChannel.user_id.nick }}</h2>
+                <p>Games Won: {{ usersInChannel.user_id.won_games }} </p>
+                <p>Games Lost: {{ usersInChannel.user_id.lost_games }} </p>
+                <p>Total xp: {{ usersInChannel.user_id.xp_total }} </p>
+              </div>
+            </div>
+          </span>
+        </div>
       </div>
       <div v-else id="msg-container" ref="msgsContainer">
         <div v-for="message in messages" :key="message.id" :class="[getMessageClass(message.author.nick), 'message']">
@@ -119,7 +137,8 @@
           <button type="submit" class="send-button">Send</button>
         </form>
       </div>
-      <div style="color: red;text-align: center;" v-if="isUserMutedOnChannel(usersInChannels) && !showChannelOptions">YOU ARE MUTED</div>
+      <div style="color: red;text-align: center;" v-if="isUserMutedOnChannel(usersInChannels) && !showChannelOptions">YOU
+        ARE MUTED</div>
     </div>
   </div>
 </template>
@@ -129,7 +148,7 @@
 import { io } from 'socket.io-client'
 import { ref, onBeforeMount, watch, nextTick } from 'vue';
 import jwt_decode from 'jwt-decode';
-import {Md5} from 'ts-md5';
+import { Md5 } from 'ts-md5';
 
 const socket = io(process.env.VUE_APP_BACKEND_URL);
 const msgsContainer = ref(null);
@@ -150,7 +169,7 @@ let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
 
 function toggleChannelList() {
-	showSideInfo.value = !showSideInfo.value;
+  showSideInfo.value = !showSideInfo.value;
 }
 
 function enableModal() {
@@ -176,30 +195,28 @@ function getCookieValueByName(name) {
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
 let userId = decodedToken.id;
-const users_Name =  decodedToken.user['nick'];
+const users_Name = decodedToken.user['nick'];
 
 
 const getChannelType = (channelID) => {
-	const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelID)
-	console.log(channel.type);
+  const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelID)
+  return channel.channel_id.type;
 }
 
 const getChannelName = (channelId) => {
- 	const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelId);
-	if(channel['channel_id']['type'] == 0)
-	{
-		const channelname = channel['channel_id']['channel_name'];
-		const user1ID = channelname.split('-')[0];
-		const user2ID = channelname.split('-')[1];
-		const pmwith = user1ID == userId ? user2ID : user1ID;
-	    const user = users.value.find((user) => user.id === parseInt(pmwith));
-		return user.intra_nick;
-	}
-  	return channel ? channel.channel_id.channel_name : '';
+  const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelId);
+  if (channel['channel_id']['type'] == 0) {
+    const channelname = channel['channel_id']['channel_name'];
+    const user1ID = channelname.split('-')[0];
+    const user2ID = channelname.split('-')[1];
+    const pmwith = user1ID == userId ? user2ID : user1ID;
+    const user = users.value.find((user) => user.id === parseInt(pmwith));
+    return user.intra_nick;
+  }
+  return channel ? channel.channel_id.channel_name : '';
 };
 
-const  getChannelUserCount  = (channel) => {
-console.log(channel)
+const getChannelUserCount = (channel) => {
   return channel.length
 }
 
@@ -207,7 +224,7 @@ const isUserMutedOnChannel = (userList) => {
   for (const userId in userList) {
     const entry = userList[userId];
     if (entry['user_id']['nick'] === users_Name) {
-      if(entry['is_muted'])
+      if (entry['is_muted'])
         return true
       else
         return false
@@ -306,11 +323,11 @@ const getChannels = async () => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/channels/all'
     const response = await fetch(url,
-    {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
     if (response.ok) {
       const data = await response.json();
       channels.value = data;
@@ -344,8 +361,7 @@ const getChannelsJoined = async () => {
 };
 
 const leaveChannel = async (channelid) => {
-  if(confirm("Are you sure you wanto to leave this channel?"))
-  {
+  if (confirm("Are you sure you wanto to leave this channel?")) {
     try {
       let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/leavechannel'
       const response = await fetch(url,
@@ -374,7 +390,7 @@ const leaveChannel = async (channelid) => {
 
 const joinChannel = async (channel, ownerPWD) => {
   let pass = ownerPWD
-  if(channel.type == 2 && !ownerPWD){
+  if (channel.type == 2 && !ownerPWD) {
     let input = await window.prompt("Channel Password:");
     pass = Md5.hashStr(input);
   }
@@ -387,7 +403,7 @@ const joinChannel = async (channel, ownerPWD) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ id: parseInt(channel.id) , pass: pass })
+        body: JSON.stringify({ id: parseInt(channel.id), pass: pass })
       });
     if (response.ok) {
       await getChannelsJoined();
@@ -406,15 +422,14 @@ const joinChannel = async (channel, ownerPWD) => {
 
 const isUserMorePowerful = (userList, target) => {
   for (const userId in userList) {
-    if(target['user_id']['nick'] === users_Name)
+    if (target['user_id']['nick'] === users_Name)
       return false;
     const entry = userList[userId];
     if (entry['user_id']['nick'] === users_Name) {
-      if(entry['is_owner'])
+      if (entry['is_owner'])
         return true
-      else if (entry['is_admin'])
-      {
-        if(target['is_owner']){
+      else if (entry['is_admin']) {
+        if (target['is_owner']) {
           return false
         }
         else {
@@ -429,7 +444,7 @@ const isUserMorePowerful = (userList, target) => {
 
 const kickUser = async (KickedUserID) => {
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/kick/' + KickedUserID + '/from/' +  selected_channel
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/kick/' + KickedUserID + '/from/' + selected_channel
     const response = await fetch(url,
       {
         method: 'POST',
@@ -452,7 +467,7 @@ const kickUser = async (KickedUserID) => {
 
 const banUser = async (bannedUserID) => {
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/ban/' + bannedUserID + '/from/' +  selected_channel
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/ban/' + bannedUserID + '/from/' + selected_channel
     const response = await fetch(url,
       {
         method: 'POST',
@@ -473,12 +488,12 @@ const banUser = async (bannedUserID) => {
   await getUsersInGivenChannel(selected_channel)
 }
 
-const is_already_admin = async(actionToUserID) => {
+const is_already_admin = async (actionToUserID) => {
   for (const userId in usersInChannels.value) {
-    if(usersInChannels.value[userId].user_id.id == actionToUserID){
-     if(!usersInChannels.value[userId].is_admin)
+    if (usersInChannels.value[userId].user_id.id == actionToUserID) {
+      if (!usersInChannels.value[userId].is_admin)
         return "give"
-     else
+      else
         return "take"
     }
   }
@@ -488,8 +503,8 @@ const ToggleAdminUser = async (actionToUserID) => {
   let action = await is_already_admin(actionToUserID)
   console.log(await action)
   try {
-    
-    let url = await process.env.VUE_APP_BACKEND_URL + '/usertochannel/giveadmin/' + actionToUserID + '/on/' +  selected_channel + "/" + action
+
+    let url = await process.env.VUE_APP_BACKEND_URL + '/usertochannel/giveadmin/' + actionToUserID + '/on/' + selected_channel + "/" + action
     const response = await fetch(url,
       {
         method: 'POST',
@@ -510,9 +525,9 @@ const ToggleAdminUser = async (actionToUserID) => {
   await getUsersInGivenChannel(selected_channel)
 }
 
-const MuteUser  = async (userToMute) => {
+const MuteUser = async (userToMute) => {
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/mute/' + userToMute + '/from/' +  selected_channel
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/mute/' + userToMute + '/from/' + selected_channel
     const response = await fetch(url,
       {
         method: 'POST',
@@ -612,15 +627,16 @@ const search = () => {
 }
 
 const chooseChannel = (channel) => {
-  selected_channel = channel;
+  showChannelOptions.value = false;
   unreadMessages.value[channel] = 0;
+  selected_channel = channel;
   getChannelsJoined();
   getMessages();
   getUsersInGivenChannel(channel)
 }
 
 const createChannel = async () => {
-  
+
   let channelName = document.getElementById("channelName").value;
   let channelPassword = document.getElementById("channelPassword").value;
   let ch_type = channelPassword ? 2 : 1;
@@ -633,7 +649,7 @@ const createChannel = async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ type: ch_type, channel_name: channelName, password: pass}),
+      body: JSON.stringify({ type: ch_type, channel_name: channelName, password: pass }),
     });
     if (response.ok) {
       const data = await response.json();
@@ -736,10 +752,10 @@ const removeFriend = async (friend) => {
 };
 
 onBeforeMount(() => {
-	getUsers();	
-	getChannelsJoined();
-	getChannels();
-	getFriends();
+  getUsers();
+  getChannelsJoined();
+  getChannels();
+  getFriends();
 });
 
 socket.on('recMessage', message => {
