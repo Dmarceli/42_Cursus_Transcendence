@@ -15,12 +15,18 @@ export class AuthService {
     ) {}
    
   async login(user: User) {
+    const infoToSend  = {
+      intra_nick : user.intra_nick,
+      nick : user.nick,
+      id : user.id,
+    }
     const payload = {
-      user: user,
+      user: infoToSend,
       id: user.id,
-      TwoFAEnabled: user.TwoFAEnabled
     };
     return {
+      TwoFAEnabled: user.TwoFAEnabled,
+      TwoFASecret: user.TwoFASecret,
       user: payload.user,
       id: payload.id,
       access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,/*expiresIn: '30s'*/expiresIn: '1d'}),
@@ -29,13 +35,22 @@ export class AuthService {
 
 
   googleLogin(@Req() req:any) {
+    const infoToSend  = {
+      intra_nick : req.user.intra_nick,
+      nick : req.user.nick,
+      id : req.user.id
+      
+    }
     const payload = {
-      login: req.user.intra_nick,
-      id: req.user.id
+      user: infoToSend,
+      id: req.user.id, 
+      TwoFAEnabled: req.user.TwoFAEnabled
     };
     return {
-      message: 'User information from google',
-      user: req.user,
+      TwoFAEnabled: req.user.TwoFAEnabled,
+      TwoFASecret: req.user.TwoFASecret,
+      user: payload.user,
+      id: payload.id,
       access_token: this.jwtService.sign(payload, {privateKey: `${process.env.JWT_SECRET_KEY}`,/*expiresIn: '30s'*/expiresIn: '1d'}),
     }
   }

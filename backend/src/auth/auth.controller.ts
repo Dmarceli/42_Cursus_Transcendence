@@ -32,7 +32,7 @@ export class AuthController {
   @Get('/callback_intra')
   async callbackIntra(@Req() req: any, @Res() res: any) {
     const payload = await this.authService.login(req.user);
-    if (payload.user.TwoFAEnabled && payload.user.TwoFASecret) {
+    if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
         login: payload.user.intra_nick,
         id: -1,
@@ -42,8 +42,10 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
-      res.cookie('token', payload.access_token)
-    }    
+      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
+      res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
+      res.setHeader('Location', process.env.BACKEND_URL) 
+    }
     res.redirect(process.env.FRONTEND_URL)
   }
 
@@ -59,7 +61,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     const payload = this.authService.googleLogin(req)
-    if (payload.user.TwoFAEnabled && payload.user.TwoFASecret) {
+    if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
         login: payload.user.intra_nick,
         id: -1,
@@ -69,9 +71,11 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
-      res.cookie('token', payload.access_token)
+      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
+      res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
+      res.setHeader('Location', process.env.BACKEND_URL)
+      
     }
-
     res.redirect(process.env.FRONTEND_URL)
   }
 
@@ -93,7 +97,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/gen2fa')
   async gen2FAcode(@Res() res: any, @getUserIDFromToken() user:User) {
-    console.log("user", user)
     const user_ = await this.userService.findByLogin(user['login'])
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
     const qrCode = require('qrcode')
