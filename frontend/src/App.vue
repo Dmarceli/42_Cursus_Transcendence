@@ -41,7 +41,7 @@ async function verifyCode(token: string, code: any) {
     const payloadBase64 = token.split('.')[1];
     const payloadJson = atob(payloadBase64);
     const payload = JSON.parse(payloadJson);
-    const response = await fetch("http://localhost:3000/auth/check2fa", {
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/check2fa", {
       method: 'POST',
       body: JSON.stringify({
         'id': payload,
@@ -88,18 +88,18 @@ async function verifyCode(token: string, code: any) {
 
 
 function login42() {
-  window.location.href = "http://localhost:3000/auth/login";
+  window.location.href = process.env.VUE_APP_BACKEND_URL + "/auth/login";
 }
 
 
 function loginGoogle() {
-  window.location.href = "http://localhost:3000/auth/login_google";
+  window.location.href = process.env.VUE_APP_BACKEND_URL + "/auth/login_google";
 }
 
 
 async function authtempBYPASS() {
   try {
-    const response = await fetch("http://localhost:3000/auth/tempbypass");
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/tempbypass");
     if (response.ok) {
       let res =  await response.json();
       document.cookie = `token=${res.code}`
