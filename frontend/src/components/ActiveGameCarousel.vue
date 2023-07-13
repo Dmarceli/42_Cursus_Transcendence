@@ -3,8 +3,8 @@
     <div class="carousel">
       <div class="carousel-container">
         <div class="carousel-arrows">
-          <font-awesome-icon class="carousel-arrow-left" :icon="['fas', 'circle-chevron-left']" @click="prevPage"></font-awesome-icon> 
-          <font-awesome-icon class="carousel-arrow-right" :icon="['fas', 'circle-chevron-right']" @click="nextPage"></font-awesome-icon> 
+          <font-awesome-icon class="carousel-arrow carousel-arrow-left" :icon="['fas', 'circle-chevron-left']" @click="prevPage"></font-awesome-icon> 
+          <font-awesome-icon class="carousel-arrow carousel-arrow-right" :icon="['fas', 'circle-chevron-right']" @click="nextPage"></font-awesome-icon> 
         </div>
         <div class="carousel-items">
           <div class="carousel-item" v-for="game in currentGames" :key="game.id">
@@ -118,30 +118,23 @@ const goToPage = (page: number) => {
   width: 100%;
 }
 
-.carousel-arrow.left {
-  left: 0;
+.carousel-arrow {
   font-size: 24px;
   cursor: pointer;
-  margin: 0 10px;
   color: hsla(160, 100%, 37%, 1);
   transition: color 0.3s;
-  justify-content: flex-end;
+}
+
+.carousel-arrow-left {
+  left: 0;
 }
 
 .carousel-arrow.right {
   right: 0;
-  bottom: 0;
-  font-size: 24px;
-  cursor: pointer;
-  margin: 0 10px;
-  color: hsla(160, 100%, 37%, 1);
-  transition: color 0.3s;
-  justify-content: flex-end;
 }
 
 .carousel-arrow:hover {
   opacity: 60%;
-  cursor: pointer;
 }
 
 .carousel-dots {
