@@ -39,9 +39,16 @@ class Paddle implements Rectangle {
     this.conv_rate = conv_rate
   }
   draw(context: CanvasRenderingContext2D): void {
+    this.drawRectangle(context)
+    this.drawNick(context)
+  }
+  drawRectangle(context: CanvasRenderingContext2Dext)
+  {
     context.fillStyle = 'hsla(0, 0%, 100%, 1)'
     context.fillRect(this.x, this.y, this.width, this.height)
-  
+  }
+  drawNick(context: CanvasRenderingContext2Dext)
+  {
     const board_height = board_dims.height * this.conv_rate
     let nick_size = board_height /20
     context.font = nick_size+"px Helvetica Neue";
