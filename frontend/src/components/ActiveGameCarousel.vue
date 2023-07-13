@@ -4,9 +4,9 @@
       <div class="carousel-container">
         <div class="carousel-arrows">
           <font-awesome-icon class="carousel-arrow-left" :icon="['fas', 'circle-chevron-left']" @click="prevPage"></font-awesome-icon> 
-        </div>
-        <div class="carousel-arrows">
           <font-awesome-icon class="carousel-arrow-right" :icon="['fas', 'circle-chevron-right']" @click="nextPage"></font-awesome-icon> 
+        </div>
+        <div class="carousel-items">
           <div class="carousel-item" v-for="game in currentGames" :key="game.id">
             <h3>{{ game.name }}</h3>
           </div>
@@ -19,7 +19,7 @@
           :key="index"
           :class="{ active: currentPage === page }"
           @click="goToPage(page)"
-          ></span>
+        ></span>
       </div>
     </div>
   </transition>
@@ -54,7 +54,7 @@ const games = ref<Game[]>([
 const gamesPerPage = 3;
 const currentPage = ref(1);
 
-const totalPages = computed(() => Math.ceil(games.value.length / gamesPerPage));
+const totalPages = 3;
 
 const currentGames = computed(() => {
   const startIndex = (currentPage.value - 1) * gamesPerPage;
@@ -68,7 +68,7 @@ const prevPage = () => {
 };
 
 const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
+  if (currentPage.value < totalPages) {
     currentPage.value++;
   }
 };
@@ -80,14 +80,19 @@ const goToPage = (page: number) => {
 
 <style scoped>
 .carousel {
-  /* display: flex; */
-  /* align-items: center; */
-  /* justify-content: center; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%; 
-  position: relative;
 }
 
 .carousel-container {
+  /* display: flex; */
+  position: relative;
+  width: 100%;
+}
+
+.carousel-items {
   display: flex;
   justify-content: center;
   overflow: hidden;
@@ -105,11 +110,12 @@ const goToPage = (page: number) => {
 }
 
 .carousel-arrows {
-  display: flex;
-  align-items: center;
-  position: relative;
+  position: absolute;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .carousel-arrow.left {
