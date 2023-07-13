@@ -1,75 +1,75 @@
 <script setup lang="ts">
-	import { ref, computed } from 'vue';
-  import Carousel from '../components/ActiveGameCarousel.vue'
-  	
-  interface Player {
-    id: number;
-    name: string;
-    score: number;
-  }
+import { ref, computed } from 'vue';
+import Carousel from '../components/ActiveGameCarousel.vue'
 
-	// Sample leaderboard data
-	const leaderboard = ref<Player[]>([
-	{ id: 1, name: 'Player 1', score: 100 },
-	{ id: 2, name: 'Player 2', score: 200 },
-	{ id: 3, name: 'Player 3', score: 150 },
-	{ id: 4, name: 'Player 4', score: 150 },
-	{ id: 5, name: 'Player 5', score: 0 },
-	{ id: 6, name: 'Player 6', score: 120 },
-	{ id: 7, name: 'Player 7', score: 300 },
-	{ id: 8, name: 'Player 8', score: 50 },
-	{ id: 9, name: 'Player 9', score: 100 },
-	{ id: 10, name: 'Player 10', score: 100},
-	{ id: 11, name: 'Player 11', score: 1000 }
-	]);
+interface Player {
+  id: number;
+  name: string;
+  score: number;
+}
 
-  const sortLeaderboard = () => {
-    leaderboard.value.sort((a, b) => b.score - a.score);
-  };
+// Sample leaderboard data
+const leaderboard = ref<Player[]>([
+  { id: 1, name: 'Player 1', score: 100 },
+  { id: 2, name: 'Player 2', score: 200 },
+  { id: 3, name: 'Player 3', score: 150 },
+  { id: 4, name: 'Player 4', score: 150 },
+  { id: 5, name: 'Player 5', score: 0 },
+  { id: 6, name: 'Player 6', score: 120 },
+  { id: 7, name: 'Player 7', score: 300 },
+  { id: 8, name: 'Player 8', score: 50 },
+  { id: 9, name: 'Player 9', score: 100 },
+  { id: 10, name: 'Player 10', score: 100 },
+  { id: 11, name: 'Player 11', score: 1000 }
+]);
 
-  const selectedPlayer = ref<Player | null>(null);
+const sortLeaderboard = () => {
+  leaderboard.value.sort((a, b) => b.score - a.score);
+};
 
-  const openPlayerProfile = (player: Player) => {
-    selectedPlayer.value = player;
-  };
+const selectedPlayer = ref<Player | null>(null);
 
-  const closeModal = () => {
-    selectedPlayer.value = null;
-  };
+const openPlayerProfile = (player: Player) => {
+  selectedPlayer.value = player;
+};
 
-  /* Code below is to fetch the leaderboard data from the API, I think... */
+const closeModal = () => {
+  selectedPlayer.value = null;
+};
 
-  // const fetchLeaderboard = async () => {
-  //     try {
-  //       const response = await fetch('API_ENDPOINT'); // Replace 'API_ENDPOINT' with the actual API URL to fetch the leaderboard data
-  //       const data = await response.json();
-  //       leaderboard.value = data;
-  //     } catch (error) {
-  //       console.error('Error fetching leaderboard data:', error);
-  //     }
-  //   };
+/* Code below is to fetch the leaderboard data from the API, I think... */
 
-  //   onMounted(() => {
-  //     fetchLeaderboard();
-  //   });
+// const fetchLeaderboard = async () => {
+//     try {
+//       const response = await fetch('API_ENDPOINT'); // Replace 'API_ENDPOINT' with the actual API URL to fetch the leaderboard data
+//       const data = await response.json();
+//       leaderboard.value = data;
+//     } catch (error) {
+//       console.error('Error fetching leaderboard data:', error);
+//     }
+//   };
 
-  sortLeaderboard();
-  const top10 = computed(() => leaderboard.value.slice(0, 10));
+//   onMounted(() => {
+//     fetchLeaderboard();
+//   });
+
+sortLeaderboard();
+const top10 = computed(() => leaderboard.value.slice(0, 10));
 </script>
 
 <template>
-	<div class="leaderboard">
-	  <h1>Leaderboard - Top 10</h1>
-	  <div class="board">
-	    <table>
-		    <thead>
-		      <tr>
-			      <th>Rank</th>
-			      <th>Name</th>
-			      <th>Score</th>
-		      </tr>
-		    </thead>
-		    <tbody>
+  <div class="leaderboard">
+    <h1>Leaderboard - Top 10</h1>
+    <div class="board">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
           <tr v-for="(player, index) in top10" :key="player.id" @click="openPlayerProfile(player)">
             <td class="player-name">
               <span v-if="index === 0">🥇</span>
@@ -94,7 +94,7 @@
       <div class="modal-overlay" @click="closeModal"></div>
     </div>
   </div>
-  <div>
+  <div class="active-games">
     <h1>Active Games</h1>
     <Carousel />
   </div>
@@ -104,7 +104,7 @@
 .leaderboard {
   text-align: center;
   font-family: 'Roboto', sans-serif;
-  color: hsla(160, 100%, 37%, 1);
+  color: var(--main-color);
 }
 
 .board {
@@ -148,6 +148,12 @@ tbody tr:hover {
   cursor: pointer;
 }
 
+.active-games {
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+  color: var(--main-color);
+}
+
 .modal {
   position: fixed;
   top: 0;
@@ -175,6 +181,5 @@ tbody tr:hover {
   height: 100%;
   background-color: transparent;
 }
-
 </style>
   

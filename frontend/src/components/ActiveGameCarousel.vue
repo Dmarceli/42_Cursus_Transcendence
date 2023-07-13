@@ -1,32 +1,31 @@
 <template>
-  <transition name ="carousel-transition">
+  <transition name="carousel-transition">
     <div class="carousel">
       <div class="carousel-container">
-        <div class="carousel-arrows">
-          <font-awesome-icon class="carousel-arrow carousel-arrow-left" :icon="['fas', 'circle-chevron-left']" @click="prevPage"></font-awesome-icon> 
-          <font-awesome-icon class="carousel-arrow carousel-arrow-right" :icon="['fas', 'circle-chevron-right']" @click="nextPage"></font-awesome-icon> 
+        <div class="carousel-arrows" :class="{ 'arrows-top': isSmallScreen }">
+          <font-awesome-icon class="carousel-arrow carousel-arrow-left" :icon="['fas', 'circle-chevron-left']"
+            @click="prevPage"></font-awesome-icon>
+          <font-awesome-icon class="carousel-arrow carousel-arrow-right" :icon="['fas', 'circle-chevron-right']"
+            @click="nextPage"></font-awesome-icon>
         </div>
-        <div class="carousel-items">
-          <div class="carousel-item" v-for="game in currentGames" :key="game.id">
-            <h3>{{ game.name }}</h3>
+        <div class="carousel-items-container">
+          <div class="carousel-items" :class="{ 'column-layout': isSmallScreen }">
+            <div class="carousel-item" v-for="game in currentGames" :key="game.id">
+              <h3>{{ game.name }}</h3>
+            </div>
           </div>
         </div>
       </div>
-      <div class="carousel-dots">
-        <span
-          class="carousel-dot"
-          v-for="(page, index) in totalPages"
-          :key="index"
-          :class="{ active: currentPage === page }"
-          @click="goToPage(page)"
-        ></span>
+      <div class="carousel-dots" v-if="!isSmallScreen">
+        <span class="carousel-dot" v-for="(page, index) in totalPages" :key="index"
+          :class="{ active: currentPage === page }" @click="goToPage(page)"></span>
       </div>
     </div>
   </transition>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
@@ -76,6 +75,21 @@ const nextPage = () => {
 const goToPage = (page: number) => {
   currentPage.value = page;
 };
+
+const isSmallScreen = ref(window.innerWidth <= 768);
+
+const handleResize = () => {
+  isSmallScreen.value = window.innerWidth <= 768;
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+});
+
 </script>
 
 <style scoped>
@@ -83,11 +97,10 @@ const goToPage = (page: number) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%; 
+  width: 100%;
 }
 
 .carousel-container {
-  /* display: flex; */
   position: relative;
   width: 100%;
 }
@@ -103,6 +116,7 @@ const goToPage = (page: number) => {
   width: 200px;
   height: 150px;
   border: 1px solid #ccc;
+  background-color: #555;
   margin-right: 10px;
   display: flex;
   align-items: center;
@@ -116,12 +130,14 @@ const goToPage = (page: number) => {
   display: flex;
   justify-content: space-between;
   width: 100%;
+  padding: 0 20px;
+  margin-bottom: 10px;
 }
 
 .carousel-arrow {
   font-size: 24px;
   cursor: pointer;
-  color: hsla(160, 100%, 37%, 1);
+  color: var(--main-color);
   transition: color 0.3s;
 }
 
@@ -154,7 +170,7 @@ const goToPage = (page: number) => {
 }
 
 .carousel-dot.active {
-  background-color: hsla(160, 100%, 37%, 1);
+  background-color: var(--main-color);
 }
 
 .carousel-transition-enter-active,
@@ -166,5 +182,31 @@ const goToPage = (page: number) => {
 .carousel-transition-leave-to {
   opacity: 0;
   transform: translateX(-100%);
+}
+
+@media (max-width: 786px) {
+  .carousel-arrows {
+    padding: 0 10px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .carousel-items-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .carousel-items {
+    justify-content: flex-start;
+  }
+
+  .carousel-item {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .carousel-dots {
+    display: none;
+  }
 }
 </style>
