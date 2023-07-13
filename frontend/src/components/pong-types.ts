@@ -19,6 +19,7 @@ class Paddle implements Rectangle {
   y: number
   height: number
   width: number
+  nick: string
   conv_rate: number
   constructor(paddleref: any, conv: number) {
     this.conv_rate = conv
@@ -26,6 +27,7 @@ class Paddle implements Rectangle {
     this.width = paddleref.width * this.conv_rate
     this.x = paddleref.x * this.conv_rate
     this.y = paddleref.y * this.conv_rate
+    this.nick = paddleref.nick
   }
   update(paddleref: any): void {
     this.height = paddleref.height * this.conv_rate
@@ -37,8 +39,23 @@ class Paddle implements Rectangle {
     this.conv_rate = conv_rate
   }
   draw(context: CanvasRenderingContext2D): void {
+    this.drawRectangle(context)
+    this.drawNick(context)
+  }
+  drawRectangle(context: CanvasRenderingContext2Dext)
+  {
     context.fillStyle = 'hsla(0, 0%, 100%, 1)'
     context.fillRect(this.x, this.y, this.width, this.height)
+  }
+  drawNick(context: CanvasRenderingContext2Dext)
+  {
+    const board_height = board_dims.height * this.conv_rate
+    let nick_size = board_height /20
+    context.font = nick_size+"px Helvetica Neue";
+    context.fillStyle = "white";
+    const text_width = context.measureText(this.nick).width
+    const x = this.x > board_height/2 ? this.x-text_width: this.x
+    context.fillText(this.nick, x, nick_size+(board_height/30));
   }
 }
 
@@ -108,6 +125,5 @@ class Score {
     context.fillText(this.text, x, this.fontSize);
   }
 }
-
 
 export { type Rectangle, Paddle, type Circle, Ball, Score }

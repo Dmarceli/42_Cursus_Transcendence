@@ -97,11 +97,10 @@
 
 
 <script setup>
-import { io } from 'socket.io-client'
+import socket from '../socket'
 import { ref, onBeforeMount, watch, nextTick } from 'vue';
 import jwt_decode from 'jwt-decode';
 
-const socket = io(process.env.VUE_APP_BACKEND_URL);
 const msgsContainer = ref(null);
 let show_UserInfo = ref(false);
 const messageText = ref('');
@@ -113,8 +112,6 @@ let User_Friends = ref([]);
 let selected_channel = null;
 let side_info = ref(0);
 let showModal = ref(false);
-
-
 
 function getCookieValueByName(name) {
   const cookies = document.cookie.split(';');
