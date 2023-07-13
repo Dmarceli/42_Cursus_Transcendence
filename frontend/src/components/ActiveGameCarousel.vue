@@ -10,8 +10,11 @@
         </div>
         <div class="carousel-items-container">
           <div class="carousel-items" :class="{ 'column-layout': isSmallScreen }">
-            <div class="carousel-item" v-for="game in currentGames" :key="game.id">
+            <div class="carousel-item" v-for="game in currentGames" :key="game.id" @mouseenter="hoverGame" @mouseleave="leaveGame" @click="spectateGame(game.id)">
               <h3>{{ game.name }}</h3>
+              <div class="spectate-overlay" v-if="game.isHovered">
+                <span class="spectate-text">Spectate</span>
+              </div>
             </div>
           </div>
         </div>
@@ -35,25 +38,28 @@ library.add(fas);
 interface Game {
   id: number;
   name: string;
+  isHovered: boolean;
 }
 
 const games = ref<Game[]>([
-  { id: 1, name: 'Game 1' },
-  { id: 2, name: 'Game 2' },
-  { id: 3, name: 'Game 3' },
-  { id: 4, name: 'Game 4' },
-  { id: 5, name: 'Game 5' },
-  { id: 6, name: 'Game 6' },
-  { id: 7, name: 'Game 7' },
-  { id: 8, name: 'Game 8' },
-  { id: 9, name: 'Game 9' },
-  { id: 10, name: 'Game 10' },
+  { id: 1, name: 'Game 1', isHovered: false },
+  { id: 2, name: 'Game 2', isHovered: false },
+  { id: 3, name: 'Game 3', isHovered: false },
+  { id: 4, name: 'Game 4', isHovered: false },
+  { id: 5, name: 'Game 5', isHovered: false },
+  { id: 6, name: 'Game 6', isHovered: false },
+  { id: 7, name: 'Game 7', isHovered: false },
+  { id: 8, name: 'Game 8', isHovered: false },
+  { id: 9, name: 'Game 9', isHovered: false },
+  { id: 10, name: 'Game 10', isHovered: false },
 ]);
 
 const gamesPerPage = 3;
 const currentPage = ref(1);
 
 const totalPages = 3;
+
+const hoveredGame = ref<number | null>(null);
 
 const currentGames = computed(() => {
   const startIndex = (currentPage.value - 1) * gamesPerPage;
@@ -74,6 +80,27 @@ const nextPage = () => {
 
 const goToPage = (page: number) => {
   currentPage.value = page;
+};
+
+const hoverGame = (gameId: number) => {
+  const game = games.value.find((game) => game.id === gameId);
+  if (game) {
+    game.isHovered = true;
+    hoveredGame.value = gameId;
+  }
+};
+
+const leaveGame = (gameId: number) => {
+  const game = games.value.find((game) => game.id === gameId);
+  if (game) {
+    game.isHovered = false;
+    hoveredGame.value = null;
+  }
+};
+
+const spectateGame = (gameId: number) => {
+  // TODO: Handle spectating game
+  console.log(`Spectating game ${gameId}`);
 };
 
 const isSmallScreen = ref(window.innerWidth <= 768);
@@ -123,6 +150,36 @@ onUnmounted(() => {
   justify-content: center;
 }
 
+.carousel-item:hover {
+  background-color: #333;
+}
+
+.spectate-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.carousel-item:hover .spectate-overlay:hover {
+  opacity: 1;
+}
+
+.spectate-text {
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  pointer-events: none;
+}
+
 .carousel-arrows {
   position: absolute;
   top: 50%;
@@ -132,6 +189,13 @@ onUnmounted(() => {
   width: 100%;
   padding: 0 20px;
   margin-bottom: 10px;
+}
+
+.carousel-arrows.arrows-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 .carousel-arrow {
@@ -184,7 +248,7 @@ onUnmounted(() => {
   transform: translateX(-100%);
 }
 
-@media (max-width: 786px) {
+@media (max-width: 768px) {
   .carousel-arrows {
     padding: 0 10px;
     flex-direction: column;
