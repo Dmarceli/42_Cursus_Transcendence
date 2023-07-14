@@ -14,6 +14,7 @@ const userProfile = ref({
   winStreak: 1,
   biggestStreak: 3,
   rank: 5,
+  status: 'online',
   // Add more user profile data here
 });
 
@@ -36,10 +37,15 @@ const getPlayerAvatar = (playerNick: string) => {
   }
   return '../assets/avatar.png';
 }
+
 const isSettingsOpen = ref(false);
 
 const updateNickname = ref(userProfile.value.nickname);
 const updateAvatar = ref('');
+
+function updateStatus(newStatus: string) {
+  userProfile.value.status = newStatus;
+}
 
 function openSettings() {
   isSettingsOpen.value = true;
@@ -93,6 +99,7 @@ function handleNewAvatar(event: Event) {
     <div class="profile-header">
       <div class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
+        <div :class="['status-indicator', userProfile.status]"></div>
       </div>
       <h1 class="nickname" >{{ userProfile.nickname }}</h1>
         <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" @click="openSettings" />
@@ -213,7 +220,7 @@ function handleNewAvatar(event: Event) {
   border-radius: 50%;
   overflow: hidden;
   margin-right: 20px;
-  border: 2px solid white; /* Customize the color if needed */
+  border: 2px solid white;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -225,6 +232,7 @@ function handleNewAvatar(event: Event) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 @media (max-width: 500px) {
@@ -235,12 +243,34 @@ function handleNewAvatar(event: Event) {
     max-height: 100px;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
+    z-index: 2;
   }
 
   .profile-header {
     flex-direction: column;
     text-align: center;
   }
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: green;
+  border: none;
+  z-index: 3;
+}
+
+.status-indicator.offline {
+  background-color: red;
+}
+
+.status-indicator.in-game {
+  background-color: orange;
 }
 
 .avatar-container-settings {
