@@ -36,8 +36,8 @@
             <label for="channelName">Password:</label>
             <input class="input-field" placeholder="(optional)" type="text" id="channelPassword" name="channelPassword">
             <label for="inviteUser">Invite Users:</label>
-            <select class="input-field" id="inviteUser" name="inviteUser" multiple>
-              <option value="" disabled>Select users</option>
+            <select  class="input-field" id="inviteUser" name="inviteUser" multiple>
+              <option  value="" disabled>Select users</option>
               <option v-for="user in users" :key="user.id" :value="user.id">{{ user.nick }}</option>
             </select>
             <button @click="createChannel()">Create</button>
@@ -206,7 +206,7 @@ const getChannelType = (channelID) => {
 
 const getChannelName = (channelId) => {
   const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelId);
-  if (channel['channel_id']['type'] == 0) {
+  if (channel && channel['channel_id']['type'] == 0) {
     const channelname = channel['channel_id']['channel_name'];
     const user1ID = channelname.split('-')[0];
     const user2ID = channelname.split('-')[1];
@@ -638,6 +638,17 @@ const chooseChannel = (channel) => {
 }
 
 const createChannel = async () => {
+  
+  let channelUsers= document.getElementById("inviteUser").selectedOptions;
+  var Userarr = Array.prototype.slice.call( channelUsers )
+  var computedUserarr=[]
+  //console.log("Lista");
+  Userarr.forEach(element => {
+    //console.log(element.label)
+    computedUserarr.push(element.label)
+  });
+
+  console.log("COMPUTED ARR",computedUserarr)
 
   let channelName = document.getElementById("channelName").value;
   let channelPassword = document.getElementById("channelPassword").value;
@@ -651,7 +662,7 @@ const createChannel = async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ type: ch_type, channel_name: channelName, password: pass }),
+      body: JSON.stringify({ type: ch_type, channel_name: channelName, password: pass, invitedusers:  computedUserarr}),
     });
     if (response.ok) {
       const data = await response.json();

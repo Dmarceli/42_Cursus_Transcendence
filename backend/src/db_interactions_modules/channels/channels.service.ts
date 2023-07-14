@@ -16,7 +16,8 @@ export class ChannelsService {
 
 
  async create(createChannelDto: ChannelCreateDto) {
-  
+
+  //console.log(createChannelDto.invitedusers)
     const all_channels = await this.ChannelsRepository.findOne({where: {type: MoreThan(0), channel_name: createChannelDto.channel_name}})
     if(all_channels){
       throw new ConflictException('Duplicate key value found.');
