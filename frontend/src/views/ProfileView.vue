@@ -126,32 +126,34 @@ function handleNewAvatar(event: Event) {
 	    </div>
 
       <!-- Game History -->
-	    <div class="game-history">
-	    <h2>Last 5 games:</h2>
-      <table>
-        <tbody>
-          <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
-            <td>
-              <div class="history-avatar-container">
-                <img :src="getPlayerAvatar(game.user.nick)" alt="Avatar" class="history-avatar" />
-                <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="game.userWon" />
-              </div>
-              <span class="history-player-nick">{{ game.user.nick }}</span>
-            </td>
-            <td class="user-score">{{ game.user.score }}</td>
-            <td class="vs">-</td>
-            <td class="opponent-score">{{ game.opponent.score }}</td>
-            <td>
-              <div class="history-avatar-container">
-                <img :src="getPlayerAvatar(game.opponent.nick)" alt="Avatar" class="history-avatar" />
-                <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!game.userWon" />
-              </div>
-              <span class="history-player-nick">{{ game.opponent.nick }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-	    </div>
+      <div class="game-history-container">
+	      <div class="game-history">
+	      <h2>Last 5 games:</h2>
+        <table>
+          <tbody>
+            <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
+              <td>
+                <div class="history-avatar-container">
+                  <img :src="getPlayerAvatar(game.user.nick)" alt="Avatar" class="history-avatar" />
+                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="game.userWon" />
+                </div>
+                <span class="history-player-nick">{{ game.user.nick }}</span>
+              </td>
+              <td class="user-score">{{ game.user.score }}</td>
+              <td class="vs">-</td>
+              <td class="opponent-score">{{ game.opponent.score }}</td>
+              <td>
+                <div class="history-avatar-container">
+                  <img :src="getPlayerAvatar(game.opponent.nick)" alt="Avatar" class="history-avatar" />
+                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!game.userWon" />
+                </div>
+                <span class="history-player-nick">{{ game.opponent.nick }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+	      </div>
+      </div>
     </div>
 
     <!-- Settings Modal -->
@@ -219,11 +221,9 @@ function handleNewAvatar(event: Event) {
 }
 
 .avatar-container img {
-  position: absolute;
-  top: 0;
-  left: 0;
+  overflow: hidden;
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -288,11 +288,20 @@ label[for="nickname"] {
 .profile-body {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: stretch;
 }
 
-.game-history {
+.game-history-container {
   flex: 1;
+  display: flex;
+  align-items: flex-start;
+}
+
+.game-history {
+  /* flex: 1; */
+  width: calc(100% - 10px);
+  margin-right: 20px;
 }
 
 .history-avatar-container {
