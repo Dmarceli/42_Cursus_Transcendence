@@ -18,6 +18,8 @@ import { Messages } from './db_interactions_modules/messages/messages.entity';
 import { MessagesModule } from './db_interactions_modules/messages/messages.module';
 import { GameGateway } from './db_interactions_modules/game/game.gateway';
 import { AuthModule } from './auth/auth.module';
+import { EventsModule } from './db_interactions_modules/events/events.module';
+import { Events } from './db_interactions_modules/events/events.entity';
 
 @Module({
   imports: [ 
@@ -30,7 +32,7 @@ import { AuthModule } from './auth/auth.module';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User,Messages, GameHistory, Channel, friend, UserToChannel ],
+      entities: [User,Messages, GameHistory, Channel, friend, UserToChannel, Events],
       synchronize: true,
     }),
     TypeOrmModule.forFeature([User, Messages, GameHistory, Channel, friend, UserToChannel]),
@@ -40,7 +42,8 @@ import { AuthModule } from './auth/auth.module';
     ChannelsModule,
     FriendModule,
     UserToChannelModule,
-    AuthModule
+    AuthModule,
+    EventsModule
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway, GameGateway],
