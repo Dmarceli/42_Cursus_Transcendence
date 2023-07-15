@@ -19,8 +19,8 @@
 
 import { RouterLink, RouterView } from 'vue-router';
 import Login from "./components/LoginPage.vue";
-import { ref } from 'vue';
-import { verify } from 'crypto';
+import { io } from 'socket.io-client'
+import { ref, provide } from 'vue'
 
 const islogged = ref(false);
 
@@ -81,6 +81,8 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
+      let socket = io(process.env.VUE_APP_BACKEND_URL);
+      provide('socket', socket)
     }
   }
 

@@ -126,12 +126,10 @@
 
 
 <script setup>
-import { io } from 'socket.io-client'
-import { ref, onBeforeMount, watch, nextTick } from 'vue';
+import { ref, inject, onBeforeMount, watch, nextTick } from 'vue';
 import jwt_decode from 'jwt-decode';
 import {Md5} from 'ts-md5';
 
-const socket = io(process.env.VUE_APP_BACKEND_URL);
 const msgsContainer = ref(null);
 let show_UserInfo = ref(false);
 const messageText = ref('');
@@ -148,6 +146,7 @@ const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 
 let showSideInfo = ref(true);
+const socket = inject('socket')
 
 function toggleChannelList() {
 	showSideInfo.value = !showSideInfo.value;
@@ -158,8 +157,6 @@ function enableModal() {
   side_info.value = 2;
   showModal.value = true
 }
-
-
 
 function getCookieValueByName(name) {
   const cookies = document.cookie.split(';');
