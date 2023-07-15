@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete , UseGuards} from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { ChannelCreateDto } from './dtos/channelcreate.dto';
+import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { User } from '../users/user.entity';
 
-
+@UseGuards(JwtAuthGuard)
 @Controller('channels')
 export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) {}
@@ -14,8 +17,8 @@ export class ChannelsController {
   }
 
   @Get('/all')
-  findAll() {
-    return this.channelsService.all_channel();
+  findAll(@getUserIDFromToken() user: User) {
+    return this.channelsService.all_channel(user.id);
   }
 
   // @Get(':id')
