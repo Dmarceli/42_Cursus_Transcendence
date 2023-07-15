@@ -2,6 +2,7 @@
 	<div class="Chat">
 		<div class="channels-list" :class="{ 'collapsed': !showSideInfo }">
 			<div v-if="side_info === 0">
+				<div class="list-container">
 				<div class="list-header">Conversations</div>
 				<div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
 					:class="['channel', { 'selected': joinedchannel.channel_id.id === selected_channel }]"
@@ -11,6 +12,7 @@
 						{{ unreadMessages[joinedchannel.channel_id.id] }}
 					</div>
 				</div>
+			</div>
 			</div>
 			<div v-if="side_info === 1">
 				<div class="list-header">FRIENDS</div>
@@ -69,7 +71,6 @@
 							Games Lost: {{ user.lost_games }}<br>
 						</span>
 						{{ user.nick }}
-						<button class="direct-message" @click="Dmessage(user.id)">DM</button>
 						<button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
 						<button v-else class="friend-remove" @click="removeFriend(user)"></button>
 					</div>
