@@ -1,6 +1,7 @@
 import { Ball } from './Ball'
 import { PlayerPaddle } from './PlayerPaddle'
 import { Score } from './Score'
+import { GameHistoryService } from 'src/db_interactions_modules/game_history/game_history.service'
 
 const board_dims = {
   width: 1400,
@@ -113,7 +114,7 @@ export class Game {
     }
     this.ball.updatePosition()
   }
-  emit() {
+  emit(gameHistoryService: GameHistoryService) {
     if (this.score.player1 > 4) {
       this.finish(this.playerPaddle1, this.playerPaddle2)
     }

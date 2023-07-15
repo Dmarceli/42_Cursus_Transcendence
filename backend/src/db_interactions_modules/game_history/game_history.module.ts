@@ -10,6 +10,7 @@ import { User } from '../users/user.entity';
     TypeOrmModule.forFeature([GameHistory, User])
 ],
   controllers: [GameHistoryController],
-  providers: [GameHistoryService]
+  providers: [GameHistoryService],
+  exports: [GameHistoryService]
 })
 export class GameHistoryModule {}

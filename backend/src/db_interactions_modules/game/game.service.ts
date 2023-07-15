@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Game } from './classes/Game'
+import { GameHistoryService } from '../game_history/game_history.service';
 
 @Injectable()
 export class GameService {
-  constructor() { }
+  constructor(private readonly gameHistoryService: GameHistoryService) { }
   games: Game[] = []
   // TODO: Replace with intraId
   AddPlayerToGame(playerClient: Socket, nick: string) {
@@ -94,7 +95,7 @@ export class GameService {
       for (let game of this.games) {
         if (game.playerPaddle1.client && game.playerPaddle2.client) {
           game.update();
-          game.emit();
+          game.emit(this.gameHistoryService);
         }
         else {
           game.playerPaddle1.client?.emit('WaitingForPlayers')
