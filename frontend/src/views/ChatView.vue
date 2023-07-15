@@ -126,8 +126,7 @@
 
 
 <script setup>
-import socket from '../socket'
-import { ref, onBeforeMount, watch, nextTick } from 'vue';
+import { ref, inject, onBeforeMount, watch, nextTick } from 'vue';
 import jwt_decode from 'jwt-decode';
 import {Md5} from 'ts-md5';
 
@@ -147,6 +146,7 @@ const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 
 let showSideInfo = ref(true);
+const socket = inject('socket')
 
 function toggleChannelList() {
 	showSideInfo.value = !showSideInfo.value;

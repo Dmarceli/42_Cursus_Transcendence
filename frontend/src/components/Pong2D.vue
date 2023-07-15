@@ -9,10 +9,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, inject,  onMounted, onUnmounted } from 'vue'
 import LobbyPage from './LobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
-import socket from '../socket'
 import jwt_decode from 'jwt-decode';
 
 let reconnecting = ref("")
@@ -43,6 +42,7 @@ interface TokenType
   id: string
   login: string
 }
+const socket = inject("socket")
 
 onMounted(() => {
   console.log('Mounted Pong');
