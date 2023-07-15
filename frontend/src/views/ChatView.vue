@@ -28,18 +28,31 @@
         </div>
       </div>
       <div v-if="side_info === 2">
-        <div v-if="showModal" class="modal">
+        <div v-if="showModal && !createChannelOptions" class="modal">
           <div class="modal-content">
-            <span class="close" @click="showModal = false">&times;</span>
+            <div>
+              <h1>New Message</h1>
+              <span class="close" @click="showModal = false">&times;</span>
+              <button class="next" @click="createChannelOptions = true">next</button>
+            </div>
+            <label for="inviteUser">Invite Users:</label>
+            <select class="input-field" id="inviteUser" name="inviteUser" multiple
+              @mousedown="toggleOptionSelection($event)">
+              <option value="" disabled>Select users</option>
+              <option v-for="user in users" :key="user.id" :value="user.intra_nick"
+                :selected="isSelectedUser(user.intra_nick)">
+                {{ user.intra_nick }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div v-if="showModal && createChannelOptions" class="modal">
+          <div class="modal-content">
+            <span class="close" @click="showModal = false; createChannelOptions = false">&times;</span>
             <label for="channelName">Channel Name:</label>
             <input class="input-field" type="text" id="channelName" name="channelName">
             <label for="channelName">Password:</label>
             <input class="input-field" placeholder="(optional)" type="text" id="channelPassword" name="channelPassword">
-            <label for="inviteUser">Invite Users:</label>
-            <select  class="input-field" id="inviteUser" name="inviteUser" multiple>
-              <option  value="" disabled>Select users</option>
-              <option v-for="user in users" :key="user.id" :value="user.id">{{ user.nick }}</option>
-            </select>
             <button @click="createChannel()">Create</button>
           </div>
         </div>
@@ -165,8 +178,9 @@ let side_info = ref(0);
 let showModal = ref(false);
 const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
-
 let showSideInfo = ref(true);
+let createChannelOptions = ref(null)
+
 
 function toggleChannelList() {
   showSideInfo.value = !showSideInfo.value;
@@ -385,7 +399,7 @@ const leaveChannel = async (channelid) => {
     selected_channel = null;
     showChannelOptions.value = !showChannelOptions.value;
     messages.value = null;
-	showSideInfo.value = true;
+    showSideInfo.value = true;
     await getChannelsJoined();
   }
 }
@@ -637,19 +651,28 @@ const chooseChannel = (channel) => {
   getUsersInGivenChannel(channel)
 }
 
+
+const selectedUsers = ref([]);
+
+const isSelectedUser = (intraNick) => {
+  return selectedUsers.value.includes(intraNick);
+};
+
+function toggleOptionSelection(event) {
+  event.preventDefault();
+  const option = event.target;
+  const selectedValue = option.value
+  if (!option.selected) {
+    selectedUsers.value.push(selectedValue);
+  } else {
+    const index = selectedUsers.value.indexOf(selectedValue);
+    if (index !== -1) {
+      selectedUsers.value.splice(index, 1);
+    }
+  }
+}
+
 const createChannel = async () => {
-  
-  let channelUsers= document.getElementById("inviteUser").selectedOptions;
-  var Userarr = Array.prototype.slice.call( channelUsers )
-  var computedUserarr=[]
-  //console.log("Lista");
-  Userarr.forEach(element => {
-    //console.log(element.label)
-    computedUserarr.push(element.label)
-  });
-
-  console.log("COMPUTED ARR",computedUserarr)
-
   let channelName = document.getElementById("channelName").value;
   let channelPassword = document.getElementById("channelPassword").value;
   let ch_type = channelPassword ? 2 : 1;
@@ -662,7 +685,7 @@ const createChannel = async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ type: ch_type, channel_name: channelName, password: pass, invitedusers:  computedUserarr}),
+      body: JSON.stringify({ type: ch_type, channel_name: channelName, password: pass, invitedusers: selectedUsers.value }),
     });
     if (response.ok) {
       const data = await response.json();
