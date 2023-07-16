@@ -10,7 +10,6 @@ import { User } from '../users/user.entity';
 export class GameService {
   constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>){}
   games: Game[] = []
-  // TODO: Replace with intraId
   async AddPlayerToGame(playerClient: Socket, nick: string) {
     console.log("NewPlayer " + playerClient + " with intra " + nick)
     const user = await this.userRepository.findOne({where: {intra_nick: nick}})
