@@ -31,6 +31,19 @@ export class GameHistoryService {
     return game_history;
   }
 
+  async group_by_won_scores()
+  {
+    const userWins = await this.gameHistoryRepository
+    .createQueryBuilder('gameHistory')
+    .innerJoin('gameHistory.user_id_winner', 'user')
+    .select('user.id', 'id')
+    .addSelect('user.intra_nick', 'name')
+    .addSelect('SUM(gameHistory.user_id_winner)*5', 'score')
+    .groupBy('user.id')
+    .getRawMany();
+    return userWins;
+  }
+
   async sum_score(user: User)
   {
     const sum = await this.gameHistoryRepository

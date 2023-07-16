@@ -1,5 +1,5 @@
 <script setup lang="ts">
-	import { ref, computed } from 'vue';
+	import { ref, computed, onBeforeMount } from 'vue';
   	
   interface Player {
     id: number;
@@ -38,22 +38,25 @@
 
   /* Code below is to fetch the leaderboard data from the API, I think... */
 
-  // const fetchLeaderboard = async () => {
-  //     try {
-  //       const response = await fetch('API_ENDPOINT'); // Replace 'API_ENDPOINT' with the actual API URL to fetch the leaderboard data
-  //       const data = await response.json();
-  //       leaderboard.value = data;
-  //     } catch (error) {
-  //       console.error('Error fetching leaderboard data:', error);
-  //     }
-  //   };
 
-  //   onMounted(() => {
-  //     fetchLeaderboard();
-  //   });
+const fetchLeaderboard = async () => {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/game-history/won_games/'
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log(data)
+      leaderboard.value = data;
+    } catch (error) {
+      console.error('Error fetching leaderboard data:', error);
+    }
+  };
 
-  sortLeaderboard();
+  onBeforeMount(() => {
+    fetchLeaderboard();
+    sortLeaderboard();
+  });
   const top10 = computed(() => leaderboard.value.slice(0, 10));
+
 </script>
 
 <template>

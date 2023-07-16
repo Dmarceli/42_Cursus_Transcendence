@@ -16,6 +16,11 @@ export class GameHistoryController {
     return this.gameHistoryService.all_history();
   }
 
+  @Get('won_games')
+  findWon() {
+    return this.gameHistoryService.group_by_won_scores();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.gameHistoryService.all_history();
