@@ -5,13 +5,18 @@
       <button class="button" @click="button42">Login with 42</button>
       <button class="button" @click="buttonGoogle">Login with Google</button>
       <button class="button" @click="buttonBYPASS_TEMP">BYPASS</button>
+      <input  class="button" v-model="id_to_login_form" placeholder=0>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 
-const emit = defineEmits(['clicked42', 'clickedgoogle', 'clickedBYPASS'])
+import { mergeProps, ref } from 'vue'
+let id_to_login_form = ref(0);
+
+
+const emit = defineEmits(['clicked42', 'clickedgoogle', 'clickedBYPASS','id_to_login' ])
 
 function buttonGoogle() {
   emit('clickedgoogle')
@@ -20,8 +25,12 @@ function button42() {
   emit('clicked42')
 }
 function buttonBYPASS_TEMP() {
-  emit('clickedBYPASS')
+  emit('id_to_login', id_to_login_form.value)
+  //emit('clickedBYPASS')
+  
+  
 }
+
 </script>
 
 <style>
