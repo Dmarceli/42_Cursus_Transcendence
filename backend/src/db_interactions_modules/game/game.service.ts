@@ -41,7 +41,7 @@ export class GameService {
         return
       }
     }
-    let game = new Game(this.gameHistoryService)
+    let game = new Game(this.gameHistoryService, this.userRepository)
     game.playerPaddle1.client = playerClient
     game.playerPaddle1.frontEndData.nick = nick
     game.playerPaddle1.user = user
