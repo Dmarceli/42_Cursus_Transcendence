@@ -59,6 +59,15 @@ export class UsersService {
    }
 
 
+   async findById(id_to_search :number) {
+  
+    const resp= await this.userRepository.findOne(
+      {where: {id: id_to_search}}
+     );
+     return resp;
+   }
+
+
   // findOne(id: number) {
   //   return `This action returns a #${id} user`;
   // }

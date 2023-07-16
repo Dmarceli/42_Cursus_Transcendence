@@ -11,7 +11,7 @@
     <RouterView />
   </div>
   <div v-else>
-    <Login @clicked42="login42" @clickedgoogle="loginGoogle" @clickedBYPASS="loginBYPASS" />
+    <Login  @clicked42="login42" @clickedgoogle="loginGoogle" @clickedBYPASS="loginBYPASS" @id_to_login="executeLoginwithId" />
   </div>
 </template>
 
@@ -99,9 +99,9 @@ function loginGoogle() {
 }
 
 
-async function authtempBYPASS() {
+async function authtempBYPASS(idvalue: number) {
   try {
-    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/tempbypass");
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/tempbypass/" + idvalue);
     if (response.ok) {
       let res =  await response.json();
       document.cookie = `token=${res.code}`
@@ -115,8 +115,8 @@ async function authtempBYPASS() {
     return false;
   }
 }
-async function loginBYPASS() {
-  let verify = await authtempBYPASS()
+async function loginBYPASS() {  
+  let verify = await authtempBYPASS(1)
   if (verify)
     islogged.value = true;
     let socket = io(process.env.VUE_APP_BACKEND_URL);
@@ -124,6 +124,12 @@ async function loginBYPASS() {
 }
 
 
+async function executeLoginwithId(idvalue: number) {
+  console.log(idvalue)
+  let verify = await authtempBYPASS(idvalue)
+  if (verify)
+    islogged.value = true;
+}
 </script>
 
 <style scoped>
