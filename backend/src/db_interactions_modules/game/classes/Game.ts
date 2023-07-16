@@ -130,11 +130,10 @@ export class Game {
     return (this.score.player1 > 4 || this.score.player2 > 4)
   }
   handleFinishGame() {
-    if (this.score.player1 > 4) {
-      this.finish(this.playerPaddle1, this.playerPaddle2, this.score.player2)
-      return
-    }
-    this.finish(this.playerPaddle2, this.playerPaddle1, this.score.player1)
+    const winningPlayer = this.score.player1 > 4 ? this.playerPaddle1 : this.playerPaddle2;
+    const losingPlayer = winningPlayer === this.playerPaddle1 ? this.playerPaddle2 : this.playerPaddle1;
+    const winningScore = this.score.player1 > this.score.player2 ? this.score.player1: this.score.player2
+    this.finish(winningPlayer, losingPlayer, winningScore)
   }
   finish(winner: PlayerPaddle, loser: PlayerPaddle, loserScore: number) {
     let gameHistoryEntry = {
