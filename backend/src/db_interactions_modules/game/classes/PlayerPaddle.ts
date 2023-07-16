@@ -1,4 +1,5 @@
 import { Socket } from 'socket.io';
+import { User } from 'src/db_interactions_modules/users/user.entity';
 
 export class PlayerPaddle {
     frontEndData: {
@@ -11,10 +12,11 @@ export class PlayerPaddle {
     client: Socket | null
     movingDown: Boolean
     movingUp: Boolean
-
+    user: User
     constructor(x: number, y: number, width: number, height: number) {
         this.init(x, y, width, height)
         this.client = null
+        this.user = null
     }
     updatePosition(canvasHeight: number): void {
         if (this.movingDown && this.frontEndData.y + this.frontEndData.height + 10 < canvasHeight) {

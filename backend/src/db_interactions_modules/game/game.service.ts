@@ -2,20 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Game } from './classes/Game'
 import { GameHistoryService } from '../game_history/game_history.service';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class GameService {
-  constructor(private readonly gameHistoryService: GameHistoryService) { }
+  constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>){}
   games: Game[] = []
   // TODO: Replace with intraId
-  AddPlayerToGame(playerClient: Socket, nick: string) {
+  async AddPlayerToGame(playerClient: Socket, nick: string) {
     console.log("NewPlayer " + playerClient + " with intra " + nick)
+    const user = await this.userRepository.findOne({where: {intra_nick: nick}})
     for (let i = 0; i < this.games.length; i++) {
       if (this.games[i].playerPaddle1.frontEndData.nick == nick) {
+        this.games[i].playerPaddle1.user = user
         this.games[i].playerPaddle1.client = playerClient
         return
       }
       if (this.games[i].playerPaddle2.frontEndData.nick == nick) {
+        this.games[i].playerPaddle2.user = user
         this.games[i].playerPaddle2.client = playerClient
         return
       }
@@ -24,19 +30,22 @@ export class GameService {
       if (this.games[i].playerPaddle1.client == playerClient || this.games[i].playerPaddle1.client == playerClient)
         return
       if (!this.games[i].playerPaddle1.client) {
+        this.games[i].playerPaddle1.user = user
         this.games[i].playerPaddle1.frontEndData.nick = nick
         this.games[i].playerPaddle1.client = playerClient
         return
       }
       else if (!this.games[i].playerPaddle2.client) {
+        this.games[i].playerPaddle2.user = user
         this.games[i].playerPaddle2.frontEndData.nick = nick
         this.games[i].playerPaddle2.client = playerClient
         return
       }
     }
-    let game = new Game
+    let game = new Game(this.gameHistoryService)
     game.playerPaddle1.client = playerClient
     game.playerPaddle1.frontEndData.nick = nick
+    game.playerPaddle1.user = user
     this.games.push(game)
   }
   RemovePlayerFromGame(client: Socket) {
@@ -95,7 +104,7 @@ export class GameService {
       for (let game of this.games) {
         if (game.playerPaddle1.client && game.playerPaddle2.client) {
           game.update();
-          game.emit(this.gameHistoryService);
+          game.checkStatus();
         }
         else {
           game.playerPaddle1.client?.emit('WaitingForPlayers')

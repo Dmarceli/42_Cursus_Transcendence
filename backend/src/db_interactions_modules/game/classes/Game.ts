@@ -2,6 +2,7 @@ import { Ball } from './Ball'
 import { PlayerPaddle } from './PlayerPaddle'
 import { Score } from './Score'
 import { GameHistoryService } from 'src/db_interactions_modules/game_history/game_history.service'
+import { User } from 'src/db_interactions_modules/users/user.entity'
 
 const board_dims = {
   width: 1400,
@@ -26,17 +27,21 @@ function areColliding(circle: any, rectangle: any) {
 }
 
 export class Game {
+  timeStart: Date
   ball: Ball
   playerPaddle1: PlayerPaddle
   playerPaddle2: PlayerPaddle
   score: Score
   isColliding: Boolean;
-  constructor() {
+  gameHistoryService: GameHistoryService
+  constructor(gameHistoryService: GameHistoryService) {
+    this.timeStart = new Date()
     this.ball = new Ball(700, 350, 20)
     this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
     this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
     this.score = new Score
     this.isColliding = false
+    this.gameHistoryService = gameHistoryService
   }
   resetPositions(): void {
     this.ball.init(700, 350, 20)
@@ -114,27 +119,59 @@ export class Game {
     }
     this.ball.updatePosition()
   }
-  emit(gameHistoryService: GameHistoryService) {
+  checkStatus() {
+    if (this.isGameFinished()) {
+      this.handleFinishGame()
+      return
+    }
+    this.handleGameContinue()
+  }
+  isGameFinished() {
+    return (this.score.player1 > 4 || this.score.player2 > 4)
+  }
+  handleFinishGame() {
     if (this.score.player1 > 4) {
       this.finish(this.playerPaddle1, this.playerPaddle2)
+      return
     }
-    else if (this.score.player2 > 4) {
-      this.finish(this.playerPaddle2, this.playerPaddle1)
-    }
-    else {
-      let gamevisual = {
-        ball: this.ball.frontEndData,
-        playerPaddle1: this.playerPaddle1.frontEndData,
-        playerPaddle2: this.playerPaddle2.frontEndData,
-        score: this.score
-      }
-      this.playerPaddle1.client?.emit('updateGame', gamevisual)
-      this.playerPaddle2.client?.emit('updateGame', gamevisual)
-    }
+    this.finish(this.playerPaddle2, this.playerPaddle1)
   }
-  finish(winner: PlayerPaddle, loser: PlayerPaddle) {
+  async finish(winner: PlayerPaddle, loser: PlayerPaddle) {
+    console.log("WINNER "+winner.user)
+    console.log("LOSER "+loser.user)
+    let gameHistoryEntry = {
+      winnerId: winner.user.id,
+      loserId: loser.user.id,
+      points: await this.calculateXP(winner.user, loser.user),
+      time_begin: this.timeStart
+    }
+    await this.gameHistoryService.create(gameHistoryEntry)
     winner.client?.emit('PlayerWon')
     loser.client?.emit('PlayerLost')
     this.reset()
+  }
+  handleGameContinue() {
+    let gamevisual = {
+      ball: this.ball.frontEndData,
+      playerPaddle1: this.playerPaddle1.frontEndData,
+      playerPaddle2: this.playerPaddle2.frontEndData,
+      score: this.score
+    }
+    this.playerPaddle1.client?.emit('updateGame', gamevisual)
+    this.playerPaddle2.client?.emit('updateGame', gamevisual)
+  }
+  async calculateXP(winner: User, loser: User) {
+    let winnerPoints = await this.gameHistoryService.sum_score(winner)
+    let loserPoints = await this.gameHistoryService.sum_score(loser)
+    let gameSeconds = this.getSeconds()
+    if (winnerPoints == 0) {
+      return gameSeconds * 5
+    }
+    return ((loserPoints/winnerPoints)+1) * gameSeconds
+  }
+  getSeconds(): number {
+    const currentTime = new Date();
+    const elapsedTimeInSeconds = Math.floor((currentTime.getTime() - this.timeStart.getTime()) / 1000);
+    return elapsedTimeInSeconds;
   }
 };
