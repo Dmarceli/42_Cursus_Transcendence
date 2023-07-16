@@ -136,7 +136,7 @@ export class Game {
     }
     this.finish(this.playerPaddle2, this.playerPaddle1, this.score.player1)
   }
-  async finish(winner: PlayerPaddle, loser: PlayerPaddle, loserScore: number) {
+  finish(winner: PlayerPaddle, loser: PlayerPaddle, loserScore: number) {
     let gameHistoryEntry = {
       winnerId: winner.user.id,
       loserId: loser.user.id,
@@ -146,7 +146,7 @@ export class Game {
     winner.client?.emit('PlayerWon')
     loser.client?.emit('PlayerLost')
     this.reset()
-    await this.gameHistoryService.create(gameHistoryEntry)
+    this.gameHistoryService.create(gameHistoryEntry)
   }
   handleGameContinue() {
     let gamevisual = {
