@@ -30,29 +30,4 @@ export class GameHistoryService {
       , select: {user_id_loser:{id:true, nick:true, intra_nick: true}, user_id_winner: {id:true, nick:true, intra_nick: true}}});
     return game_history;
   }
-
-  async group_by_won_scores()
-  {
-    const userWins = await this.gameHistoryRepository
-    .createQueryBuilder('gameHistory')
-    .innerJoin('gameHistory.user_id_winner', 'user')
-    .select('user.id', 'id')
-    .addSelect('user.intra_nick', 'name')
-    .addSelect('SUM(gameHistory.user_id_winner)*5', 'score')
-    .groupBy('user.id')
-    .getRawMany();
-    return userWins;
-  }
-
-  async sum_score(user: User)
-  {
-    const sum = await this.gameHistoryRepository
-    .createQueryBuilder('gameHistory')
-    .select('SUM(gameHistory.points)', 'totalPoints')
-    .where('gameHistory.user_id_winner = :userId', { userId: user.id })
-    .orWhere('gameHistory.user_id_loser = :userId', { userId: user.id })
-    .getRawOne();
-    const totalPoints = sum?.totalPoints || 0;
-    return parseInt(totalPoints);
-  }
 }

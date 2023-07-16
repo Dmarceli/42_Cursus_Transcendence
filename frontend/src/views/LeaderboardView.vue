@@ -41,7 +41,7 @@
 
 const fetchLeaderboard = async () => {
     try {
-      let url = process.env.VUE_APP_BACKEND_URL + '/game-history/won_games/'
+      let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
       const response = await fetch(url);
       const data = await response.json();
       console.log(data)
