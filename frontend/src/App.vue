@@ -119,6 +119,8 @@ async function loginBYPASS() {
   let verify = await authtempBYPASS()
   if (verify)
     islogged.value = true;
+    let socket = io(process.env.VUE_APP_BACKEND_URL);
+    provide('socket', socket)
 }
 
 

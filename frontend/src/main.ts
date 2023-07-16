@@ -6,10 +6,18 @@ import App from './App.vue'
 // import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 import router from './router'
 import VueCookies from 'vue-cookies';
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
 
-// library.add()
+const vuetify = createVuetify({
+  components,
+  directives,
+})
 
 const app = createApp(App)
 app.use(router)
 app.use(VueCookies)
+app.use(vuetify)
 app.mount('#app')
