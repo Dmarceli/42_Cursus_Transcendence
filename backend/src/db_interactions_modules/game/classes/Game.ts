@@ -138,26 +138,18 @@ export class Game {
     this.finish(winningPlayer, losingPlayer, winningScore)
   }
   async finish(winner: PlayerPaddle, loser: PlayerPaddle, loserScore: number) {
-    console.log("4 "+winner.frontEndData.nick)
+    winner.client?.emit('PlayerWon')
+    loser.client?.emit('PlayerLost')
     let gameHistoryEntry = {
       winnerId: winner.user.id,
       loserId: loser.user.id,
       points: loserScore,
       time_begin: this.timeStart
     }
-    let loserNick = loser.frontEndData.nick
-    let winnerNick = winner.frontEndData.nick
-    winner.client?.emit('PlayerWon')
-    loser.client?.emit('PlayerLost')
     this.reset()
     await this.gameHistoryService.create(gameHistoryEntry)
-    const loserUser = await this.userRepository.findOne({where: {intra_nick: loserNick}})
-    loserUser.lost_games++
-    await this.userRepository.save(loserUser);
-    const winnerUser = await this.userRepository.findOne({where: {intra_nick: winnerNick}})
-    winnerUser.won_games++
-    winnerUser.xp_total += await this.calculateXP(winnerUser, loserUser)
-    await this.userRepository.save(winnerUser);
+    const loserUser = await this.handleLoser(loser.frontEndData.nick)
+    await this.handleWinner(winner.frontEndData.nick, loserUser)
   }
   handleGameContinue() {
     let gamevisual = {
@@ -182,5 +174,18 @@ export class Game {
     const currentTime = new Date();
     const elapsedTimeInSeconds = Math.floor((currentTime.getTime() - this.timeStart.getTime()) / 1000);
     return elapsedTimeInSeconds;
+  }
+  async handleLoser(loserNick: string)
+  {
+    let loserUser = await this.userRepository.findOne({where: {intra_nick: loserNick}})
+    loserUser.lost_games++
+    return await this.userRepository.save(loserUser);
+  }
+  async handleWinner(winnerNick: string, loserUser: User)
+  {
+    const winnerUser = await this.userRepository.findOne({where: {intra_nick: winnerNick}})
+    winnerUser.won_games++
+    winnerUser.xp_total += await this.calculateXP(winnerUser, loserUser)
+    return await this.userRepository.save(winnerUser);
   }
 };

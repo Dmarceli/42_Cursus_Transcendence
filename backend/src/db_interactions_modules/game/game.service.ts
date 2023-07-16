@@ -98,22 +98,19 @@ export class GameService {
     }
   }
 
-  async UpdateAllPositions() {
-    while (true) {
+  UpdateAllPositions() {
+    setInterval(() => {
       for (let game of this.games) {
         if (game.playerPaddle1.client && game.playerPaddle2.client) {
           game.update();
-          await game.checkStatus();
+          game.checkStatus();
         }
         else {
           game.playerPaddle1.client?.emit('WaitingForPlayers')
           game.playerPaddle2.client?.emit('WaitingForPlayers')
         }
       }
-      await this.delay(15);
-    }
-  }
-  async delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    }, 15
+    )
   }
 }
