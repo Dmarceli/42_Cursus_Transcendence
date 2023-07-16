@@ -131,24 +131,22 @@ export class Game {
   }
   handleFinishGame() {
     if (this.score.player1 > 4) {
-      this.finish(this.playerPaddle1, this.playerPaddle2)
+      this.finish(this.playerPaddle1, this.playerPaddle2, this.score.player2)
       return
     }
-    this.finish(this.playerPaddle2, this.playerPaddle1)
+    this.finish(this.playerPaddle2, this.playerPaddle1, this.score.player1)
   }
-  async finish(winner: PlayerPaddle, loser: PlayerPaddle) {
-    console.log("WINNER "+winner.user)
-    console.log("LOSER "+loser.user)
+  async finish(winner: PlayerPaddle, loser: PlayerPaddle, loserScore: number) {
     let gameHistoryEntry = {
       winnerId: winner.user.id,
       loserId: loser.user.id,
-      points: await this.calculateXP(winner.user, loser.user),
+      points: loserScore,
       time_begin: this.timeStart
     }
-    await this.gameHistoryService.create(gameHistoryEntry)
     winner.client?.emit('PlayerWon')
     loser.client?.emit('PlayerLost')
     this.reset()
+    await this.gameHistoryService.create(gameHistoryEntry)
   }
   handleGameContinue() {
     let gamevisual = {
