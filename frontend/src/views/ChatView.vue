@@ -13,14 +13,14 @@
 					</div>
 				</div>
 			</div>
-			</div>
-			<div v-if="side_info === 1">
-				<div class="list-header">FRIENDS</div>
-				<div v-for="user_friend in User_Friends" :key="user_friend.id" class="tooltip">
-					<div class="user">
-						<span class="tooltiptext">
-							Nickname: {{ user_friend.nick }}<br>
-							Intra Nick: {{ user_friend.intra_nick }}<br>
+		</div>
+		<div v-if="side_info === 1">
+			<div class="list-header">FRIENDS</div>
+			<div v-for="user_friend in User_Friends" :key="user_friend.id" class="tooltip">
+				<div class="user">
+					<span class="tooltiptext">
+						Nickname: {{ user_friend.nick }}<br>
+						Intra Nick: {{ user_friend.intra_nick }}<br>
 							Games Won: {{ user_friend.won_games }}<br>
 							Games Lost: {{ user_friend.lost_games }}<br>
 						</span>
@@ -38,24 +38,24 @@
 							<button class="next" @click="selectedUsers.length === 1 ? Dmessage(selectedUsers[0]) : createChannelOptions = true">Next</button>
 						</div>
 						<h3 style="text-align: center;">Selected Users</h3>
-
+						
 						<select class="invitedUsersList" id="inviteUser" name="inviteUser" multiple
 							@mousedown="toggleOptionSelection($event)">
 							<option v-for="user in users" :key="user.id" :value="user.id"
-								:selected="isSelectedUser(user.id)" class="user_options">
-								{{ user.intra_nick }}
-							</option>
-						</select>
-					</div>
+							:selected="isSelectedUser(user.id)" class="user_options">
+							{{ user.intra_nick }}
+						</option>
+					</select>
 				</div>
-				<div v-if="showModal && createChannelOptions" class="modal">
-					<div class="modal-content">
-						<span class="close" @click="showModal = false; createChannelOptions = false">&times;</span>
-						<label for="channelName">Channel Name:</label>
+			</div>
+			<div v-if="showModal && createChannelOptions" class="modal">
+				<div class="modal-content">
+					<span class="close" @click="showModal = false; createChannelOptions = false">&times;</span>
+					<label for="channelName">Channel Name:</label>
 						<input class="input-field" type="text" id="channelName" name="channelName">
 						<label for="channelName">Password:</label>
 						<input class="input-field" placeholder="(optional)" type="text" id="channelPassword"
-							name="channelPassword">
+						name="channelPassword">
 						<button @click="createChannel()">Create</button>
 					</div>
 				</div>
@@ -77,13 +77,13 @@
 				</div>
 				<div class="list-header">CHANNELS LIST</div>
 				<div v-for="channel in channels" :key="channel.id"
-					:class="['channel', { 'selected': channel.id === selected_channel }]">
-					{{ channel.channel_name }}
-					<button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel)">join</button>
-				</div>
-				<form @submit.prevent="searchQuery">
-					<div class="search-input-container">
-						<button type="button" class="back-button" @click="side_info = 0"></button>
+				:class="['channel', { 'selected': channel.id === selected_channel }]">
+				{{ channel.channel_name }}
+				<button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel)">join</button>
+			</div>
+			<form @submit.prevent="searchQuery">
+				<div class="search-input-container">
+					<button type="button" class="back-button" @click="side_info = 0"></button>
 						<input v-model="searchText" type="text" placeholder="Search..." class="search-input">
 						<button type="submit" class="send-search-button"></button>
 					</div>
@@ -92,20 +92,22 @@
 			<div class="button-container" v-if="side_info !== 3">
 				<button :class="['channel-button', 'bar-button', { 'highlighted': side_info === 0 }]"
 					@click="getChannelsJoined(); side_info = 0"></button>
-				<button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]"
+					<button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]"
 					@click="getFriends()"></button>
-				<button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]"
+					<button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]"
 					@click="enableModal()"></button>
-				<button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]"
+					<button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]"
 					@click="search()"></button>
+					<button :class="['notify-button', 'bar-button', { 'highlighted': side_info === 4 }]"
+					@click="getNotifications(); side_info = 0"></button>
+				</div>
 			</div>
-		</div>
-		<div id="chat-container" ref="chatContainer">
-			<div class="chat-container-header">
-				<button :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]"
+			<div id="chat-container" ref="chatContainer">
+				<div class="chat-container-header">
+					<button :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]"
 					@click="toggleChannelList"></button>
-				<div v-if="selected_channel" class="channel-name">{{ getChannelName(selected_channel) }}
-					<button class="more-options" :class="{ 'more-options close-moreoptions': showChannelOptions }"
+					<div v-if="selected_channel" class="channel-name">{{ getChannelName(selected_channel) }}
+						<button class="more-options" :class="{ 'more-options close-moreoptions': showChannelOptions }"
 						@click="moreChannelOptions()"></button>
 				</div>
 			</div>
@@ -569,6 +571,26 @@ const MuteUser = async (userToMute) => {
 	}
 }
 
+const getNotifications = async () => {
+	try {
+		let url = process.env.VUE_APP_BACKEND_URL + '/events/notifications'
+		const response = await fetch(url,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+			});
+		if (response.ok) {
+			
+		} else {
+			console.log('Error:', response.status);
+		}
+	} catch (error) {
+		console.log('Error:', error);
+	}
+}
 
 const Dmessage = async (User_ID) => {
 	selectedUsers.value = [];

@@ -281,6 +281,10 @@
   background-image: url('../src/assets/search.svg');  
 }
 
+.notify-button{
+  background-image: url('../src/assets/notification-bell.svg');  
+}
+
 .searchcontainer{
   height: 94%; /* Set the height of the parent container */
   overflow-y: scroll; 

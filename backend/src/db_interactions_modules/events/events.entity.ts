@@ -4,7 +4,7 @@ import {
     Column,
     PrimaryGeneratedColumn,
     CreateDateColumn,
-    OneToOne,
+    ManyToOne,
     JoinColumn
    } from 'typeorm';
     
@@ -13,12 +13,12 @@ import {
     @PrimaryGeneratedColumn()
     id: number;
     
-    @OneToOne(() => User)
-    @JoinColumn()
+    @ManyToOne(() => User, user => user.id)
+    @JoinColumn({ name: 'requester_user' })
     requester_user: User;
    
-    @OneToOne(() => User)
-    @JoinColumn()
+    @ManyToOne(() => User, user => user.id)
+    @JoinColumn({ name: 'decider_user' })
     decider_user: User;
 
     @Column()

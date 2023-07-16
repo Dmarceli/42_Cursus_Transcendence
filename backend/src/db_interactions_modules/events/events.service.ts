@@ -3,17 +3,20 @@ import { EventCreateDto } from './dtos/events.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Events } from './events.entity';
 import { Any, Repository} from 'typeorm';
+import { User } from '../users/user.entity';
 @Injectable()
 export class EventsService {
   constructor(
     @InjectRepository(Events) private eventsRepository: Repository<Events>,
+     @InjectRepository(User) private UserRepository: Repository<User>
    ) {}
 
   async create(createEventDto: EventCreateDto, event_type: number) {
-    return this.eventsRepository.create({
+    return await this.eventsRepository.save({
       ...createEventDto as any,
       time: new Date(),
-      type: event_type
+      type: event_type,
+      already_seen: false
     });
   }
 
@@ -23,9 +26,10 @@ export class EventsService {
     // case ''
     await this.eventsRepository.delete(event)
   }
-  // findAll() {
-  //   return `This action returns all gameHistory`;
-  // }
+  async findAll_for_user(user_id :number) {
+    const user= await this.UserRepository.findOneBy({id: user_id})
+    return await this.eventsRepository.findBy({decider_user : user});
+  }
 
   // findOne(id: number) {
   //   return `This action returns a #${id} gameHistory`;

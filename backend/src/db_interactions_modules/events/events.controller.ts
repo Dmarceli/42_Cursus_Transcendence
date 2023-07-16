@@ -1,7 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { EventCreateDto } from './dtos/events.dto';
-
+import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { User } from '../users/user.entity';
+@UseGuards(JwtAuthGuard)
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
@@ -20,10 +23,11 @@ export class EventsController {
   event_decision(@Param('decision') decision: boolean, @Param('event_id') event_id: number) {
     return this.eventsService.closedecision(decision, event_id);
   }
-  // @Get()
-  // findAll() {
-  //   return this.gameHistoryService.findAll();
-  // }
+
+  @Get('/notifications')
+  findAll(@getUserIDFromToken() user: User) {
+    return this.eventsService.findAll_for_user(user.id);
+  }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {

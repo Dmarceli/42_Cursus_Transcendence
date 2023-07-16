@@ -11,9 +11,9 @@ export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) {}
 
   @Post('/create')
-  create(@Body() createChannelDto: ChannelCreateDto) {
+  create(@Body() createChannelDto: ChannelCreateDto,@getUserIDFromToken() user: User) {
     console.log(createChannelDto)
-    return this.channelsService.create(createChannelDto);
+    return this.channelsService.create(createChannelDto,user.id);
   }
 
   @Get('/all')

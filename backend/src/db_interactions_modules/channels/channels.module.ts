@@ -6,13 +6,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
 import { User } from '../users/user.entity';
+import { Events } from '../events/events.entity';
+import { EventsService } from '../events/events.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Channel, UserToChannel, User])
+    TypeOrmModule.forFeature([Channel, UserToChannel, User, Events])
 ],
   controllers: [ChannelsController],
-  providers: [ChannelsService, UserToChannelService],
+  providers: [ChannelsService, UserToChannelService, EventsService],
   exports : [ChannelsService]
 })
 export class ChannelsModule {}
