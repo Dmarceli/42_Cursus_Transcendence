@@ -41,7 +41,7 @@ export class GameService {
         return
       }
     }
-    let game = new Game(this.gameHistoryService)
+    let game = new Game(this.gameHistoryService, this.userRepository)
     game.playerPaddle1.client = playerClient
     game.playerPaddle1.frontEndData.nick = nick
     game.playerPaddle1.user = user
@@ -98,19 +98,22 @@ export class GameService {
     }
   }
 
-  UpdateAllPositions() {
-    setInterval(() => {
+  async UpdateAllPositions() {
+    while (true) {
       for (let game of this.games) {
         if (game.playerPaddle1.client && game.playerPaddle2.client) {
           game.update();
-          game.checkStatus();
+          await game.checkStatus();
         }
         else {
           game.playerPaddle1.client?.emit('WaitingForPlayers')
           game.playerPaddle2.client?.emit('WaitingForPlayers')
         }
       }
-    }, 15
-    )
+      await this.delay(15);
+    }
+  }
+  async delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
