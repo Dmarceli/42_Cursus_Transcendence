@@ -28,7 +28,7 @@ export class EventsService {
   }
   async findAll_for_user(user_id :number) {
     const user= await this.UserRepository.findOneBy({id: user_id})
-    return await this.eventsRepository.findBy({decider_user : user});
+    return await this.eventsRepository.find({where: {decider_user : user},relations: ['requester_user','decider_user' ]});
   }
 
   // findOne(id: number) {
