@@ -85,9 +85,10 @@
 				</div>
 				<form @submit.prevent="searchQuery">
 					<div class="search-input-container">
-						<button type="button" class="back-button" @click="side_info = 0"></button>
-						<input v-model="searchText" type="text" placeholder="Search..." class="search-input">
-						<button type="submit" class="send-search-button"></button>
+					<button @click="searchText = '';side_info = 0;">
+						<v-icon>mdi-arrow-left</v-icon>
+					</button>
+					<input v-model="searchText" type="text" placeholder="Search..." class="search-input">
 					</div>
 				</form>
 			</div>
@@ -219,6 +220,7 @@ const socket = inject('socket')
 function toggleChannelList() {
 	showSideInfo.value = !showSideInfo.value;
 }
+
 
 function enableModal() {
 	getUsers();
