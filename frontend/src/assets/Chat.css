@@ -5,21 +5,19 @@
   display: flex;
   font-family: 'Roboto', sans-serif;
   position: relative;
-    overflow-y: auto;
 }
   
 #chat-container {
     border: 1px solid #ccc;
     border-radius: 14px;
-    overflow-y: scroll;
     padding: 5px;
     display: flex;
     flex-direction: column;
     justify-content: baseline;
     flex-grow: 1;
-    overflow-y: auto;
     height: 100vh;
 }
+
 
 @media (max-width: 1024px){
 	.Chat{
@@ -78,16 +76,7 @@
 }
   
 .send-button {
-  padding: 5px 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  bottom: 0;
-  transition: 0.5s;
-  width: 8%;
-  min-width: 50px;
+  width: 5%;
 }
   
 .send-button:hover {
@@ -143,8 +132,23 @@
 }
 
 .list-container{
-	height: 93vh;
- 	overflow-y: scroll;
+  height: 94%;
+  overflow-y: scroll;
+
+}
+
+.list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.list-container::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.list-container::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
 }
 
 .channels-list {
@@ -156,6 +160,7 @@
 	transition: max-width 0.7s ease-in-out, opacity 0.7s ease-in-out;
 	max-width: 100%; 
 	padding-right: 0;
+  border-radius: 14px;
 }
 
 
@@ -281,13 +286,24 @@
   background-image: url('../src/assets/search.svg');  
 }
 
-.notify-button{
-  background-image: url('../src/assets/notification-bell.svg');  
+.searchcontainer{
+  height: 94%;
+  overflow-y: scroll;
+
 }
 
-.searchcontainer{
-  height: 94%; /* Set the height of the parent container */
-  overflow-y: scroll; 
+.searchcontainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.searchcontainer::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.searchcontainer::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
 }
 
 .search-input-container {
@@ -482,7 +498,7 @@
 }
 
 .user_options {
-  	display: flex;
+  display: flex;
 	align-items: center;
 	justify-content: space-between;
 	text-align: center;
@@ -516,7 +532,7 @@
 }
 
 .chat-container-header{
-	display: flex;
+	display: inline-flex;
 }
 
 .hamburguer-button,
@@ -527,18 +543,19 @@
 	background-color: transparent;
 	width: 4%;
 	height: 100%;
-	border: none;
+  border-radius: 10px;
 	filter: invert(100%);
 	transition: background-image 0.5s ease;
 	cursor: pointer;
 }
 
+
 .hamburguer-button {
-  background-image: url(../src/assets/burguer.svg);
+  background-image: url(../src/assets/full_burguer.svg);
 }
 
 .full-hamburguer-button {
-  background-image: url(../src/assets/full_burguer.svg);
+  background-image: url(../src/assets/burguer.svg);
 }
 
 
@@ -552,6 +569,7 @@
   display: flex;
   text-align: center;
   align-items: center;
+  margin-left: 5%;
 }
 
 .more-options {

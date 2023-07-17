@@ -5,6 +5,7 @@
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink to="/leaderboard">Leaderboard</RouterLink>
       <RouterLink to="/profile">User profile</RouterLink>
+      <button class="notify-button" @click="getNotifications()"></button>
     </nav>
   </header>
   <div v-if="islogged">
@@ -130,6 +131,28 @@ async function executeLoginwithId(idvalue: number) {
   if (verify)
     islogged.value = true;
 }
+
+
+const getNotifications = async () => {
+	// try {
+	// 	let url = process.env.VUE_APP_BACKEND_URL + '/events/notifications'
+	// 	const response = await fetch(url,
+	// 		{
+	// 			method: 'GET',
+	// 			headers: {
+	// 				'Content-Type': 'application/json',
+	// 				'Authorization': `Bearer ${token}`
+	// 			},
+	// 		});
+	// 	if (response.ok) {
+			
+	// 	} else {
+	// 		console.log('Error:', response.status);
+	// 	}
+	// } catch (error) {
+	// 	console.log('Error:', error);
+	}
+
 </script>
 
 <style scoped>
@@ -174,6 +197,16 @@ nav a {
     margin-left: 0rem;
     font-size: 1.5rem;
   }
+
+  .notify-button{
+    background-color: #555;
+    width: 50px;
+    height: 50px;
+    background-image: url('src/assets/notification-bell.svg');
+    background-size: contain;
+    
+  }
+
 
 }
 </style>
