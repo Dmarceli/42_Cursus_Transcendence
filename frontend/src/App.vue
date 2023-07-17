@@ -134,24 +134,27 @@ async function executeLoginwithId(idvalue: number) {
 
 
 const getNotifications = async () => {
-	// try {
-	// 	let url = process.env.VUE_APP_BACKEND_URL + '/events/notifications'
-	// 	const response = await fetch(url,
-	// 		{
-	// 			method: 'GET',
-	// 			headers: {
-	// 				'Content-Type': 'application/json',
-	// 				'Authorization': `Bearer ${token}`
-	// 			},
-	// 		});
-	// 	if (response.ok) {
+  let token = getCookieValueByName('token');
+  console.log(token)
+	try {
+		let url = process.env.VUE_APP_BACKEND_URL + '/events/notifications'
+		const response = await fetch(url,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+			});
+		if (response.ok) {
 			
-	// 	} else {
-	// 		console.log('Error:', response.status);
-	// 	}
-	// } catch (error) {
-	// 	console.log('Error:', error);
+		} else {
+			console.log('Error:', response.status);
+		}
+	} catch (error) {
+		console.log('Error:', error);
 	}
+}
 
 </script>
 
