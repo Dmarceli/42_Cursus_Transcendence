@@ -1,7 +1,13 @@
 <template>
   <div v-if="startmenu" class="start-menu">
     <img src="../assets/racketas.svg" alt="Green Rackets" />
-    <button @click="startmenu = false">Start Game</button>
+    <button @click="handleStartMenu">Start Game</button>
+  </div>
+  <div v-else-if="playerWon">
+    <h1>You won!!!!</h1>
+  </div>
+  <div v-else-if="playerLost">
+    <h1>You lost!!!!</h1>
   </div>
   <div v-else-if="playerWon">
     <h1>You won!!!!</h1>
@@ -10,7 +16,7 @@
     <h1>You lost!!!!</h1>
   </div>
   <div v-else class="board">
-    <Pong2D @player-lost="playerLost = true" @player-won="playerWon = true" />
+    <Pong2D  @player-lost="playerLost = true" @player-won="playerWon = true" />
   </div>
 </template>
 
@@ -21,6 +27,13 @@ import { ref } from 'vue'
 let startmenu = ref(true)
 let playerWon = ref(false)
 let playerLost = ref(false)
+
+function handleStartMenu()
+{
+  playerWon.value = false
+  playerLost.value = false 
+  startmenu.value = false
+}
 </script>
 
 <style scoped>

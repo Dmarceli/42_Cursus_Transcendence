@@ -5,7 +5,8 @@ import {
     PrimaryGeneratedColumn,
     CreateDateColumn,
     OneToOne,
-    JoinColumn
+    JoinColumn,
+    ManyToOne
    } from 'typeorm';
     
    @Entity()
@@ -13,18 +14,18 @@ import {
     @PrimaryGeneratedColumn()
     match_id: number;
     
-    @OneToOne(() => User)
-    @JoinColumn()
+    @ManyToOne(() => User, user => user.id)
+    @JoinColumn({name: 'winner_user'})
     user_id_winner: User;
    
-    @OneToOne(() => User)
-    @JoinColumn()
+    @ManyToOne(() => User, user => user.id)
+    @JoinColumn({name: 'loser_user'})
     user_id_loser: User;
 
-    @Column()
+    @CreateDateColumn()
     time_begin: Date;
     
-    @Column()
+    @CreateDateColumn()
     time_end: Date;
 
     @Column()

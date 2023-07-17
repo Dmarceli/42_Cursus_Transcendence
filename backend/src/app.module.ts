@@ -16,10 +16,10 @@ import { UserToChannelModule } from './db_interactions_modules/relations/user_to
 import { ConfigModule } from '@nestjs/config';
 import { Messages } from './db_interactions_modules/messages/messages.entity';
 import { MessagesModule } from './db_interactions_modules/messages/messages.module';
-import { GameGateway } from './db_interactions_modules/game/game.gateway';
 import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './db_interactions_modules/events/events.module';
 import { Events } from './db_interactions_modules/events/events.entity';
+import { GameModule } from './db_interactions_modules/game/games.module';
 
 @Module({
   imports: [ 
@@ -43,9 +43,10 @@ import { Events } from './db_interactions_modules/events/events.entity';
     FriendModule,
     UserToChannelModule,
     AuthModule,
-    EventsModule
+    EventsModule,
+    GameModule
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway, GameGateway],
+  providers: [AppService, AppGateway],
 })
 export class AppModule {}
