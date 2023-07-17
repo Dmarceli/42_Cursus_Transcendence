@@ -91,90 +91,103 @@
 				</form>
 			</div>
 			<div class="button-container" v-if="side_info !== 3">
-				<button :class="['channel-button', 'bar-button', { 'highlighted': side_info === 0 }]"
-					@click="getChannelsJoined(); side_info = 0"></button>
-				<button :class="['people-button', 'bar-button', { 'highlighted': side_info === 1 }]"
-					@click="getFriends()"></button>
-				<button :class="['new-button', 'bar-button', { 'highlighted': side_info === 2 }]"
-					@click="enableModal()"></button>
-				<button :class="['search-button', 'bar-button', { 'highlighted': side_info === 3 }]"
-					@click="search()"></button>
-
+				<v-row class="fill-parent">
+					<v-col cols="3" class="button-column">
+						<v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="getChannelsJoined(); side_info = 0">
+							<v-icon size="25" style="color: white;">mdi-format-list-bulleted</v-icon>
+						</v-btn>
+					</v-col>
+					<v-col cols="3" class="button-column">
+						<v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="getFriends()">
+							<v-icon size="25" style="color: white;">mdi-account-group</v-icon>
+						</v-btn>
+					</v-col>
+					<v-col cols="3" class="button-column">
+						<v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="enableModal()">
+							<v-icon size="25" style="color: white;">mdi-plus</v-icon>
+						</v-btn>
+					</v-col>
+					<v-col cols="3" class="button-column">
+						<v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="search()">
+							<v-icon size="25" style="color: white;">mdi-magnify</v-icon>
+						</v-btn>
+					</v-col>
+				</v-row>
 			</div>
-		</div>
-		<div id="chat-container" ref="chatContainer">
-			<div v-if="selected_channel" class="chat-container-header">
-				<v-btn icon :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]"
-					@click="toggleChannelList">
-					<v-icon>mdi-menu</v-icon>
-				</v-btn>
-				<div class="channel-name">
-					{{ getChannelName(selected_channel) }}
+			</div>
+			<div id="chat-container" ref="chatContainer">
+				<div v-if="selected_channel" class="chat-container-header">
+					<v-btn icon :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]"
+						@click="toggleChannelList">
+						<v-icon>mdi-menu</v-icon>
+					</v-btn>
+					<div class="channel-name">
+						{{ getChannelName(selected_channel) }}
+					</div>
+					<v-btn icon class="more-options ml-auto" :class="{ 'close-moreoptions': showChannelOptions }"
+						@click="moreChannelOptions()">
+						<v-icon>{{ showChannelOptions ? 'mdi-close' : 'mdi-dots-vertical' }}</v-icon>
+					</v-btn>
 				</div>
-				<v-btn icon class="more-options ml-auto" :class="{ 'close-moreoptions': showChannelOptions }"
-					@click="moreChannelOptions()">
-					<v-icon>{{ showChannelOptions ? 'mdi-close' : 'mdi-dots-vertical' }}</v-icon>
-				</v-btn>
-			</div>
-			<div v-if="showChannelOptions && getChannelType(selected_channel)">
-				<div id="user-list-container">
-					<h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
-						getChannelName(selected_channel)
-					}}</h2>
-					<div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
-						<img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
-						<div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
-							<button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
-							<button @click="banUser(usersInChannel.user_id.id)">Ban</button>
-							<button @click="MuteUser(usersInChannel.user_id.id)">Mute</button>
-							<button @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</button>
+				<div v-if="showChannelOptions && getChannelType(selected_channel)">
+					<div id="user-list-container">
+						<h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
+							getChannelName(selected_channel)
+						}}</h2>
+						<div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
+							<img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
+							<div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
+								<button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
+								<button @click="banUser(usersInChannel.user_id.id)">Ban</button>
+								<button @click="MuteUser(usersInChannel.user_id.id)">Mute</button>
+								<button @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</button>
+							</div>
+							{{ usersInChannel.user_id.intra_nick }}
 						</div>
-						{{ usersInChannel.user_id.intra_nick }}
+					</div>
+					<button class="leave-button" @click="leaveChannel(selected_channel)"></button>
+				</div>
+				<div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
+					<div v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
+						<span v-if="usersInChannel.user_id.intra_nick !== users_Name">
+							<div class="userInfo-container">
+								<div class="userInfo">
+									<img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="alone-user-avatar">
+									<h1>{{ usersInChannel.user_id.intra_nick }}</h1>
+									<h2>{{ usersInChannel.user_id.nick }}</h2>
+									<p>Games Won : {{ usersInChannel.user_id.won_games }} </p>
+									<p>Games Lost : {{ usersInChannel.user_id.lost_games }} </p>
+									<p>Total XP : {{ usersInChannel.user_id.xp_total }} </p>
+								</div>
+							</div>
+						</span>
 					</div>
 				</div>
-				<button class="leave-button" @click="leaveChannel(selected_channel)"></button>
-			</div>
-			<div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
-				<div v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
-					<span v-if="usersInChannel.user_id.intra_nick !== users_Name">
-						<div class="userInfo-container">
-							<div class="userInfo">
-								<img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="alone-user-avatar">
-								<h1>{{ usersInChannel.user_id.intra_nick }}</h1>
-								<h2>{{ usersInChannel.user_id.nick }}</h2>
-								<p>Games Won : {{ usersInChannel.user_id.won_games }} </p>
-								<p>Games Lost : {{ usersInChannel.user_id.lost_games }} </p>
-								<p>Total XP : {{ usersInChannel.user_id.xp_total }} </p>
-							</div>
-						</div>
-					</span>
+				<div v-else id="msg-container" ref="msgsContainer">
+					<div v-for="message in messages" :key="message.id"
+						:class="[getMessageClass(message.author.nick), 'message']">
+						<strong>[{{ message.author?.nick }}]:</strong> {{ message.message }}
+						<div class="message-time">{{ formatTime(message.time) }}</div>
+					</div>
 				</div>
-			</div>
-			<div v-else id="msg-container" ref="msgsContainer">
-				<div v-for="message in messages" :key="message.id"
-					:class="[getMessageClass(message.author.nick), 'message']">
-					<strong>[{{ message.author?.nick }}]:</strong> {{ message.message }}
-					<div class="message-time">{{ formatTime(message.time) }}</div>
-				</div>
-			</div>
-			<div v-if="!showChannelOptions && !isUserMutedOnChannel(usersInChannels)" class="msg-input"
-				style="margin-bottom: -10px;">
-				<form class="d-flex flex-row" @submit.prevent="sendMessage">
-					<v-text-field class="input-field" v-model="messageText" placeholder="Type Something"></v-text-field>
-					<v-btn icon type="submit" class="send-button input-field"
-						style="margin-top: 10px;"><v-icon>mdi-send</v-icon></v-btn>
-				</form>
-				<!-- <form class="submitform" @submit.prevent="sendMessage">
+				<div v-if="!showChannelOptions && !isUserMutedOnChannel(usersInChannels)" class="msg-input"
+					style="margin-bottom: -10px;">
+					<form class="d-flex flex-row" @submit.prevent="sendMessage">
+						<v-text-field class="input-field" v-model="messageText" placeholder="Type Something"></v-text-field>
+						<v-btn icon type="submit" class="send-button input-field"
+							style="margin-top: 10px;"><v-icon>mdi-send</v-icon></v-btn>
+					</form>
+					<!-- <form class="submitform" @submit.prevent="sendMessage">
 					<input v-model="messageText" placeholder="Message" class="input-field">
 					<button type="submit" class="send-button">Send</button>
 				</form> -->
-			</div>
-			<div v-else style="color: red;text-align: center;"
-				v-if="isUserMutedOnChannel(usersInChannels) && !showChannelOptions">
-				YOU ARE MUTED
+				</div>
+				<div v-else style="color: red;text-align: center;"
+					v-if="isUserMutedOnChannel(usersInChannels) && !showChannelOptions">
+					YOU ARE MUTED
+				</div>
 			</div>
 		</div>
-	</div>
 </template>
 
 

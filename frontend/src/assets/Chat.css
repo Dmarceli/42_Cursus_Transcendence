@@ -61,7 +61,7 @@
   border-radius: 15px 15px 15px 0 ;
 }
 
-  
+
 .msg-input {
   margin-top: 10px;
 }
@@ -212,28 +212,38 @@
 }
 
 .button-container {
-	display: flex;
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	height: 5%;
-	margin-left: 10px;
-	background-color: #555;
-	border-radius: 15px;
-	min-width: 90%;
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5%;
+  margin-left: 10px;
+  background-color: #555;
+  border-radius: 15px;
+  padding: 3px;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
+.fill-parent {
+  width: 100%;
+}
 
-.bar-button{
-  border: none;
-  background-color: transparent;
-  padding: 5px;
-  cursor: pointer;
+.button-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.button-column > .v-btn {
   width: 25%;
-  background-repeat: no-repeat;
-  background-size: contain;
-  transition: transform 0.3s ease-in-out;
+  padding: 0;
+}
+
+.v-btn {
+  margin: 0;
 }
 
 .bar-button:hover {
