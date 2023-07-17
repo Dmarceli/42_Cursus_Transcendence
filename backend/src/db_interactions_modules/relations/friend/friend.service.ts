@@ -15,17 +15,28 @@ export class friendService {
   //TODO: Validate if friendship already exist and if users id sent exist
   const user1= await this.userRepository.findOne({where: {id: createfriendDto.user1Id} })
   const user2= await this.userRepository.findOne({where: {id: createfriendDto.user2Id} })
-   return this.friendRepository.save({...createfriendDto as any});
+   return this.friendRepository.save({...createfriendDto as any, is_block: false});
+ }
+
+
+ async blockuser(user_to_block: number, user: number) {
+  const to_block= await this.userRepository.findOne({where: {id: user_to_block} })
+  const user1= await this.userRepository.findOne({where: {id: user} })
+   return this.friendRepository.save({
+    user1Id: user1,
+    user2Id: to_block,
+    is_block: true
+   });
  }
  async findAll() {
-  return await this.friendRepository.find({relations: ['user1Id', 'user2Id' ]});
+  return await this.friendRepository.find({relations: ['user1Id', 'user2Id' ], where: {is_block: false}});
 }
 
 async findByUserId(userId: number) {
   let friendList: Array<User> = [];
   const friendship = await this.friendRepository.find({
-    where: [{ user1Id: { id: userId }},
-            {user2Id: {id: userId}}
+    where: [{ user1Id: { id: userId}, is_block: false},
+            {user2Id: {id: userId}, is_block: false}
             ],
     relations:['user1Id', 'user2Id']
   });
@@ -36,6 +47,16 @@ async findByUserId(userId: number) {
       friendList.push(friendship[k].user1Id)
   }
   return  friendList
+}
+
+async get_blockedusers(userId: number) {
+  const blocked_list = await this.friendRepository.find({
+    where: [{ user1Id: { id: userId}, is_block: true}],
+    relations:['user1Id', 'user2Id'],
+    select:{user1Id: {id: true, intra_nick: true}, user2Id: {id: true, intra_nick: true}}
+  });
+ 
+  return  blocked_list
 }
 
 async delete_friend(id1: number,id2: number) {
