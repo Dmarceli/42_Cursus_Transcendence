@@ -1,13 +1,7 @@
 <template>
   <div v-if="startmenu" class="start-menu">
     <img src="../assets/racketas.svg" alt="Green Rackets" />
-    <button @click="handleStartMenu">Start Game</button>
-  </div>
-  <div v-else-if="playerWon">
-    <h1>You won!!!!</h1>
-  </div>
-  <div v-else-if="playerLost">
-    <h1>You lost!!!!</h1>
+    <button @click="handleStartMenu">Join Lobby</button>
   </div>
   <div v-else-if="playerWon">
     <h1>You won!!!!</h1>

@@ -134,8 +134,8 @@ export class Game {
   async handleFinishGame() {
     let winningPlayer = this.score.player1 > 4 ? this.playerPaddle1 : this.playerPaddle2;
     let losingPlayer = winningPlayer == this.playerPaddle1 ? this.playerPaddle2 : this.playerPaddle1;
-    let winningScore = this.score.player1 > this.score.player2 ? this.score.player1: this.score.player2
-    this.finish(winningPlayer, losingPlayer, winningScore)
+    let losingScore = this.score.player1 < this.score.player2 ? this.score.player1: this.score.player2
+    this.finish(winningPlayer, losingPlayer, losingScore)
   }
   async finish(winner: PlayerPaddle, loser: PlayerPaddle, loserScore: number) {
     winner.client?.emit('PlayerWon')
