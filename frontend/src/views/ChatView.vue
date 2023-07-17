@@ -78,9 +78,10 @@
 				</div>
 				<div class="list-header">CHANNELS LIST</div>
 				<div v-for="channel in channels" :key="channel.id"
-					:class="['channel', { 'selected': channel.id === selected_channel }]">
-					{{ channel.channel_name }}
-					<button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel)">join</button>
+					:class="['channel', { 'selected': channel.id === selected_channel }]" style="cursor: auto;">
+					<span class="channel-name-wrap">{{ channel.channel_name }}</span>
+					<button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel)" class="join-button">Join</button>
+					<button v-else @click="chooseChannel(channel.id)"><v-icon class="chat-button">mdi-send</v-icon></button>
 				</div>
 				<form @submit.prevent="searchQuery">
 					<div class="search-input-container">
