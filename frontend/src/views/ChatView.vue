@@ -94,22 +94,22 @@
 				<v-row class="fill-parent">
 					<v-col cols="3" class="button-column">
 						<v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="getChannelsJoined(); side_info = 0">
-							<v-icon size="25" style="color: white;">mdi-format-list-bulleted</v-icon>
+							<v-icon size="29" style="color: white;">mdi-format-list-bulleted</v-icon>
 						</v-btn>
 					</v-col>
 					<v-col cols="3" class="button-column">
 						<v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="getFriends()">
-							<v-icon size="25" style="color: white;">mdi-account-group</v-icon>
+							<v-icon size="29" style="color: white;">mdi-account-group</v-icon>
 						</v-btn>
 					</v-col>
 					<v-col cols="3" class="button-column">
 						<v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="enableModal()">
-							<v-icon size="25" style="color: white;">mdi-plus</v-icon>
+							<v-icon size="29" style="color: white;">mdi-plus</v-icon>
 						</v-btn>
 					</v-col>
 					<v-col cols="3" class="button-column">
 						<v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="search()">
-							<v-icon size="25" style="color: white;">mdi-magnify</v-icon>
+							<v-icon size="29" style="color: white;">mdi-magnify</v-icon>
 						</v-btn>
 					</v-col>
 				</v-row>
