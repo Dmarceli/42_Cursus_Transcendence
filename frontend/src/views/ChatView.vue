@@ -103,13 +103,18 @@
 			</div>
 		</div>
 		<div id="chat-container" ref="chatContainer">
-			<div class="chat-container-header">
-				<v-btn icon :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]" 
-					@click="toggleChannelList"><v-icon>mdi-menu</v-icon></v-btn>
-				<div v-if="selected_channel" class="channel-name">{{ getChannelName(selected_channel) }}
-					<button class="more-options" :class="{ 'more-options close-moreoptions': showChannelOptions }"
-						@click="moreChannelOptions()"></button>
+			<div v-if="selected_channel" class="chat-container-header">
+				<v-btn icon :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]"
+					@click="toggleChannelList">
+					<v-icon>mdi-menu</v-icon>
+				</v-btn>
+				<div class="channel-name">
+					{{ getChannelName(selected_channel) }}
 				</div>
+				<v-btn icon class="more-options ml-auto" :class="{ 'close-moreoptions': showChannelOptions }"
+					@click="moreChannelOptions()">
+					<v-icon>{{ showChannelOptions ? 'mdi-close' : 'mdi-dots-vertical' }}</v-icon>
+				</v-btn>
 			</div>
 			<div v-if="showChannelOptions && getChannelType(selected_channel)">
 				<div id="user-list-container">
@@ -152,10 +157,12 @@
 					<div class="message-time">{{ formatTime(message.time) }}</div>
 				</div>
 			</div>
-			<div v-if="!showChannelOptions && !isUserMutedOnChannel(usersInChannels)" class="msg-input"  style="margin-bottom: -10px;">
-				<form class="d-flex flex-row" @submit.prevent="sendMessage"  >
+			<div v-if="!showChannelOptions && !isUserMutedOnChannel(usersInChannels)" class="msg-input"
+				style="margin-bottom: -10px;">
+				<form class="d-flex flex-row" @submit.prevent="sendMessage">
 					<v-text-field class="input-field" v-model="messageText" placeholder="Type Something"></v-text-field>
-					<v-btn icon type="submit" class="send-button input-field" style="margin-top: 10px;"><v-icon>mdi-send</v-icon></v-btn>
+					<v-btn icon type="submit" class="send-button input-field"
+						style="margin-top: 10px;"><v-icon>mdi-send</v-icon></v-btn>
 				</form>
 				<!-- <form class="submitform" @submit.prevent="sendMessage">
 					<input v-model="messageText" placeholder="Message" class="input-field">
