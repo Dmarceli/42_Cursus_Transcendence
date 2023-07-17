@@ -43,12 +43,12 @@
   margin-bottom: 10px;
   min-width: 33vw;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: white;
 
 }
 
 .message-sent {
   background-color: #72b24d;
-  color: white;
   padding: 10px;
   align-self: flex-end;
   border-radius: 15px 15px 0 15px ;
@@ -320,6 +320,9 @@
   background-color: #555;
 }
 
+.custom-text-field{
+  position: relative;
+}
 
 .search-input {
   padding: 5px;
