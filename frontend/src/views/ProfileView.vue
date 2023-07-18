@@ -161,14 +161,14 @@ function handleNewAvatar(event: Event) {
             <div class="stat-label">Games Lost</div>
             <div class="stat-value">{{ userProfile.lost_games }}</div>
           </div>
-          <div class="stat-item">
+          <!-- <div class="stat-item">
             <div class="stat-label">Win Streak</div>
             <div class="stat-value">{{ userProfile.win_streak }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">Highest Streak</div>
             <div class="stat-value">{{ userProfile.highest_win_streak }}</div>
-          </div>
+          </div> -->
           <div class="stat-item stat-rank">
             <div class="stat-label">Rank</div>
             <div class="stat-value">{{ userProfile.rank }}</div>
