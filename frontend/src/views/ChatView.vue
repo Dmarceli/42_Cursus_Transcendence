@@ -33,7 +33,7 @@
 				<div v-if="showModal && !createChannelOptions" class="modal">
 					<div class="modal-content">
 						<div class="modal-header">
-							<span class="close" @click="showModal = false; side_info = 0">&times;</span>
+							<span class="close" @click="closeModal()">&times;</span>
 							<h1>New Message</h1>
 							<button class="next"
 								@click="selectedUsers.length === 1 ? Dmessage(selectedUsers[0]) : createChannelOptions = true">Next</button>
@@ -51,7 +51,7 @@
 				</div>
 				<div v-if="showModal && createChannelOptions" class="modal">
 					<div class="modal-content">
-						<span class="close" @click="showModal = false; createChannelOptions = false">&times;</span>
+						<span class="close" @click="closeModal()">&times;</span>
 						<label for="channelName">Channel Name:</label>
 						<input class="input-field" type="text" id="channelName" name="channelName">
 						<label for="channelName">Password:</label>
@@ -220,7 +220,12 @@ const socket = inject('socket')
 function toggleChannelList() {
 	showSideInfo.value = !showSideInfo.value;
 }
-
+function closeModal(){
+	selectedUsers.value = [];
+	showModal.value = false;  
+	side_info.value = 0;
+	createChannelOptions.value = false;
+}
 
 function enableModal() {
 	getUsers();
