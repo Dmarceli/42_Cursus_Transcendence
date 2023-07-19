@@ -102,12 +102,17 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
-      let socket = io(process.env.VUE_APP_BACKEND_URL);
+};
+      let socket = io(process.env.VUE_APP_BACKEND_URL,{
+        auth: {
+          token: token+'2'
+        }
+      });
       provide('socket', socket)
     }
   }
 
-})();
+)();
 
 
 function login42() {

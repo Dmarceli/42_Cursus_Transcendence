@@ -1,17 +1,25 @@
-import { Injectable, Catch, ConflictException} from '@nestjs/common';
+import { Injectable, Catch, ConflictException, UnauthorizedException} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository, QueryFailedError } from 'typeorm';
 import { Response } from 'express';
 import { CreateUserDto } from './dtos/user.dto';
-
+import { Socket } from 'socket.io';
+import { UserSocketArray } from './classes/UsersSockets';
+import { getUserIDFromToken } from './getUserIDFromToken';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+    private jwtService: JwtService,
+    
+  ) {
+    this.UsersOnline = []
+  }
+  UsersOnline: UserSocketArray[] = []
 
 
   async createUser(User: CreateUserDto){
@@ -67,7 +75,36 @@ export class UsersService {
      return resp;
    }
 
+  
+   async addUserToLobby(client: Socket){
+    const token = client.handshake.auth.token;
+    let payload;
+    try {
+       payload = await this.jwtService.verifyAsync(
+        token,
+        {
+          secret: `${process.env.JWT_SECRET_KEY}`
+        }
+      );
+    } catch {
+      console.log("User Unhautorized")
+      return null
+    } 
+    const resp= await this.userRepository.findOne(
+      {where: {id: payload.id}}
+     );
+     if(!resp)
+     return null
+      this.UsersOnline.push(new UserSocketArray(resp,client))
+     return true;
+   }
 
+   async remove_disconnect_User(client_: Socket){
+    const Index = this.UsersOnline.findIndex( User_ => User_.client === client_)
+    if(Index != -1)
+      this.UsersOnline.splice(Index,1)
+    console.log(this.UsersOnline)
+   }
   // findOne(id: number) {
   //   return `This action returns a #${id} user`;
   // }

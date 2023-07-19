@@ -10,8 +10,10 @@ OnGatewayDisconnect,
 import { Socket, Server } from 'socket.io';
 import { AppService } from '../../app.service';
 import { CreateMsgDto } from '../messages/dtos/message.dto';
-import { UsePipes, ValidationPipe } from '@nestjs/common';
+import { UsePipes, ValidationPipe, UseGuards } from '@nestjs/common';
 import { GameService } from '../game/game.service';
+import { UsersService } from '../users/users.service';
+
 
 @WebSocketGateway({
   cors: {
@@ -21,7 +23,7 @@ import { GameService } from '../game/game.service';
  export class AppGateway
  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
- constructor(private appService: AppService, private gameService: GameService) {}
+ constructor(private appService: AppService, private gameService: GameService, private usersService: UsersService  ) {}
  
  @WebSocketServer() server: Server;
  
@@ -39,11 +41,16 @@ import { GameService } from '../game/game.service';
  
  handleDisconnect(client: Socket) {
    console.log(`Disconnected: ${client.id}`);
+   this.usersService.remove_disconnect_User(client)
    this.gameService.RemovePlayerFromGame(client)
  }
  
- handleConnection(client: Socket, ...args: any[]) {
-   console.log(`Connected ${client.id}`);
+ //1º step após conexão
+ async handleConnection(client: Socket/* ...args: any[]*/) {
+  const authorization = await this.usersService.addUserToLobby(client)
+  console.log(`Connected ${client.id}`);
+  if(!authorization)
+    client.disconnect();
  }
 
 // Game Service
