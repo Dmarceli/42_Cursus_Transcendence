@@ -40,11 +40,21 @@
 
 import { RouterLink, RouterView } from 'vue-router';
 import Login from "./components/LoginPage.vue";
-import { io } from 'socket.io-client'
-import { ref, provide } from 'vue'
+import { Socket, io } from 'socket.io-client'
+import { ref, provide, inject } from 'vue'
 
 const islogged = ref(false);
 
+
+let socket: Socket | null = null;
+async function setupSocket(token) {
+  socket = io(process.env.VUE_APP_BACKEND_URL, {
+    auth: {
+      token: token,
+    },
+  });
+  provide('socket', socket);
+}
 function getCookieValueByName(name: any) {
   const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i++) {
@@ -102,13 +112,13 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
-};
-      let socket = io(process.env.VUE_APP_BACKEND_URL,{
+		socket = io(process.env.VUE_APP_BACKEND_URL,{
         auth: {
-          token: token+'2'
+          token: token
         }
       });
       provide('socket', socket)
+	};
     }
   }
 
@@ -184,7 +194,12 @@ const fetchNotifications = async () => {
   }
 };
 
-
+if (socket && islogged.value === true) {
+  socket.on('notification', Notification => {
+    fetchNotifications();
+    console.log("ola");
+  });
+}
 </script>
 
 <style scoped>

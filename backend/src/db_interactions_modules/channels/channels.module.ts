@@ -8,13 +8,14 @@ import { UserToChannel } from '../relations/user_to_channel/user_to_channel.enti
 import { User } from '../users/user.entity';
 import { Events } from '../events/events.entity';
 import { EventsService } from '../events/events.service';
+import { UsersService } from '../users/users.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Channel, UserToChannel, User, Events])
 ],
   controllers: [ChannelsController],
-  providers: [ChannelsService, UserToChannelService, EventsService],
+  providers: [ChannelsService, UserToChannelService, EventsService, UsersService],
   exports : [ChannelsService]
 })
 export class ChannelsModule {}

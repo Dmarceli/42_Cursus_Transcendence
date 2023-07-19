@@ -42,7 +42,6 @@ export class ChannelsService {
           requester_user: creator_user,
           decider_user: user_to_join.id,
           message: ""
-
         }
         await this.eventService.create(eventDto,1)
       }

@@ -105,6 +105,14 @@ export class UsersService {
       this.UsersOnline.splice(Index,1)
     console.log(this.UsersOnline)
    }
+
+	async notifyUser(user_id: number){
+		const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
+		if(!user)
+			return;
+		user.client.emit("notification")
+	}
+
   // findOne(id: number) {
   //   return `This action returns a #${id} user`;
   // }

@@ -53,6 +53,8 @@ import { UsersService } from '../users/users.service';
     client.disconnect();
  }
 
+
+
 // Game Service
   @SubscribeMessage('NewPlayer')
   handleNewPlayer(client: Socket, intra_nick: string) {

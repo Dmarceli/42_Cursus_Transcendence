@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { AppGateway } from '../app/app.gateway';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
@@ -14,7 +16,6 @@ import { PassportModule } from '@nestjs/passport';
       signOptions: { expiresIn: 30 },
     }),
     PassportModule.register({ session: true }),
-   
   ],
   controllers: [UsersController],
   providers: [UsersService],
