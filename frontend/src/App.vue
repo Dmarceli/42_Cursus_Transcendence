@@ -5,9 +5,29 @@
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink to="/leaderboard">Leaderboard</RouterLink>
       <RouterLink to="/profile">User profile</RouterLink>
-      <button class="notify-button" @click="getNotifications()"></button>
+      <v-btn @click="toggleNotifications()" style="background-color: #555;">
+        <v-icon>mdi-bell</v-icon>
+      </v-btn>
     </nav>
   </header>
+  <v-dialog v-model="showNotifications" max-width="400">
+    <v-card>
+      <v-card-title>
+        <span class="headline">Notifications</span>
+      </v-card-title>
+      <v-card-text>
+        <div v-if="notifications.length > 0" class="notifications-box">
+          <div v-for="notification in notifications" :key="notification.id" class="notification-item">
+            {{ notification }}
+          </div>
+        </div>
+        <div v-else class="no-notifications">No new notifications</div>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="primary" @click="showNotifications = false">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <div v-if="islogged">
     <RouterView />
   </div>
@@ -127,29 +147,38 @@ async function executeLoginwithId(idvalue: number) {
   }
 }
 
+const showNotifications = ref(false);
+const notifications = ref([]);
 
-const getNotifications = async () => {
+const toggleNotifications = async () => {
+  if (!showNotifications.value) {
+    await fetchNotifications();
+  }
+  showNotifications.value = !showNotifications.value;
+}; 
+
+const fetchNotifications = async () => {
   let token = getCookieValueByName('token');
-  console.log(token)
-	try {
-		let url = process.env.VUE_APP_BACKEND_URL + '/events/notifications'
-		const response = await fetch(url,
-			{
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${token}`
-				},
-			});
-		if (response.ok) {
-			
-		} else {
-			console.log('Error:', response.status);
-		}
-	} catch (error) {
-		console.log('Error:', error);
-	}
-}
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/events/notifications';
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      notifications.value = data; 
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
 
 </script>
 

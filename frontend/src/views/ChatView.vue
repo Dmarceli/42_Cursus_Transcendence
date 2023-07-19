@@ -179,10 +179,6 @@
 						<v-btn icon type="submit" class="send-button input-field"
 							style="margin-top: 10px;"><v-icon>mdi-send</v-icon></v-btn>
 					</form>
-					<!-- <form class="submitform" @submit.prevent="sendMessage">
-					<input v-model="messageText" placeholder="Message" class="input-field">
-					<button type="submit" class="send-button">Send</button>
-				</form> -->
 				</div>
 				<div v-else style="color: red;text-align: center;"
 					v-if="isUserMutedOnChannel(usersInChannels) && !showChannelOptions">
@@ -222,9 +218,9 @@ function toggleChannelList() {
 }
 function closeModal(){
 	selectedUsers.value = [];
-	showModal.value = false;  
-	side_info.value = 0;
 	createChannelOptions.value = false;
+	side_info.value = 0;
+	showModal.value = false;  
 }
 
 function enableModal() {

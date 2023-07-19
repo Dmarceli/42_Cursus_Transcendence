@@ -155,14 +155,10 @@
 	transform: rotate(-25deg);
 }
 
-.chat-button:hover{
-	transform: rotate(-25deg);
-}
 
 .list-container{
   height: 94%;
-  overflow-y: scroll;
-
+  overflow: hidden;
 }
 
 .list-container::-webkit-scrollbar {
