@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref,onBeforeMount, reactive, computed } from 'vue';
+import { ref,onBeforeMount, reactive, computed, route } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import jwt_decode from 'jwt-decode';
+
 
 
 library.add(fas);
@@ -40,11 +41,9 @@ function getCookieValueByName(name: string) {
 
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
-let userId = decodedToken.id;
-const userNick =  decodedToken.user['nick'];
-
-userData.id = userId;
-userData.nick = userNick;
+let useNick;
+userData.id = decodedToken.id;
+userData.nick =  decodedToken.user['nick'];
 
 const isOwnProfile = computed(() => {
 	return userProfile.value.nick === userData.nick;
@@ -52,13 +51,27 @@ const isOwnProfile = computed(() => {
 
 const fetchUserProfile = async () => {
 	try {
-		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers';
-		const response = await fetch(url);
-		const data = await response.json();
-		console.log(data);
-
-		userProfile.value = data[0];
-		// console.log(userProfile.value);
+		if (route.name === 'myProfile') {
+			useNick = userData.nick;
+		} else {
+			useNick = route.params.nick;
+		}
+		console.log(useNick);
+		console.log(userData.nick)
+		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/' + useNick;
+		const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      userProfile.value = data;
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching User Profile data:', response.statusText);
+    }
 	} catch (error) {
 		console.error('Error fetching User Profile data', error);
 	}
