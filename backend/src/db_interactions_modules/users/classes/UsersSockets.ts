@@ -9,7 +9,5 @@ export class UserSocketArray {
         this.user = user_
         this.client = socket_
     }
-
-    
 }
 

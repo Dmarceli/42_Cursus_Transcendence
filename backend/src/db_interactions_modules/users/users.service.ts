@@ -111,6 +111,8 @@ export class UsersService {
 		if(!user)
 			return;
 		user.client.emit("notification")
+  		console.log('Notification sent to user:', user_id);
+
 	}
 
   // findOne(id: number) {
