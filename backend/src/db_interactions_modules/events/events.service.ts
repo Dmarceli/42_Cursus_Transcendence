@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { EventCreateDto } from './dtos/events.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Events } from './events.entity';
 import { Any, Repository} from 'typeorm';
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
-
+import { AppService } from 'src/app.service';
 
 @Injectable()
 export class EventsService {
@@ -13,6 +13,8 @@ export class EventsService {
     @InjectRepository(Events) private eventsRepository: Repository<Events>,
      @InjectRepository(User) private UserRepository: Repository<User> ,
      private usersService: UsersService,
+  
+     private appService: AppService,
  
    ) {}
 
@@ -28,7 +30,7 @@ export class EventsService {
       console.error('Error notifying user:', error);
     }
     try {
-      await this.usersService.notifyUser(createEventDto.decider_user);
+      await this.appService.user_to_notify(createEventDto.decider_user);
     } catch (error) {
       console.error('Error notifying user:', error);
     }
@@ -36,8 +38,6 @@ export class EventsService {
 
   async closedecision(decision: boolean, event_id: number){
     const event = await this.eventsRepository.findOneBy({id: event_id})
-    // switch()
-    // case ''
     await this.eventsRepository.delete(event)
   }
   async findAll_for_user(user_id :number) {

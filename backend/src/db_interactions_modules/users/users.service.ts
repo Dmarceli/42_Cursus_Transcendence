@@ -94,24 +94,35 @@ export class UsersService {
         return null
       
       this.UsersOnline.push(new UserSocketArray(resp,client))
-      // console.log(this.UsersOnline)
+      // let i=0;
+      // this.UsersOnline.forEach((element) => {
+      //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+      // })
      return true;
    }
 
    async notifyUser(user_id: number){
-    console.log(this.UsersOnline)
+    //console.log(this.UsersOnline)
      console.log('Notification sent to user:', user_id);
-     //const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
-     // if(!user)
-     //   return;
-     //user.client.emit("notification")
+    //  let i=0;
+    //  this.UsersOnline.forEach((user) => {
+    //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+    // })
+     const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
+     if(!user)
+       return;
+     user.client.emit("notification")
    }
 
    async remove_disconnect_User(client_: Socket){
     const Index = this.UsersOnline.findIndex( User_ => User_.client === client_)
     if(Index != -1)
       this.UsersOnline.splice(Index,1)
-    console.log(this.UsersOnline)
+    
+    //   let i=0;
+    //   this.UsersOnline.forEach((user) => {
+    //    console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+    //  })  
    }
 
 

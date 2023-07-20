@@ -20,6 +20,11 @@ import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './db_interactions_modules/events/events.module';
 import { Events } from './db_interactions_modules/events/events.entity';
 import { GameModule } from './db_interactions_modules/game/games.module';
+import { UsersService } from './db_interactions_modules/users/users.service';
+import { ChannelsService } from './db_interactions_modules/channels/channels.service';
+import { UserToChannelService } from './db_interactions_modules/relations/user_to_channel/user_to_channel.service';
+import { EventsService } from './db_interactions_modules/events/events.service';
+import { MessagesService } from './db_interactions_modules/messages/messages.service';
 
 @Module({
   imports: [ 
@@ -35,7 +40,7 @@ import { GameModule } from './db_interactions_modules/game/games.module';
       entities: [User,Messages, GameHistory, Channel, friend, UserToChannel, Events],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Messages, GameHistory, Channel, friend, UserToChannel]),
+    TypeOrmModule.forFeature([User, Messages, GameHistory, Channel, friend, UserToChannel, Events]),
     MessagesModule,
     UsersModule,
     GameHistoryModule,
@@ -47,6 +52,7 @@ import { GameModule } from './db_interactions_modules/game/games.module';
     GameModule
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway],
+  providers: [AppService, AppGateway, UsersService, ChannelsService, UserToChannelService,EventsService, MessagesService],
+  exports: [AppService, AppGateway, UsersService, ChannelsService, UserToChannelService,EventsService, MessagesService]
 })
 export class AppModule {}

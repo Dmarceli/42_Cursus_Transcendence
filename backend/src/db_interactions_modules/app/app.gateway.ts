@@ -13,6 +13,7 @@ import { CreateMsgDto } from '../messages/dtos/message.dto';
 import { UsePipes, ValidationPipe, UseGuards } from '@nestjs/common';
 import { GameService } from '../game/game.service';
 import { UsersService } from '../users/users.service';
+import { UsersModule } from '../users/users.module';
 
 
 @WebSocketGateway({
@@ -23,7 +24,7 @@ import { UsersService } from '../users/users.service';
  export class AppGateway
  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
- constructor(private appService: AppService, private gameService: GameService, private usersService: UsersService  ) {}
+ constructor(private appService: AppService, private gameService: GameService ) {}
  
  @WebSocketServer() server: Server;
  
@@ -41,16 +42,19 @@ import { UsersService } from '../users/users.service';
  
  handleDisconnect(client: Socket) {
    console.log(`Disconnected: ${client.id}`);
-   this.usersService.remove_disconnect_User(client)
+   
+   this.appService.user_remove_disconect(client)
    this.gameService.RemovePlayerFromGame(client)
  }
  
  //1º step após conexão
  async handleConnection(client: Socket/* ...args: any[]*/) {
   console.log(`Connected ${client.id}`);
-  const authorization = await this.usersService.addUserToLobby(client)
-  if(!authorization)
+  const authorization = await this.appService.add_user_to_lobby(client)
+  if(!authorization){
     client.disconnect();
+    console.log(`Discnnected Auth missing -  ${client.id}`)
+  }
  }
 
 
