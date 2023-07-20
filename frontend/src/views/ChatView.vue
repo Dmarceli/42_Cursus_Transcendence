@@ -37,7 +37,6 @@
 								@click="selectedUsers.length === 1 ? Dmessage(selectedUsers[0]) : createChannelOptions = true">Next</button>
 						</div>
 						<h3 style="text-align: center;">Selected Users</h3>
-
 						<select class="invitedUsersList" id="inviteUser" name="inviteUser" multiple
 							@mousedown="toggleOptionSelection($event)">
 							<option v-for="user in users" :key="user.id" :value="user.id"
@@ -47,16 +46,35 @@
 						</select>
 					</div>
 				</div>
-				<div v-if="showModal && createChannelOptions" class="modal">
-					<div class="modal-content">
-						<span class="close" @click="closeModal()">&times;</span>
-						<label for="channelName">Channel Name:</label>
-						<input class="input-field" type="text" id="channelName" name="channelName">
-						<label for="channelName">Password:</label>
-						<input class="input-field" placeholder="(optional)" type="text" id="channelPassword"
-							name="channelPassword">
-						<button @click="createChannel()">Create</button>
-					</div>
+				<div v-if="showModal && createChannelOptions">
+				<v-dialog v-model="createChannelOptions" persistent max-width="400px">
+					<v-card>
+					<v-card-title>
+						<span class="close" @click="closeModal">&times;</span>
+					</v-card-title>
+					<v-card-text>
+						<v-container>
+						<v-row>
+							<v-col cols="12">
+							<v-text-field v-model="channelName" label="Channel Name"></v-text-field>
+							</v-col>
+						</v-row>
+						<v-row>
+							<v-col cols="12">
+							<v-text-field
+								v-model="channelPassword"
+								label="Password"
+								placeholder="(optional)"
+							></v-text-field>
+							</v-col>
+						</v-row>
+						</v-container>
+					</v-card-text>
+					<v-card-actions>
+						<v-btn color="primary" @click="createChannel">Create</v-btn>
+					</v-card-actions>
+					</v-card>
+				</v-dialog>
 				</div>
 			</div>
 			<div v-if="side_info === 3" class="searchcontainer">
@@ -209,6 +227,10 @@ let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
 let createChannelOptions = ref(null)
 
+
+let channelName = ref('');
+let channelPassword = ref('');
+
 const socket = inject('socket')
 
 function toggleChannelList() {
@@ -218,7 +240,9 @@ function closeModal(){
 	selectedUsers.value = [];
 	createChannelOptions.value = false;
 	side_info.value = 0;
-	showModal.value = false;  
+	showModal.value = false;
+	channelName.value = '';
+	channelPassword.value = '';
 }
 
 function enableModal() {
@@ -712,10 +736,10 @@ function toggleOptionSelection(event) {
 }
 
 const createChannel = async () => {
-	let channelName = document.getElementById("channelName").value;
-	let channelPassword = document.getElementById("channelPassword").value;
+	let channel_name = channelName.value;
+	let channel_password = channelPassword.value;
 	let ch_type = channelPassword ? 2 : 1;
-	const pass = Md5.hashStr(channelPassword);
+	const pass = Md5.hashStr(channel_password);
 	try {
 		let url = process.env.VUE_APP_BACKEND_URL + '/channels/create';
 		const response = await fetch(url, {
@@ -724,7 +748,7 @@ const createChannel = async () => {
 				'Content-Type': 'application/json',
 				'Authorization': `Bearer ${token}`
 			},
-			body: JSON.stringify({ type: ch_type, channel_name: channelName, password: pass, invitedusers: selectedUsers.value }),
+			body: JSON.stringify({ type: ch_type, channel_name: channel_name, password: pass, invitedusers: selectedUsers.value }),
 		});
 		if (response.ok) {
 			const data = await response.json();
@@ -737,7 +761,8 @@ const createChannel = async () => {
 	} catch (error) {
 		console.log('Error:', error);
 	}
-	showModal.value = false;
+	closeModal();
+
 };
 
 const moreChannelOptions = () => {
