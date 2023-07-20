@@ -5,8 +5,8 @@
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink to="/leaderboard">Leaderboard</RouterLink>
       <RouterLink to="/profile">User profile</RouterLink>
-      <v-btn @click="toggleNotifications()" style="background-color: #555;">
-        <v-icon>mdi-bell</v-icon>
+      <v-btn @click="toggleNotifications()" style="background-color:transparent;">
+        <v-icon color="green">mdi-bell</v-icon>
         <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
       </v-btn>
     </nav>
