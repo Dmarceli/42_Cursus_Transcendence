@@ -7,7 +7,7 @@
       <RouterLink to="/profile">User profile</RouterLink>
       <v-btn @click="toggleNotifications()" style="background-color: #555;">
         <v-icon>mdi-bell</v-icon>
-        <div v-if="notifications.length > 0" class="notification-badge">{{ notifications.length }}</div>
+        <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
       </v-btn>
     </nav>
   </header>
@@ -42,7 +42,7 @@
 import { RouterLink, RouterView } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
-import { ref, provide, inject } from 'vue'
+import { ref, provide, inject , onBeforeMount, computed} from 'vue'
 
 const islogged = ref(false);
 
@@ -165,7 +165,33 @@ async function executeLoginwithId(idvalue: number) {
 
 const showNotifications = ref(false);
 const notifications = ref([]);
+const unseenNotifications = computed(() => {
+  return notifications.value.filter(notification => !notification.already_seen);
+});
+
+
+const markAllNotificationsAsSeen = async () => {
+  let token = getCookieValueByName('token');
+  try {
+    const unseenNotificationIds = notifications.value
+    .filter((notification) => !notification.already_seen)
+    .map((notification) => notification.id);
+    await fetch(process.env.VUE_APP_BACKEND_URL + '/events/mark_seen_all', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ unseenNotificationIds }),
+    });
+    fetchNotifications();
+  } catch (error) {
+    console.log('Error marking all notifications as seen:', error);
+  }
+}
+
 const toggleNotifications = async () => {
+  markAllNotificationsAsSeen();
   if (!showNotifications.value) {
     await fetchNotifications();
   }
@@ -196,10 +222,14 @@ const fetchNotifications = async () => {
 
 if (socket && islogged.value === true) {
   socket.on('notification', Notification => {
-    fetchNotifications();
     console.log("ola");
+    fetchNotifications();
   });
 }
+
+onBeforeMount(() => {
+  fetchNotifications();
+});
 </script>
 
 <style scoped>

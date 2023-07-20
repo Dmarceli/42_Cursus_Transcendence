@@ -4,6 +4,8 @@ import { EventCreateDto } from './dtos/events.dto';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { User } from '../users/user.entity';
+
+
 @UseGuards(JwtAuthGuard)
 @Controller('events')
 export class EventsController {
@@ -29,6 +31,18 @@ export class EventsController {
     return this.eventsService.findAll_for_user(user.id);
   }
 
+  @Post('/mark_seen/:notificationId')
+  async markNotificationAsSeen(@Param('notificationId') notificationId: number){
+    await this.eventsService.markNotificationAsSeen(notificationId);
+  }
+
+  @Post('/mark_seen_all')
+  async markAllNotificationsAsSeen(@Body() IDS: any){
+    const { unseenNotificationIds } = IDS;
+    for (const notificationId of unseenNotificationIds) {
+      await this.eventsService.markNotificationAsSeen(notificationId);
+    }
+  }
   // @Get(':id')
   // findOne(@Param('id') id: string) {
   //   return this.gameHistoryService.findOne(+id);

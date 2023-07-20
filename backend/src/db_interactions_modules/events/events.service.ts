@@ -45,6 +45,10 @@ export class EventsService {
     return await this.eventsRepository.find({where: {decider_user : user},relations: ['requester_user','decider_user' ]});
   }
 
+  
+  async markNotificationAsSeen(notificationId: number): Promise<void> {
+    await this.eventsRepository.update(notificationId, { already_seen: true });
+  }
   // findOne(id: number) {
   //   return `This action returns a #${id} gameHistory`;
   // }
