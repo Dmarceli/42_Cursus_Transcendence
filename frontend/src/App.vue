@@ -5,10 +5,10 @@
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink to="/leaderboard">Leaderboard</RouterLink>
       <RouterLink to="/profile">User profile</RouterLink>
-      <v-btn @click="toggleNotifications()" style="background-color:transparent;">
-        <v-icon color="green">mdi-bell</v-icon>
-        <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
-      </v-btn>
+        <v-btn @click="toggleNotifications()" style="background-color:transparent;">
+          <v-icon color="green">mdi-bell</v-icon>
+          <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
+        </v-btn>
     </nav>
   </header>
   <v-dialog v-model="showNotifications" max-width="400">
@@ -176,6 +176,8 @@ const markAllNotificationsAsSeen = async () => {
     const unseenNotificationIds = notifications.value
     .filter((notification) => !notification.already_seen)
     .map((notification) => notification.id);
+    if(!unseenNotificationIds.length)
+      return;
     await fetch(process.env.VUE_APP_BACKEND_URL + '/events/mark_seen_all', {
       method: 'POST',
       headers: {
