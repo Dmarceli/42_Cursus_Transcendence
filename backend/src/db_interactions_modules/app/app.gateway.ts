@@ -47,8 +47,8 @@ import { UsersService } from '../users/users.service';
  
  //1º step após conexão
  async handleConnection(client: Socket/* ...args: any[]*/) {
-  const authorization = await this.usersService.addUserToLobby(client)
   console.log(`Connected ${client.id}`);
+  const authorization = await this.usersService.addUserToLobby(client)
   if(!authorization)
     client.disconnect();
  }

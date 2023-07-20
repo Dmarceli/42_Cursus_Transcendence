@@ -21,8 +21,6 @@ export class ChannelsService {
 
 
  async create(createChannelDto: ChannelCreateDto, creator_user: number) {
-
-  console.log(createChannelDto.invitedusers)
     const all_channels = await this.ChannelsRepository.findOne({where: {type: MoreThan(0), channel_name: createChannelDto.channel_name}})
     if(all_channels){
       throw new ConflictException('Duplicate key value found.');
@@ -34,7 +32,6 @@ export class ChannelsService {
     }    
     const response = await this.ChannelsRepository.save({...createChannelDto, password: pwd})
     createChannelDto.invitedusers.forEach( async element => {
-      console.log(element)
       const user_to_join = await this.UserRepository.findOne({where: {id: element}})
       if(user_to_join){
         await this.UserToChannelService_.joinchannel(response,user_to_join,pwd)
@@ -46,8 +43,6 @@ export class ChannelsService {
         await this.eventService.create(eventDto,1)
       }
     })
-    console.log("terminei")
-    
     return response
   
   

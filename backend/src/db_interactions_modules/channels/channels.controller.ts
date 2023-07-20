@@ -12,7 +12,6 @@ export class ChannelsController {
 
   @Post('/create')
   create(@Body() createChannelDto: ChannelCreateDto,@getUserIDFromToken() user: User) {
-    console.log(createChannelDto)
     return this.channelsService.create(createChannelDto,user.id);
   }
 

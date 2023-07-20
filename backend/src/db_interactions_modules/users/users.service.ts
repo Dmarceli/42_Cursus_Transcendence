@@ -17,7 +17,6 @@ export class UsersService {
     private jwtService: JwtService,
     
   ) {
-    this.UsersOnline = []
   }
   UsersOnline: UserSocketArray[] = []
 
@@ -90,13 +89,22 @@ export class UsersService {
       console.log("User Unhautorized")
       return null
     } 
-    const resp= await this.userRepository.findOne(
-      {where: {id: payload.id}}
-     );
+    const resp = await this.userRepository.findOne({where: {id: payload.id}});
      if(!resp)
-     return null
+        return null
+      
       this.UsersOnline.push(new UserSocketArray(resp,client))
+      // console.log(this.UsersOnline)
      return true;
+   }
+
+   async notifyUser(user_id: number){
+    console.log(this.UsersOnline)
+     console.log('Notification sent to user:', user_id);
+     //const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
+     // if(!user)
+     //   return;
+     //user.client.emit("notification")
    }
 
    async remove_disconnect_User(client_: Socket){
@@ -106,24 +114,5 @@ export class UsersService {
     console.log(this.UsersOnline)
    }
 
-	async notifyUser(user_id: number){
-		const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
-		if(!user)
-			return;
-		user.client.emit("notification")
-  		console.log('Notification sent to user:', user_id);
 
-	}
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} user`;
-  // }
-
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} user`;
-  // }
-  }
+}

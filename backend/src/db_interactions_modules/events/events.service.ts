@@ -12,21 +12,30 @@ export class EventsService {
   constructor(
     @InjectRepository(Events) private eventsRepository: Repository<Events>,
      @InjectRepository(User) private UserRepository: Repository<User> ,
-	private UserService: UsersService 
+     private usersService: UsersService,
+ 
    ) {}
 
   async create(createEventDto: EventCreateDto, event_type: number) {
-    return await this.eventsRepository.save({
-      ...createEventDto as any,
-      time: new Date(),
-      type: event_type,
-      already_seen: false
-    });
-	this.UserService.notifyUser(createEventDto.decider_user)
+    try {
+      await this.eventsRepository.save({
+        ...createEventDto as any,
+        time: new Date(),
+        type: event_type,
+        already_seen: false
+      });
+    } catch (error) {
+      console.error('Error notifying user:', error);
+    }
+    try {
+      await this.usersService.notifyUser(createEventDto.decider_user);
+    } catch (error) {
+      console.error('Error notifying user:', error);
+    }
   }
 
   async closedecision(decision: boolean, event_id: number){
-    const event=await this.eventsRepository.findOneBy({id: event_id})
+    const event = await this.eventsRepository.findOneBy({id: event_id})
     // switch()
     // case ''
     await this.eventsRepository.delete(event)
