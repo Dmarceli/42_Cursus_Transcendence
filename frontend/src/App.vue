@@ -19,13 +19,13 @@
       <v-card-text>
         <div v-if="notifications.length > 0" class="notifications-box">
           <div v-for="notification in notifications" :key="notification.id" class="notification-item">
-            {{ notification }}
+            {{ notification.message }}
           </div>
         </div>
         <div v-else class="no-notifications">No new notifications</div>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="primary" @click="showNotifications = false">Close</v-btn>
+        <v-btn color="primary" @click="showNotifications = false;">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -165,7 +165,6 @@ async function executeLoginwithId(idvalue: number) {
 
 const showNotifications = ref(false);
 const notifications = ref([]);
-
 const toggleNotifications = async () => {
   if (!showNotifications.value) {
     await fetchNotifications();

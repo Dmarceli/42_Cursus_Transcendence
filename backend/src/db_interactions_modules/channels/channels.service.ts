@@ -38,7 +38,7 @@ export class ChannelsService {
         const eventDto = {
           requester_user: creator_user,
           decider_user: user_to_join.id,
-          message: ""
+          message: `${creator_user} added you to channel ${createChannelDto.channel_name}`
         }
         await this.eventService.create(eventDto,1)
       }
