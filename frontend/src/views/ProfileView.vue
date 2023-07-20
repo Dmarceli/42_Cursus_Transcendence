@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref,onBeforeMount, reactive, computed, route } from 'vue';
+import { ref,onBeforeMount, reactive, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
@@ -48,6 +49,8 @@ userData.nick =  decodedToken.user['nick'];
 const isOwnProfile = computed(() => {
 	return userProfile.value.nick === userData.nick;
 });
+
+const route = useRoute();
 
 const fetchUserProfile = async () => {
 	try {
