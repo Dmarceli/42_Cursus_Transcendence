@@ -19,6 +19,7 @@
 }
 
 
+
 @media (max-width: 1024px){
 	.Chat{
 	    height: 90vh;
@@ -156,20 +157,21 @@
 }
 
 
-.list-container{
+.convo-list-container{
+  position: relative;
   height: 94%;
-  overflow: hidden;
+  overflow-y: scroll;
 }
 
-.list-container::-webkit-scrollbar {
+.convo-list-container::-webkit-scrollbar {
   width: 8px;
 }
 
-.list-container::-webkit-scrollbar-track {
+.convo-list-container::-webkit-scrollbar-track {
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
 }
 
-.list-container::-webkit-scrollbar-thumb {
+.convo-list-container::-webkit-scrollbar-thumb {
   border-radius: 8px;
   background-color: darkgrey;
   outline: 1px solid slategrey;
@@ -329,7 +331,6 @@
 .searchcontainer{
   height: 94%;
   overflow-y: scroll;
-
 }
 
 .searchcontainer::-webkit-scrollbar {

@@ -1,8 +1,7 @@
 <template>
 	<div class="Chat">
-		<div class="channels-list" :class="{ 'collapsed': !showSideInfo }">
-			<div v-if="side_info === 0">
-				<div class="list-container">
+		<div class="channels-list" :class="{ 'collapsed': !showSideInfo }" >
+			<div v-if="side_info === 0" class="convo-list-container" >
 					<div class="list-header">Conversations</div>
 					<div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
 						:class="['channel', { 'selected': joinedchannel.channel_id.id === selected_channel }]"
@@ -13,7 +12,6 @@
 						</div>
 					</div>
 				</div>
-			</div>
 			<div v-if="side_info === 1">
 				<div class="list-header">FRIENDS</div>
 				<div v-for="user_friend in User_Friends" :key="user_friend.id" class="tooltip">

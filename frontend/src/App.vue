@@ -7,6 +7,7 @@
       <RouterLink to="/profile">User profile</RouterLink>
       <v-btn @click="toggleNotifications()" style="background-color: #555;">
         <v-icon>mdi-bell</v-icon>
+        <div v-if="notifications.length > 0" class="notification-badge">{{ notifications.length }}</div>
       </v-btn>
     </nav>
   </header>
@@ -253,7 +254,20 @@ nav a {
     background-size: contain;
     
   }
-
+  .notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: red; /* Choose your desired background color */
+  color: white; /* Choose your desired text color */
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
 
 }
 </style>
