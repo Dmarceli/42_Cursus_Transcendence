@@ -16,7 +16,7 @@ import { mergeProps, ref } from 'vue'
 let id_to_login_form = ref(0);
 
 
-const emit = defineEmits(['clicked42', 'clickedgoogle', 'clickedBYPASS','id_to_login' ])
+const emit = defineEmits(['clicked42', 'clickedgoogle', 'id_to_login' ])
 
 function buttonGoogle() {
   emit('clickedgoogle')
@@ -26,9 +26,6 @@ function button42() {
 }
 function buttonBYPASS_TEMP() {
   emit('id_to_login', id_to_login_form.value)
-  //emit('clickedBYPASS')
-  
-  
 }
 
 </script>
