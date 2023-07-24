@@ -12,6 +12,7 @@ import { GoogleStrategy } from './google/auth_google.strategy';
 import { TwoFactorAuthService } from './2FA/2FA-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/db_interactions_modules/users/user.entity';
+import { GoogleAuthGuard } from './google/auth_google.guard';
 
 @Module({
   imports: [ 
@@ -30,6 +31,7 @@ import { User } from 'src/db_interactions_modules/users/user.entity';
     AuthService,
     JwtService, 
     FortyTwoAuthStrategy,
+    GoogleAuthGuard,
     SessionSerializer,
     JwtAuthStrategy,
     GoogleStrategy,
