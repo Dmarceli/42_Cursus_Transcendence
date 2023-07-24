@@ -22,6 +22,11 @@ export class friendsController {
     return this.friendService.createfriend(createFriendDto);
   }
 
+  @Post('/block-user')
+  blockuser(@Body() user_to_block: number, @getUserIDFromToken() user:User) {
+    return this.friendService.blockuser(user_to_block, user.id);
+  }
+
   @Get('/getfriends')
   findAll() {
     return this.friendService.findAll();
@@ -30,6 +35,11 @@ export class friendsController {
   @Get()
   findOne(@Req() req:any, @getUserIDFromToken() user:User) {
     return this.friendService.findByUserId(user.id);
+  }
+
+  @Get('/blocked')
+  get_blocked(@Req() req:any, @getUserIDFromToken() user:User) {
+    return this.friendService.get_blockedusers(user.id);
   }
   
     @Delete('/deletefriends/:id1/:id2')
