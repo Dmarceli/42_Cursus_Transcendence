@@ -14,6 +14,25 @@ interface Rectangle {
   draw(context: CanvasRenderingContext2D): void
 }
 
+class Sprites
+{
+  src: string
+  image_x: number
+  image_y: number
+  image_width: number
+  image_heigt: number
+  rot: number
+  constructor(path: string, x: number, y: number, w: number, h: number, rotation: number)
+  {
+    this.src = path
+    this.image_x = x
+    this.image_y = y
+    this.image_width = w
+    this.image_heigt = h
+    this.rot = rotation
+  }
+}
+
 class Paddle implements Rectangle {
   x: number
   y: number
@@ -42,12 +61,13 @@ class Paddle implements Rectangle {
     this.drawRectangle(context)
     this.drawNick(context)
   }
-  drawRectangle(context: CanvasRenderingContext2Dext)
+  drawRectangle(context: CanvasRenderingContext2D)
   {
-    context.fillStyle = 'hsla(0, 0%, 100%, 1)'
-    context.fillRect(this.x, this.y, this.width, this.height)
+    const img = new Image();
+  img.src = "cosmos.png"
+  context.drawImage(img, 670, 41, 25, 150, this.x, this.y, this.width, this.height)
   }
-  drawNick(context: CanvasRenderingContext2Dext)
+  drawNick(context: CanvasRenderingContext2D)
   {
     const board_height = board_dims.height * this.conv_rate
     let nick_size = board_height /20

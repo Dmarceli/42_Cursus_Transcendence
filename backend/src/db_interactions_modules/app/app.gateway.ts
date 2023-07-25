@@ -51,10 +51,6 @@ import { GameService } from '../game/game.service';
   handleNewPlayer(client: Socket, intra_nick: string) {
     this.gameService.AddPlayerToGame(client, intra_nick)
   }
-  @SubscribeMessage('PlayerReady')
-  handlePlayerReady(client: Socket, intra_nick: string) {
-    this.gameService.handlePlayerReady(client, intra_nick)
-  }
   @SubscribeMessage('PlayerExited')
   handlePlayerExited(client: Socket) {
     this.gameService.RemovePlayerFromGame(client)
