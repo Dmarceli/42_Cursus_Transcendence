@@ -1,10 +1,10 @@
 import { Injectable, Req } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/db_interactions_modules/users/user.entity';
-import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { TwoFactorAuthService } from './2FA/2FA-service';
 import { authenticator } from 'otplib';
 import { resourceUsage } from 'process';
+import { UsersService } from 'src/db_interactions_modules/users/users.service';
 
 @Injectable()
 export class AuthService {

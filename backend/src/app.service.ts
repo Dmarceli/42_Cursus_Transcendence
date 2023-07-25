@@ -5,13 +5,15 @@ import { Messages } from './db_interactions_modules/messages/messages.entity';
 import { User } from './db_interactions_modules/users/user.entity';
 import { Channel } from './db_interactions_modules/channels/channel.entity';
 import { CreateMsgDto } from './db_interactions_modules/messages/dtos/message.dto';
- 
+import { UsersService } from './db_interactions_modules/users/users.service';
+import { Socket, Server } from 'socket.io';
 @Injectable()
 export class AppService {
  constructor(
    @InjectRepository(Messages) private messagesRepository: Repository<Messages>,
    @InjectRepository(User)private userRepository: Repository<User>,
-   @InjectRepository(Channel)private channelRepository: Repository<Channel>
+   @InjectRepository(Channel)private channelRepository: Repository<Channel>,
+   private usersService: UsersService
  ) {}
 
 
@@ -31,4 +33,18 @@ export class AppService {
  async getMessages(): Promise<Messages[]> {
    return await this.messagesRepository.find();
  }
+
+ async user_remove_disconect(client: Socket){
+  this.usersService.remove_disconnect_User(client)
+ }
+
+ async add_user_to_lobby(client: Socket){
+  return this.usersService.addUserToLobby(client)
+ }
+
+ async user_to_notify(client: number){
+  return this.usersService.notifyUser(client)
+ }
+
+
 }

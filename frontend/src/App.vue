@@ -5,8 +5,30 @@
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink to="/leaderboard">Leaderboard</RouterLink>
       <RouterLink to="/profile">User profile</RouterLink>
+        <v-btn @click="toggleNotifications()" style="background-color:transparent;">
+          <v-icon color="green">mdi-bell</v-icon>
+          <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
+        </v-btn>
     </nav>
   </header>
+  <v-dialog v-model="showNotifications" max-width="400">
+    <v-card>
+      <v-card-title>
+        <span class="headline">Notifications</span>
+      </v-card-title>
+      <v-card-text>
+        <div v-if="notifications.length > 0" class="notifications-box">
+          <div v-for="notification in notifications" :key="notification.id" class="notification-item">
+            {{ notification.message }}
+          </div>
+        </div>
+        <div v-else class="no-notifications">No new notifications</div>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="primary" @click="showNotifications = false;">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <div v-if="islogged">
     <RouterView />
   </div>
@@ -19,11 +41,21 @@
 
 import { RouterLink, RouterView } from 'vue-router';
 import Login from "./components/LoginPage.vue";
-import { io } from 'socket.io-client'
-import { ref, provide } from 'vue'
+import { Socket, io } from 'socket.io-client'
+import { ref, provide, inject , onBeforeMount, computed} from 'vue'
 
 const islogged = ref(false);
 
+
+let socket: Socket | null = null;
+async function setupSocket(token) {
+  socket = io(process.env.VUE_APP_BACKEND_URL, {
+    auth: {
+      token: token,
+    },
+  });
+  provide('socket', socket);
+}
 function getCookieValueByName(name: any) {
   const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i++) {
@@ -81,12 +113,17 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
-      let socket = io(process.env.VUE_APP_BACKEND_URL);
+		socket = io(process.env.VUE_APP_BACKEND_URL,{
+        auth: {
+          token: token
+        }
+      });
       provide('socket', socket)
+	};
     }
   }
 
-})();
+)();
 
 
 function login42() {
@@ -127,6 +164,75 @@ async function executeLoginwithId(idvalue: number) {
   }
 }
 
+const showNotifications = ref(false);
+const notifications = ref([]);
+const unseenNotifications = computed(() => {
+  return notifications.value.filter(notification => !notification.already_seen);
+});
+
+
+const markAllNotificationsAsSeen = async () => {
+  let token = getCookieValueByName('token');
+  try {
+    const unseenNotificationIds = notifications.value
+    .filter((notification) => !notification.already_seen)
+    .map((notification) => notification.id);
+    if(!unseenNotificationIds.length)
+      return;
+    await fetch(process.env.VUE_APP_BACKEND_URL + '/events/mark_seen_all', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ unseenNotificationIds }),
+    });
+    fetchNotifications();
+  } catch (error) {
+    console.log('Error marking all notifications as seen:', error);
+  }
+}
+
+const toggleNotifications = async () => {
+  markAllNotificationsAsSeen();
+  if (!showNotifications.value) {
+    await fetchNotifications();
+  }
+  showNotifications.value = !showNotifications.value;
+}; 
+
+const fetchNotifications = async () => {
+  let token = getCookieValueByName('token');
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/events/notifications';
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      notifications.value = data; 
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
+if (socket && islogged.value === true) {
+  socket.on('notification', Notification => {
+    console.log("ola");
+    fetchNotifications();
+  });
+}
+
+onBeforeMount(() => {
+  fetchNotifications();
+});
 </script>
 
 <style scoped>
@@ -171,6 +277,29 @@ nav a {
     margin-left: 0rem;
     font-size: 1.5rem;
   }
+
+  .notify-button{
+    background-color: #555;
+    width: 50px;
+    height: 50px;
+    background-image: url('src/assets/notification-bell.svg');
+    background-size: contain;
+    
+  }
+  .notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: red; /* Choose your desired background color */
+  color: white; /* Choose your desired text color */
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
 
 }
 </style>

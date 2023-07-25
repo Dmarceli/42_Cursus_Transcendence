@@ -1,17 +1,19 @@
 import { IsString, MaxLength,MinLength, ValidateIf, IsIn, IsNumber, isNumber, maxLength, IsDefined, minLength } from 'class-validator';
 
-  export class ChannelCreateDto {
+  export class EventCreateDto {
 
-    @IsNumber()
-    @IsDefined()
-    type: number;
+    // @IsNumber()
+    // @IsDefined()
+    // type: number;
 
     @IsDefined()
-    channel_name: string;
+    requester_user: number;
+
+    @IsDefined()
+    decider_user: number;
   
-    password: string;
-
-    invitedusers: [];
+    @IsDefined()
+    message: string;
   }
   
   
