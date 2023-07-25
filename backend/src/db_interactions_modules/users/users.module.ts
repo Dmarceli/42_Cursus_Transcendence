@@ -21,7 +21,6 @@ import { Channel } from '../channels/channel.entity';
       signOptions: { expiresIn: 30 },
     }),
     PassportModule.register({ session: true }),
-
   ],
   controllers: [UsersController],
   providers: [UsersService, UserToChannelService],

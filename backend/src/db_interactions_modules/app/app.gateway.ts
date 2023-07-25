@@ -69,6 +69,8 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 
 
 
+
+
 // Game Service
   @SubscribeMessage('NewPlayer')
   handleNewPlayer(client: Socket, intra_nick: string) {
