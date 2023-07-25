@@ -136,6 +136,7 @@ function loginGoogle() {
 }
 
 
+
 async function authtempBYPASS(idvalue: number) {
   try {
     const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/tempbypass/" + idvalue);
