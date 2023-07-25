@@ -162,8 +162,8 @@ export class Game {
     this.playerPaddle2.client?.emit('updateGame', gamevisual)
   }
   async calculateXP(winner: User, loser: User) {
-    let winnerPoints = await this.gameHistoryService.sum_score(winner)
-    let loserPoints = await this.gameHistoryService.sum_score(loser)
+    let winnerPoints = winner.xp_total
+    let loserPoints = loser.xp_total
     let gameSeconds = this.getSeconds()
     if (winnerPoints == 0) {
       return gameSeconds * 5

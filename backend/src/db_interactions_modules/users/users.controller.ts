@@ -21,6 +21,12 @@ export class UsersController {
   findbyusername(@Param('nick') nick_: string, @Res() res) {
     return this.usersService.findbyusername_(nick_, res);
   }
+
+  @Get('leaderboard')
+  findLeaderboardInfo() {
+    return this.usersService.leaderboardInfo();
+  }
+
 /* 
 
   @Get(':id')

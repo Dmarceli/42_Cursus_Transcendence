@@ -1,20 +1,87 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref,onBeforeMount, reactive, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
+import jwt_decode from 'jwt-decode';
+
+
 
 library.add(fas);
 
+const userData = reactive({
+	id: null,
+	nick: null,
+});
+
 const userProfile = ref({
-  nickname: 'John Doe',
-  avatar: 'avatar.png',
-  gamesWon: 10,
-  gamesLost: 5,
-  winStreak: 1,
-  biggestStreak: 3,
-  rank: 5,
+	id: 0,
+  nick: '',
+	intra_nick: '',
+  avatar: '',
+  won_games: 0,
+  lost_games: 0,
+  win_streak: 0,
+  highest_win_streak: 0,
+  rank: 0,
   // Add more user profile data here
+});
+
+function getCookieValueByName(name: string) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
+    }
+  }
+  return null;
+}
+
+let token = getCookieValueByName('token');
+const decodedToken = jwt_decode(token);
+let useNick;
+userData.id = decodedToken.id;
+userData.nick =  decodedToken.user['nick'];
+
+const isOwnProfile = computed(() => {
+	return userProfile.value.nick === userData.nick;
+});
+
+const route = useRoute();
+
+const fetchUserProfile = async () => {
+	try {
+		if (route.name === 'myProfile') {
+			useNick = userData.nick;
+		} else {
+			useNick = route.params.nick;
+		}
+		console.log(useNick);
+		console.log(userData.nick)
+		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/' + useNick;
+		const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      userProfile.value = data;
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching User Profile data:', response.statusText);
+    }
+	} catch (error) {
+		console.error('Error fetching User Profile data', error);
+	}
+}
+
+onBeforeMount(() => {
+	fetchUserProfile();
 });
 
 const lastGames = ref([
@@ -31,14 +98,14 @@ const lastGames = ref([
 ]);
 
 const getPlayerAvatar = (playerNick: string) => {
-  if (playerNick === userProfile.value.nickname) {
+  if (playerNick === userProfile.value.nick) {
     return userProfile.value.avatar;
   }
-  return '../assets/avatar.png';
+  return '';
 }
 const isSettingsOpen = ref(false);
 
-const updateNickname = ref(userProfile.value.nickname);
+const updateNickname = ref(userProfile.value.nick);
 const updateAvatar = ref('');
 
 function openSettings() {
@@ -46,7 +113,7 @@ function openSettings() {
 }
 
 function saveSettings() {
-  userProfile.value.nickname = updateNickname.value;
+  userProfile.value.nick = updateNickname.value;
   userProfile.value.avatar = updateAvatar.value;
   //send it to backend here
   closeSettings();
@@ -94,8 +161,8 @@ function handleNewAvatar(event: Event) {
       <div class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
       </div>
-      <h1 class="nickname" >{{ userProfile.nickname }}</h1>
-        <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" @click="openSettings" />
+      <h1 class="nickname" >{{ userProfile.nick }}</h1>
+        <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
     </div>
     <div class="profile-body">
       <!-- Statistics -->
@@ -104,20 +171,20 @@ function handleNewAvatar(event: Event) {
 	      <div class="stat-board">
           <div class="stat-item">
             <div class="stat-label">Games Won</div>
-            <div class="stat-value">{{ userProfile.gamesWon }}</div>
+            <div class="stat-value">{{ userProfile.won_games }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">Games Lost</div>
-            <div class="stat-value">{{ userProfile.gamesLost }}</div>
+            <div class="stat-value">{{ userProfile.lost_games }}</div>
           </div>
-          <div class="stat-item">
+          <!-- <div class="stat-item">
             <div class="stat-label">Win Streak</div>
-            <div class="stat-value">{{ userProfile.winStreak }}</div>
+            <div class="stat-value">{{ userProfile.win_streak }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">Highest Streak</div>
-            <div class="stat-value">{{ userProfile.biggestStreak }}</div>
-          </div>
+            <div class="stat-value">{{ userProfile.highest_win_streak }}</div>
+          </div> -->
           <div class="stat-item stat-rank">
             <div class="stat-label">Rank</div>
             <div class="stat-value">{{ userProfile.rank }}</div>
@@ -401,7 +468,7 @@ td {
 
 .stat-value {
   font-size: 24px;
-  color: #666666;
+  color: black;
 }
 
 .settings {

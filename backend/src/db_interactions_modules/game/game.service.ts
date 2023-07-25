@@ -48,7 +48,7 @@ export class GameService {
     this.games.push(game)
   }
   RemovePlayerFromGame(client: Socket) {
-    console.log("PlayerExited " + client)
+    console.log("PlayerExited " + client.id)
     for (let game of this.games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
         game.playerPaddle1.client = null
