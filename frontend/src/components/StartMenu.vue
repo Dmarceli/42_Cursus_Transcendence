@@ -1,7 +1,9 @@
 <template>
-  <div v-if="view1">
-    <img src="../assets/racketas.svg" alt="Green Rackets" />
-    <button>Join Lobby</button>
+  <div class="start-menu" v-if="view1">
+    <v-card class="checks" elevation="18">
+      <img src="../assets/racketas.svg" alt="Green Rackets" />
+      <button>Join Lobby</button>
+    </v-card>
   </div>
 </template>
 
@@ -9,19 +11,40 @@
 
 import { ref } from 'vue';
 
-let view1 = ref(false)
+let view1 = ref(true)
 
 </script>
 
 <style>
+@media (min-width: 1024px) {
+  .v-card.elevation-18 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 200%;
+    padding-right: 300%;
+    padding-left: 300%;
+  }
+}
+
+.v-card.elevation-18 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 35%;
+    padding: 150%;
+    padding-right: 300%;
+    padding-left: 300%;
+  }
+
 .start-menu button {
-  margin: 20px;
-  /* Adjust the margin as desired */
-  padding: 1.3em 3em;
-  font-size: 20px;
+  margin: 30%;
+  padding: 1em 2em;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 2.5px;
-  font-weight: 500;
+  letter-spacing: 0.1rem;
   color: #000;
   background-color: #fff;
   border: none;
@@ -44,11 +67,10 @@ let view1 = ref(false)
 }
 
 .start-menu img {
-  max-width: 30%;
-  max-height: 30%;
-  /* Set the maximum height to your desired value */
-  margin: 10px;
-  /*Adjust the margin as desired */
+  max-width: 70%;
+  max-height: 20%;
+  margin: 30%;
+  ;
+  padding: 5%;
 }
-
 </style>
