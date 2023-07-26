@@ -42,8 +42,8 @@ let choosePaddle = ref(true)
   font-size: 100%;
   text-transform: uppercase;
   letter-spacing: 0.1rem;
-  color: #000;
-  background-color: #fff;
+  color: #fff;
+  background-color: #E91E63;
   border: none;
   border-radius: 45px;
   box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
@@ -52,10 +52,14 @@ let choosePaddle = ref(true)
   outline: none;
 }
 
+/* background-color: #E91E63;
+  box-shadow: 0px 15px 20px rgba(233, 30, 99, 0.4);
+  color: #fff; */
+
 .start-menu button:hover {
-  background-color: #23c483;
-  box-shadow: 0px 15px 20px rgba(46, 229, 157, 0.4);
-  color: #fff;
+  background-color: #fff;
+  box-shadow: 0px 15px 20px rgba(255, 255, 255, 0.4);
+  color: #E91E63;
   transform: translateY(-7px);
 }
 
