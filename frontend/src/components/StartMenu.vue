@@ -6,7 +6,7 @@
         <button>Join Lobby</button>
       </div>
       <div v-else-if="choosePaddle" class="carousel">
-        <PaddleCarousel></PaddleCarousel>
+        <PaddleCarousel class="carousel"></PaddleCarousel>
       </div>
     </v-card>
   </div>
@@ -21,7 +21,7 @@ let choosePaddle = ref(true)
 
 </script>
 
-<style>
+<style scoped>
 
 .v-card.elevation-18 {
   display: flex;
@@ -75,12 +75,8 @@ let choosePaddle = ref(true)
 }
 
 .carousel {
-  width: 50%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 </style>
