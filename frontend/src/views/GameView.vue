@@ -32,6 +32,7 @@ let startmenu = ref(true)
   width: 95%;
   margin: 0;
   aspect-ratio: 2;
+  min-width: 300px;
 }
 
 </style>

@@ -1,25 +1,27 @@
 <template>
-  <div class="start-menu" v-if="view1">
-    <v-card class="checks" elevation="18">
-      <img src="../assets/racketas.svg" alt="Green Rackets" />
-      <button>Join Lobby</button>
+  <div class="start-menu">
+    <v-card elevation="18">
+      <div v-if="joinLobbyView" class="join-lobby">
+        <img src="../assets/racketas.svg" alt="Green Rackets" />
+        <button>Join Lobby</button>
+      </div>
+      <div v-else-if="choosePaddle" class="carousel">
+        <PaddleCarousel></PaddleCarousel>
+      </div>
     </v-card>
   </div>
 </template>
 
 <script setup lang="ts">
-
 import { ref } from 'vue';
+import PaddleCarousel from './PaddleCarousel.vue'
 
-let view1 = ref(true)
+let joinLobbyView = ref(false)
+let choosePaddle = ref(true)
 
 </script>
 
 <style>
-
-@media (min-width: 1024px) {
-
-}
 
 .v-card.elevation-18 {
   display: flex;
@@ -29,6 +31,7 @@ let view1 = ref(true)
   padding: 5%;
   width: 100%;
   height: 100%;
+
 }
 
 .start-menu button {
@@ -61,4 +64,14 @@ let view1 = ref(true)
   width: 20%;
   margin: 5%;
 }
+
+.join-lobby {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 </style>
