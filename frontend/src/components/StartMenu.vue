@@ -6,7 +6,10 @@
         <button>Join Lobby</button>
       </div>
       <div v-else-if="choosePaddle" class="carousel">
-        <PaddleCarousel class="carousel"></PaddleCarousel>
+        <PaddleCarousel class="carousel2"></PaddleCarousel>
+        <v-card-actions class="chooseButton">
+          <v-btn variant="outlined" block>CHoose paddlez</v-btn>
+        </v-card-actions>
       </div>
     </v-card>
   </div>
@@ -77,6 +80,18 @@ let choosePaddle = ref(true)
 .carousel {
   width: 100%;
   height: 100%;
+}
+
+.carousel2 {
+  height: 90%;
+}
+
+.chooseButton
+{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 </style>
