@@ -7,7 +7,7 @@
       <RouterLink to="/profile">User profile</RouterLink>
     </nav>
   </header>
-  <div v-if="islogged">
+  <div v-if="islogged" :class="{'game-view': isGameRoute}">
     <RouterView />
   </div>
   <div v-else>
@@ -17,12 +17,15 @@
 
 <script setup lang="ts">
 
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterLink, RouterView, useRoute } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { io } from 'socket.io-client'
 import { ref, provide } from 'vue'
+import { computed } from 'vue';
 
 const islogged = ref(false);
+const route = useRoute();
+const isGameRoute = computed(() => route.path === '/')
 
 function getCookieValueByName(name: any) {
   const cookies = document.cookie.split(';');
@@ -143,6 +146,7 @@ nav {
   font-size: 12px;
   text-align: center;
   line-height: 2.2rem;
+  margin-bottom: 2%;
 }
 
 nav a.router-link-exact-active {
@@ -170,7 +174,14 @@ nav a {
     text-align: left;
     margin-left: 0rem;
     font-size: 1.5rem;
+    margin: 0%;
   }
-
 }
+.game-view
+{
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
 </style>

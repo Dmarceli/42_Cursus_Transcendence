@@ -16,33 +16,24 @@ let view1 = ref(true)
 </script>
 
 <style>
+
 @media (min-width: 1024px) {
-  .v-card.elevation-18 {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 200%;
-    padding-right: 300%;
-    padding-left: 300%;
-  }
+
 }
 
 .v-card.elevation-18 {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 35%;
-    padding: 150%;
-    padding-right: 300%;
-    padding-left: 300%;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5%;
+  width: 100%;
+  height: 100%;
+}
 
 .start-menu button {
-  margin: 30%;
-  padding: 1em 2em;
-  font-size: 0.7rem;
+  padding: 2% 4%;
+  font-size: 100%;
   text-transform: uppercase;
   letter-spacing: 0.1rem;
   color: #000;
@@ -67,10 +58,7 @@ let view1 = ref(true)
 }
 
 .start-menu img {
-  max-width: 70%;
-  max-height: 20%;
-  margin: 30%;
-  ;
-  padding: 5%;
+  width: 20%;
+  margin: 5%;
 }
 </style>

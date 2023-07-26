@@ -1,6 +1,6 @@
 <template>
   <div v-if="startmenu" class="start-menu">
-    <StartMenu></StartMenu>
+    <StartMenu class="start-menu"></StartMenu>
   </div>
   <div v-else class="board">
     <Pong2D/>
@@ -19,7 +19,7 @@ let startmenu = ref(true)
 <style scoped>
 .board {
   padding-top: 5%;
-  height: 90%;
+  height: 100%;
   width: 100%;
   display: flex;
 }
@@ -29,7 +29,9 @@ let startmenu = ref(true)
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  width: 95%;
+  margin: 0;
+  aspect-ratio: 2;
 }
 
 </style>
