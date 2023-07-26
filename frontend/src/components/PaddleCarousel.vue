@@ -1,7 +1,7 @@
 <template>
   <!-- <img src="blue_pearl.jpg" /> -->
   <div ref="inner" :style="moveInner" class="inner">
-    <div v-for="card in cards" :key="card" class="card">
+    <div v-for="card in cards" :key="card" class="cardiB">
       <img :src="card" />
     </div>
   </div>
@@ -13,7 +13,7 @@
 
 import { ref, onMounted } from 'vue';
 
-const cards = ref(["blue_pearl.jpg", "brown_wood.jpg", "blue_pearl.jpg", "blue_pearl.jpg"])
+const cards = ref(["blue_pearl.jpg", "brown_wood.jpg", "cropped_sun.png", "fishies.png", "flower_powerz.jpg"])
 const moveInner = ref({})
 const step = ref('')
 const transitioning = ref(false)
@@ -87,20 +87,22 @@ onMounted(() => {
 </script>
 
 <style>
-.carousel {
-  width: 170px;
-  overflow: hidden;
-}
+
 
 .inner {
-  transition: transform 0.2s;
+  transition: transform 0.3s;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.card {
-  width: 40px;
-  margin-right: 10px;
-  display: inline-flex;
+.cardiB {
+  width: 80px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* optional */
@@ -110,14 +112,8 @@ button {
 }
 
 img {
-  width: 100px;
-  height: 100px;
-}
-
-.test1
-{
-  width: 100px;
-  height: 100px;
+  transform: rotate(90deg);
+  height: 60px;
 }
 
 </style>
