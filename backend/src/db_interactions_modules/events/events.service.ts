@@ -7,6 +7,7 @@ import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { friendService } from '../relations/friend/friend.service';
 import { AppService } from 'src/app.service';
+import { CreateFriendDto } from '../relations/friend/dtos/friend.dto';
 
 @Injectable()
 export class EventsService {
@@ -43,7 +44,11 @@ export class EventsService {
     if (event)
     {
       if (event.id == 1){
-        
+        const newfriend: CreateFriendDto = {
+          user1Id : event.decider_user.id , 
+          user2Id : event.requester_user.id
+        }
+        this.FriendsService.createfriend(newfriend)
       }
         
     }
