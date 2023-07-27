@@ -5,16 +5,18 @@ import { Events } from './events.entity';
 import { Any, Repository} from 'typeorm';
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
+import { friendService } from '../relations/friend/friend.service';
 import { AppService } from 'src/app.service';
 
 @Injectable()
 export class EventsService {
   constructor(
     @InjectRepository(Events) private eventsRepository: Repository<Events>,
-     @InjectRepository(User) private UserRepository: Repository<User> ,
-     private usersService: UsersService,
-  
-     private appService: AppService,
+    @InjectRepository(User) private UserRepository: Repository<User> ,
+
+    private usersService: UsersService,
+    private FriendsService: friendService,
+    private appService: AppService,
  
    ) {}
 
@@ -38,8 +40,17 @@ export class EventsService {
 
   async closedecision(decision: boolean, event_id: number){
     const event = await this.eventsRepository.findOneBy({id: event_id})
+    if (event)
+    {
+      if (event.id == 1){
+        
+      }
+        
+    }
     await this.eventsRepository.delete(event)
   }
+
+
   async findAll_for_user(user_id :number) {
     const user = await this.UserRepository.findOneBy({id: user_id})
     return await this.eventsRepository.find({where: {decider_user : user},relations: ['requester_user','decider_user' ]});

@@ -13,12 +13,12 @@ export class EventsController {
 
   @Post('/friendship_request')
   create_friendship_request(@Body() createEventDto: EventCreateDto) {
-    return this.eventsService.create(createEventDto, 0);
+    return this.eventsService.create(createEventDto, 1);
   }
 
   @Post('/channel_join_request')
   create_channel_join_request(@Body() createEventDto: EventCreateDto) {
-    return this.eventsService.create(createEventDto, 1);
+    return this.eventsService.create(createEventDto, 0);
   }
 
   @Post('/event_decision/:event_id/:decision')
