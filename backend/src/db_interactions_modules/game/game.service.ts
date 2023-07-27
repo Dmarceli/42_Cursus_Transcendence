@@ -8,11 +8,11 @@ import { User } from '../users/user.entity';
 
 @Injectable()
 export class GameService {
-  constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>){}
+  constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>) { }
   games: Game[] = []
   async AddPlayerToGame(playerClient: Socket, nick: string) {
     console.log("NewPlayer " + playerClient + " with intra " + nick)
-    const user = await this.userRepository.findOne({where: {intra_nick: nick}})
+    const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
     for (let i = 0; i < this.games.length; i++) {
       if (this.games[i].playerPaddle1.frontEndData.nick == nick) {
         this.games[i].playerPaddle1.user = user
@@ -51,11 +51,11 @@ export class GameService {
     console.log("PlayerExited " + client.id)
     for (let game of this.games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
-        game.playerPaddle1.client = null
+        game.playerPaddle1.ready = false
         game.playerPaddle2.client?.emit("PlayerDisconnected")
       } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
         game.playerPaddle1.client?.emit("PlayerDisconnected")
-        game.playerPaddle2.client = null
+        game.playerPaddle2.ready = false
       }
     }
   }
@@ -101,7 +101,7 @@ export class GameService {
   UpdateAllPositions() {
     setInterval(() => {
       for (let game of this.games) {
-        if (game.playerPaddle1.client && game.playerPaddle2.client) {
+        if (game.timeStart && game.playerPaddle1.ready && game.playerPaddle2.ready) {
           game.update();
           game.checkStatus();
         }
@@ -112,5 +112,15 @@ export class GameService {
       }
     }, 15
     )
+  }
+
+  PlayerReady(intra_nick: string) {
+    for (let game of this.games) {
+      if (game.playerPaddle1.user.intra_nick === intra_nick) {
+        game.playerPaddle1.ready = true
+      }
+      else if (game.playerPaddle2.user.intra_nick === intra_nick)
+        game.playerPaddle2.ready = true
+    }
   }
 }

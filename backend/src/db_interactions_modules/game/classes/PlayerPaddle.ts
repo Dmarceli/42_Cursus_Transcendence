@@ -13,6 +13,7 @@ export class PlayerPaddle {
     movingDown: Boolean
     movingUp: Boolean
     user: User
+    ready: Boolean
     constructor(x: number, y: number, width: number, height: number) {
         this.frontEndData = {
             x: x,
@@ -23,6 +24,7 @@ export class PlayerPaddle {
         };
         this.client = null
         this.user = null
+        this.ready = false
     }
     updatePosition(canvasHeight: number): void {
         if (this.movingDown && this.frontEndData.y + this.frontEndData.height + 10 < canvasHeight) {

@@ -39,7 +39,6 @@ import { GameService } from '../game/game.service';
  
  handleDisconnect(client: Socket) {
    console.log(`Disconnected: ${client.id}`);
-   this.gameService.RemovePlayerFromGame(client)
  }
  
  handleConnection(client: Socket, ...args: any[]) {
@@ -51,13 +50,9 @@ import { GameService } from '../game/game.service';
   handleNewPlayer(client: Socket, intra_nick: string) {
     this.gameService.AddPlayerToGame(client, intra_nick)
   }
-  // @SubscribeMessage('PlayerReady')
-  // handlePlayerReady(client: Socket, intra_nick: string) {
-  //   this.gameService.handlePlayerReady(client, intra_nick)
-  // }
-  @SubscribeMessage('PlayerExited')
-  handlePlayerExited(client: Socket) {
-    this.gameService.RemovePlayerFromGame(client)
+  @SubscribeMessage('PlayerReady')
+  handlePlayerReady(client: Socket, intra_nick: string) {
+    this.gameService.PlayerReady(intra_nick)
   }
   @SubscribeMessage('keydown')
   handlePlayerKeyDown(client: Socket, key: string)

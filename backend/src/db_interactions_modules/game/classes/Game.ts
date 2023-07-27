@@ -28,7 +28,7 @@ function areColliding(circle: any, rectangle: any) {
 }
 
 export class Game {
-  timeStart: Date
+  timeStart: Date | null
   ball: Ball
   playerPaddle1: PlayerPaddle
   playerPaddle2: PlayerPaddle
@@ -37,7 +37,7 @@ export class Game {
   gameHistoryService: GameHistoryService
   userRepository: Repository<User>
   constructor(gameHistoryService: GameHistoryService, userRepository: Repository<User>) {
-    this.timeStart = new Date()
+    this.timeStart = null
     this.ball = new Ball(700, 350, 20)
     this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
     this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
@@ -45,6 +45,10 @@ export class Game {
     this.isColliding = false
     this.gameHistoryService = gameHistoryService
     this.userRepository = userRepository
+  }
+  start():void
+  {
+    this.timeStart = new Date()
   }
   resetPositions(): void {
     this.ball.init(700, 350, 20)
