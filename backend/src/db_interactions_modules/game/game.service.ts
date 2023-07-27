@@ -101,9 +101,24 @@ export class GameService {
   UpdateAllPositions() {
     setInterval(() => {
       for (let game of this.games) {
-        if (game.timeStart && game.playerPaddle1.ready && game.playerPaddle2.ready) {
-          game.update();
-          game.checkStatus();
+        if (game.playerPaddle1.client && game.playerPaddle2.client) {
+          if (game.playerPaddle1.ready && game.playerPaddle2.ready) {
+            if (!game.timeStart ) {
+              if(!game.starting)
+              {
+                game.starting=true
+                game.start();
+              }
+            } else {
+              game.update();
+              game.checkStatus();
+            }
+          }
+          else
+          {
+            game.playerPaddle1.handlePlayersNotReady();
+            game.playerPaddle2.handlePlayersNotReady();
+          }
         }
         else {
           game.playerPaddle1.client?.emit('WaitingForPlayers')

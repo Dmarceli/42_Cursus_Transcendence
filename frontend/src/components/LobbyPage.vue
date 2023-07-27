@@ -1,5 +1,5 @@
 <template>
-  <h1>Waiting for other players{{ ellipsis }}</h1>
+  <h1>Welcome, player! Queueing you in for some fantastic matches{{ ellipsis }}</h1>
 </template>
 
 <script setup lang="ts">

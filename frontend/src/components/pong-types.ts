@@ -45,7 +45,7 @@ class Paddle implements Rectangle {
   drawRectangle(context: CanvasRenderingContext2D)
   {
     const img = new Image();
-  img.src = "brown_wood.jpg"
+  img.src = "game_paddles/brown_wood.jpg"
   context.drawImage(img, this.x, this.y, this.width, this.height)
   }
   drawNick(context: CanvasRenderingContext2D)

@@ -2,8 +2,20 @@
   <div v-if="startmenu" class="start-menu">
     <StartMenu class="start-menu"></StartMenu>
   </div>
+  <div v-else-if="playerWon">
+    <h1>You Won</h1>
+    <v-btn @click="startmenu=true">
+      Start Menu
+    </v-btn>
+  </div>
+  <div v-else-if="playerLost">
+    <h1>You Lost</h1>
+    <v-btn @click="startmenu=true">
+      Start Menu
+    </v-btn>
+</div>
   <div v-else class="board">
-    <Pong2D/>
+    <Pong2D @player-won="playerWon = true" @player-lost="playerLost = true"/>
   </div>
 </template>
 
@@ -12,7 +24,9 @@ import Pong2D from '../components/Pong2D.vue'
 import StartMenu from '../components/StartMenu.vue'
 import { ref } from 'vue'
 
-let startmenu = ref(true)
+let startmenu = ref(false)
+let playerWon = ref(false)
+let playerLost = ref(false)
 
 </script>
 

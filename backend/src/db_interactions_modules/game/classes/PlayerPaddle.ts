@@ -41,4 +41,17 @@ export class PlayerPaddle {
         this.movingDown = false
         this.movingUp = false
     }
+    handlePlayersNotReady()
+    {
+      if (this.ready)
+      {
+        // console.log("SIGANING WaitingOtherPlayer")
+        this.client.emit("WaitingOtherPlayer")
+      }
+      else
+      {
+        // console.log("SIGANING GetReady")
+        this.client.emit("GetReady")
+      }
+    }
 }

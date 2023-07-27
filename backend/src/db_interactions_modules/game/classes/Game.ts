@@ -28,6 +28,8 @@ function areColliding(circle: any, rectangle: any) {
 }
 
 export class Game {
+  startCounter: number
+  starting: Boolean
   timeStart: Date | null
   ball: Ball
   playerPaddle1: PlayerPaddle
@@ -38,6 +40,8 @@ export class Game {
   userRepository: Repository<User>
   constructor(gameHistoryService: GameHistoryService, userRepository: Repository<User>) {
     this.timeStart = null
+    this.starting = false
+    this.startCounter = 3
     this.ball = new Ball(700, 350, 20)
     this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
     this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
@@ -46,9 +50,18 @@ export class Game {
     this.gameHistoryService = gameHistoryService
     this.userRepository = userRepository
   }
-  start():void
-  {
-    this.timeStart = new Date()
+  start(): void {
+    let interval = setInterval(() => {
+      if (this.startCounter < 1) {
+        console.log("ENTERED")
+        clearInterval(interval);
+        this.timeStart = new Date()
+        this.starting = false
+      }
+      this.playerPaddle1.client.emit("Starting", this.startCounter)
+      this.playerPaddle2.client.emit("Starting", this.startCounter)
+      this.startCounter--;
+    }, 1000);
   }
   resetPositions(): void {
     this.ball.init(700, 350, 20)
@@ -57,6 +70,8 @@ export class Game {
     this.isColliding = false
   }
   reset(): void {
+    this.startCounter = 0
+    this.startCounter = 3
     this.ball = new Ball(700, 350, 20)
     this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
     this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
@@ -138,7 +153,7 @@ export class Game {
   async handleFinishGame() {
     let winningPlayer = this.score.player1 > 4 ? this.playerPaddle1 : this.playerPaddle2;
     let losingPlayer = winningPlayer == this.playerPaddle1 ? this.playerPaddle2 : this.playerPaddle1;
-    let losingScore = this.score.player1 < this.score.player2 ? this.score.player1: this.score.player2
+    let losingScore = this.score.player1 < this.score.player2 ? this.score.player1 : this.score.player2
     this.finish(winningPlayer, losingPlayer, losingScore)
   }
   async finish(winner: PlayerPaddle, loser: PlayerPaddle, loserScore: number) {
@@ -154,6 +169,7 @@ export class Game {
     await this.gameHistoryService.create(gameHistoryEntry)
     const loserUser = await this.handleLoser(loser.frontEndData.nick)
     await this.handleWinner(winner.frontEndData.nick, loserUser)
+    this.timeStart = null
   }
   handleGameContinue() {
     let gamevisual = {
@@ -172,22 +188,20 @@ export class Game {
     if (winnerPoints == 0) {
       return gameSeconds * 5
     }
-    return ((loserPoints/winnerPoints)+1) * gameSeconds
+    return Math.round(((loserPoints / winnerPoints) + 1) * gameSeconds)
   }
   getSeconds(): number {
     const currentTime = new Date();
     const elapsedTimeInSeconds = Math.floor((currentTime.getTime() - this.timeStart.getTime()) / 1000);
     return elapsedTimeInSeconds;
   }
-  async handleLoser(loserNick: string)
-  {
-    let loserUser = await this.userRepository.findOne({where: {intra_nick: loserNick}})
+  async handleLoser(loserNick: string) {
+    let loserUser = await this.userRepository.findOne({ where: { intra_nick: loserNick } })
     loserUser.lost_games++
     return await this.userRepository.save(loserUser);
   }
-  async handleWinner(winnerNick: string, loserUser: User)
-  {
-    const winnerUser = await this.userRepository.findOne({where: {intra_nick: winnerNick}})
+  async handleWinner(winnerNick: string, loserUser: User) {
+    const winnerUser = await this.userRepository.findOne({ where: { intra_nick: winnerNick } })
     winnerUser.won_games++
     winnerUser.xp_total += await this.calculateXP(winnerUser, loserUser)
     return await this.userRepository.save(winnerUser);

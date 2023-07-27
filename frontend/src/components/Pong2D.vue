@@ -1,10 +1,19 @@
 <template>
-  <div class="lobbypage" v-if="lobbyPage">
+  <div class="lobbypage" v-if="inQueue">
     <LobbyPage></LobbyPage>
+  </div>
+  <div class="getready" v-else-if="ImNotReady">
+    <v-btn @click="SigReady" >I'm ready to play</v-btn>
+  </div>
+  <div class="allSet" v-else-if="OtherNotReady">
+    <h1>ALL SET! Game is about to start...</h1>
+  </div>
+  <div class="starting" v-else-if="starting">
+    <h1>Starting game {{ startingCounter }}</h1>
   </div>
   <div class="overlays" v-else>
     <h1 v-if="userDisconnected">{{ reconnecting }}</h1>
-    <canvas ref="gamecanvas"></canvas>
+    <canvas v-else ref="gamecanvas"></canvas>
   </div>
 </template>
 
@@ -18,6 +27,12 @@ let reconnecting = ref("")
 
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
+let inQueue = ref(true)
+let ImNotReady = ref(true)
+let OtherNotReady = ref(true)
+let starting = ref(false)
+let startingCounter = ref(0)
+
 let userDisconnected = ref(false)
 const gamecanvas = ref<HTMLCanvasElement | null>(null)
 let ctx = ref<CanvasRenderingContext2D | null>(null)
@@ -30,7 +45,6 @@ const board_dims = {
   height: 700
 }
 let score: Score | null = null
-let lobbyPage = ref(true)
 let disconnectedId: number | null = null
 let token: string | null = null;
 let decodedToken: TokenType;
@@ -70,10 +84,12 @@ onUnmounted(() => {
 
 socket.on('updateGame', game => {
   userDisconnected.value = false
+  starting.value = false
+  OtherNotReady.value = false
   if (disconnectedId) {
     clearInterval(disconnectedId)
   }
-  lobbyPage.value = false
+  inQueue.value = false
   if (gamecanvas.value) {
     ctx.value = gamecanvas.value.getContext('2d')
   }
@@ -111,6 +127,17 @@ socket.on("PlayerDisconnected", () => {
     }
     reconnecting.value += ellipsis
   }, 800);
+});
+
+socket.on("GetReady", () => {
+  inQueue.value = false
+});
+
+socket.on("Starting", (counter: number) => {
+  console.log("HERE NBIEATCH")
+  startingCounter.value = counter
+  starting.value = true
+  OtherNotReady.value = false
 });
 
 function init_values(game: any) {
@@ -235,6 +262,12 @@ function getCookieValueByName(name: any) {
     }
   }
   return null;
+}
+
+function SigReady()
+{
+  ImNotReady.value = false
+  socket.emit('PlayerReady', users_Name)
 }
 
 </script>

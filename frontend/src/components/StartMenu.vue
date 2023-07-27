@@ -8,7 +8,7 @@
       <div v-else-if="choosePaddle" class="carousel">
         <PaddleCarousel class="carousel2"></PaddleCarousel>
         <v-card-actions class="chooseButton">
-          <v-btn variant="outlined" block>CHoose paddlez</v-btn>
+          <v-btn variant="outlined" block>Choose Paddle</v-btn>
         </v-card-actions>
       </div>
     </v-card>
