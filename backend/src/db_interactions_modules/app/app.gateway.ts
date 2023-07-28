@@ -48,7 +48,7 @@ import { GameService } from '../game/game.service';
 // Game Service
   @SubscribeMessage('NewPlayer')
   handleNewPlayer(client: Socket, intra_nick: string) {
-    this.gameService.AddPlayerToGame(client, intra_nick)
+    this.gameService.CheckLobby(client, intra_nick)
   }
   @SubscribeMessage('PlayerReady')
   handlePlayerReady(client: Socket, intra_nick: string) {

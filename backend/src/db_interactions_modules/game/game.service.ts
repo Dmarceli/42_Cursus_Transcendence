@@ -5,51 +5,40 @@ import { GameHistoryService } from '../game_history/game_history.service';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
+import { PlayerPaddle } from './classes/PlayerPaddle';
 
 @Injectable()
 export class GameService {
+  players: PlayerPaddle[]
+  lobby: PlayerPaddle[]
+  active_games: Game[] = []
+
   constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>) { }
-  games: Game[] = []
-  async AddPlayerToGame(playerClient: Socket, nick: string) {
-    console.log("NewPlayer " + playerClient + " with intra " + nick)
+
+  async CreatePlayer(playerClient: Socket, nick: string, skin: string)
+  {
+    console.log("Creating new Player " + playerClient + " with intra " + nick + " and skin " + skin)
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
-    for (let i = 0; i < this.games.length; i++) {
-      if (this.games[i].playerPaddle1.frontEndData.nick == nick) {
-        this.games[i].playerPaddle1.user = user
-        this.games[i].playerPaddle1.client = playerClient
-        return
-      }
-      if (this.games[i].playerPaddle2.frontEndData.nick == nick) {
-        this.games[i].playerPaddle2.user = user
-        this.games[i].playerPaddle2.client = playerClient
-        return
-      }
-    }
-    for (let i = 0; i < this.games.length; i++) {
-      if (this.games[i].playerPaddle1.client == playerClient || this.games[i].playerPaddle1.client == playerClient)
-        return
-      if (!this.games[i].playerPaddle1.client) {
-        this.games[i].playerPaddle1.user = user
-        this.games[i].playerPaddle1.frontEndData.nick = nick
-        this.games[i].playerPaddle1.client = playerClient
-        return
-      }
-      else if (!this.games[i].playerPaddle2.client) {
-        this.games[i].playerPaddle2.user = user
-        this.games[i].playerPaddle2.frontEndData.nick = nick
-        this.games[i].playerPaddle2.client = playerClient
-        return
-      }
-    }
-    let game = new Game(this.gameHistoryService, this.userRepository)
-    game.playerPaddle1.client = playerClient
-    game.playerPaddle1.frontEndData.nick = nick
-    game.playerPaddle1.user = user
-    this.games.push(game)
+    let newPlayer = new PlayerPaddle(playerClient, user, skin);
+    this.players.push(newPlayer);
   }
+
+  AddPlayerToLobby(playerClient: Socket, nick: string)
+  {
+    const index = this.players.findIndex(player => player.user.intra_nick === nick)
+    if (index !== -1) {
+      if (this.players[index].client != playerClient)
+      {
+        this.players[index].client = playerClient
+      }
+      this.lobby.push(this.players[index])
+      this.players.splice(index, 1);
+    }
+  }
+
   RemovePlayerFromGame(client: Socket) {
     console.log("PlayerExited " + client.id)
-    for (let game of this.games) {
+    for (let game of this.active_games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
         game.playerPaddle1.ready = false
         game.playerPaddle2.client?.emit("PlayerDisconnected")
@@ -60,7 +49,7 @@ export class GameService {
     }
   }
   PlayerKeyUp(client: Socket, key: string) {
-    for (let game of this.games) {
+    for (let game of this.active_games) {
       if (game.playerPaddle1.client?.id === client.id) {
         if (key === "up") {
           game.playerPaddle1.movingUp = false
@@ -79,7 +68,7 @@ export class GameService {
     }
   }
   PlayerKeyDown(client: Socket, key: string) {
-    for (let game of this.games) {
+    for (let game of this.active_games) {
       if (game.playerPaddle1.client.id === client.id) {
         if (key === "up") {
           game.playerPaddle1.movingUp = true
@@ -100,7 +89,7 @@ export class GameService {
 
   UpdateAllPositions() {
     setInterval(() => {
-      for (let game of this.games) {
+      for (let game of this.active_games) {
         if (game.playerPaddle1.client && game.playerPaddle2.client) {
           if (game.playerPaddle1.ready && game.playerPaddle2.ready) {
             if (!game.timeStart ) {
@@ -128,9 +117,15 @@ export class GameService {
     }, 15
     )
   }
+  CheckLobby(playerClient: Socket, nick: string) {
+    if (this.lobby.length < 2)
+      return
+    let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)
+    this.active_games.push(game)
+  }
 
   PlayerReady(intra_nick: string) {
-    for (let game of this.games) {
+    for (let game of this.active_games) {
       if (game.playerPaddle1.user.intra_nick === intra_nick) {
         game.playerPaddle1.ready = true
       }

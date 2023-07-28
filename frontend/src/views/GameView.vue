@@ -22,11 +22,51 @@
 <script setup lang="ts">
 import Pong2D from '../components/Pong2D.vue'
 import StartMenu from '../components/StartMenu.vue'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import jwt_decode from 'jwt-decode';
 
-let startmenu = ref(false)
+let startmenu = ref(true)
 let playerWon = ref(false)
 let playerLost = ref(false)
+let token: string | null = null;
+let decodedToken: TokenType;
+let userId: number | null = null;
+let users_Name: string | null = null;
+
+interface TokenType
+{
+  user: {
+    intra_nick: string,
+    nick: string,
+    id: number
+  },
+  id: number,
+  iat: number,
+  exp: number
+}
+
+onMounted(() => {
+  console.log('Mounted Game View');
+  token = getCookieValueByName('token');
+  if (token)
+    decodedToken = jwt_decode(token);
+  userId = decodedToken.user.id;
+  users_Name = decodedToken.user.intra_nick;
+  console.log("userId "+userId)
+  console.log("users_name "+users_Name)
+})
+
+function getCookieValueByName(name: any) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
+    }
+  }
+  return null;
+}
 
 </script>
 

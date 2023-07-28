@@ -36,19 +36,24 @@ export class Game {
   playerPaddle2: PlayerPaddle
   score: Score
   isColliding: Boolean;
+  isFinished: Boolean
+
   gameHistoryService: GameHistoryService
   userRepository: Repository<User>
-  constructor(gameHistoryService: GameHistoryService, userRepository: Repository<User>) {
+  constructor(player1:PlayerPaddle, player2: PlayerPaddle, gameHistoryService: GameHistoryService, userRepository: Repository<User>) {
     this.timeStart = null
     this.starting = false
     this.startCounter = 3
     this.ball = new Ball(700, 350, 20)
-    this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
-    this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
+    player1.setInitialPosition(40, 300)
+    player2.setInitialPosition(1340, 300)
+    this.playerPaddle1 = player1
+    this.playerPaddle2 = player2
     this.score = new Score
     this.isColliding = false
     this.gameHistoryService = gameHistoryService
     this.userRepository = userRepository
+    this.isFinished = false
   }
   start(): void {
     let interval = setInterval(() => {
@@ -143,7 +148,8 @@ export class Game {
   }
   async checkStatus() {
     if (this.isGameFinished()) {
-      return await this.handleFinishGame()
+      await this.handleFinishGame()
+      this.isFinished = true
     }
     this.handleGameContinue()
   }

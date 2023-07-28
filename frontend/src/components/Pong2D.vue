@@ -19,21 +19,27 @@
 
 <script setup lang="ts">
 import { ref, inject,  onMounted, onUnmounted } from 'vue'
+import { Socket } from 'socket.io-client';
 import LobbyPage from './LobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
-import jwt_decode from 'jwt-decode';
 
+const socket: Socket | undefined = inject("socket")
 let reconnecting = ref("")
-
+interface Props {
+  intraNick?: string
+}
+const props = defineProps<Props>();
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
+// State control variables
 let inQueue = ref(true)
 let ImNotReady = ref(true)
 let OtherNotReady = ref(true)
 let starting = ref(false)
 let startingCounter = ref(0)
-
 let userDisconnected = ref(false)
+
+// Game related variables
 const gamecanvas = ref<HTMLCanvasElement | null>(null)
 let ctx = ref<CanvasRenderingContext2D | null>(null)
 let ball: Circle | null = null
@@ -46,43 +52,24 @@ const board_dims = {
 }
 let score: Score | null = null
 let disconnectedId: number | null = null
-let token: string | null = null;
-let decodedToken: TokenType;
-let userId: string | null = null;
-let users_Name: string | null = null;
-
-interface TokenType
-{
-  id: string
-  login: string
-}
-const socket = inject("socket")
 
 onMounted(() => {
   console.log('Mounted Pong');
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
-  token = getCookieValueByName('token');
-  if (token)
-    decodedToken = jwt_decode(token);
-  console.log(decodedToken)
-  userId = decodedToken.id;
-  users_Name = decodedToken.user.intra_nick;
-  console.log("userId "+userId)
-  console.log("users_name "+users_Name)
-  socket.emit('NewPlayer', users_Name)
+  socket?.emit('NewPlayer', props.intraNick)
 })
 
 onUnmounted(() => {
   console.log('Unmounting Pong')
-  socket.emit('PlayerExited')
+  socket?.emit('PlayerExited')
   window.removeEventListener('resize', onWidthChange)
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
 })
 
-socket.on('updateGame', game => {
+socket?.on('updateGame', game => {
   userDisconnected.value = false
   starting.value = false
   OtherNotReady.value = false
@@ -106,15 +93,15 @@ socket.on('updateGame', game => {
   render_animation()
 });
 
-socket.on("PlayerWon", () => {
+socket?.on("PlayerWon", () => {
   emit('PlayerWon')
 });
 
-socket.on("PlayerLost", () => {
+socket?.on("PlayerLost", () => {
   emit('PlayerLost')
 });
 
-socket.on("PlayerDisconnected", () => {
+socket?.on("PlayerDisconnected", () => {
   userDisconnected.value = true
   let ellipsis = "";
   disconnectedId = setInterval(() => {
@@ -129,11 +116,11 @@ socket.on("PlayerDisconnected", () => {
   }, 800);
 });
 
-socket.on("GetReady", () => {
+socket?.on("GetReady", () => {
   inQueue.value = false
 });
 
-socket.on("Starting", (counter: number) => {
+socket?.on("Starting", (counter: number) => {
   console.log("HERE NBIEATCH")
   startingCounter.value = counter
   starting.value = true
@@ -218,10 +205,10 @@ function onKeyDown(event: KeyboardEvent) {
     console.log(event.key)
     const handlers: any = {
       ArrowUp: () => {
-        socket.emit('keydown', "up")
+        socket?.emit('keydown', "up")
       },
       ArrowDown: () => {
-        socket.emit('keydown', "down")
+        socket?.emit('keydown', "down")
       },
     }[event.key]
     handlers?.()
@@ -231,43 +218,19 @@ function onKeyDown(event: KeyboardEvent) {
 function onKeyUp(event: KeyboardEvent) {
   const handlers: any = {
     ArrowUp: () => {
-      socket.emit('keyup', "up")
+      socket?.emit('keyup', "up")
     },
     ArrowDown: () => {
-      socket.emit('keyup', "down")
+      socket?.emit('keyup', "down")
     },
   }[event.key]
   handlers?.()
 }
 
-function printAll() {
-  console.log("Ball:")
-  console.log("x:" + ball?.x)
-  console.log("y:" + ball?.y)
-  console.log("radius:" + ball?.radius)
-  console.log("Paddle 1:")
-  console.log("x:" + paddle1?.x)
-  console.log("y:" + paddle1?.y)
-  console.log("width:" + paddle1?.width)
-  console.log("height:" + paddle1?.height)
-}
-
-function getCookieValueByName(name: any) {
-  const cookies = document.cookie.split(';');
-  for (let i = 0; i < cookies.length; i++) {
-    let cookie = cookies[i].trim();
-    if (cookie.startsWith(`${name}=`)) {
-      cookie = cookie.substring(name.length + 1);
-      return (cookie);
-    }
-  }
-  return null;
-}
-
 function SigReady()
 {
   ImNotReady.value = false
-  socket.emit('PlayerReady', users_Name)
+  socket?.emit('PlayerReady', users_Name)
 }
 
 </script>

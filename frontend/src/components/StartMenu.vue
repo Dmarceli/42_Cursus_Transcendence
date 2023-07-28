@@ -8,7 +8,7 @@
       <div v-else-if="choosePaddle" class="carousel">
         <PaddleCarousel class="carousel2"></PaddleCarousel>
         <v-card-actions class="chooseButton">
-          <v-btn variant="outlined" block>Choose Paddle</v-btn>
+          <v-btn variant="outlined" block @click="selectPaddle">Choose Paddle</v-btn>
         </v-card-actions>
       </div>
     </v-card>
@@ -16,16 +16,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, inject } from 'vue'
+import { Socket } from 'socket.io-client';
 import PaddleCarousel from './PaddleCarousel.vue'
+
+interface Props {
+  intraNick?: string
+}
+const props = defineProps<Props>();
 
 let joinLobbyView = ref(false)
 let choosePaddle = ref(true)
 
+const socket: Socket | undefined = inject("socket")
+
+function selectPaddle()
+{
+  socket?.emit('PlayerSelectedPaddle', props.intraNick)
+}
+
 </script>
 
 <style scoped>
-
 .v-card.elevation-18 {
   display: flex;
   flex-direction: column;
@@ -90,12 +102,10 @@ let choosePaddle = ref(true)
   height: 90%;
 }
 
-.chooseButton
-{
+.chooseButton {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
-
 </style>
