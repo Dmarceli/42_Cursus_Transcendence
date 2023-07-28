@@ -808,13 +808,13 @@ const getFriends = async () => {
 
 const addFriend = async (friendId) => {
 	try {
-		const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends/create`, {
+		const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/friendship_request`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 				'Authorization': `Bearer ${token}`
 			},
-			body: JSON.stringify({ user1Id: parseInt(userId), user2Id: parseInt(friendId) }),
+			body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(friendId) , message: "you have received  a friend request from " + userId }),
 		});
 		if (response.ok) {
 			const data = await response.json();

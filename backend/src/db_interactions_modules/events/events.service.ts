@@ -40,10 +40,14 @@ export class EventsService {
   }
 
   async closedecision(decision: boolean, event_id: number){
-    const event = await this.eventsRepository.findOneBy({id: event_id})
+    const event = await this.eventsRepository.findOne({
+      where: { 
+        id: event_id },
+        relations: ['requester_user', 'decider_user'],
+    });
     if (event)
     {
-      if (event.id == 1){
+      if (event.type == 1){
         const newfriend: CreateFriendDto = {
           user1Id : event.decider_user.id , 
           user2Id : event.requester_user.id
@@ -51,7 +55,7 @@ export class EventsService {
         this.FriendsService.createfriend(newfriend)
       }
         
-    }
+    } 
     await this.eventsRepository.delete(event)
   }
 
