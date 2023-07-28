@@ -51,12 +51,14 @@ class Paddle implements Rectangle {
   drawNick(context: CanvasRenderingContext2D)
   {
     const board_height = board_dims.height * this.conv_rate
-    let nick_size = board_height /20
-    context.font = nick_size+"px Helvetica Neue";
+    const board_width = board_dims.width * this.conv_rate
+    let nick_height = board_height /20
+    context.font = nick_height+"px Helvetica Neue";
     context.fillStyle = "white";
     const text_width = context.measureText(this.nick).width
-    const x = this.x > board_height/2 ? this.x-text_width: this.x
-    context.fillText(this.nick, x, nick_size+(board_height/30));
+    const x = this.x > board_width/2 ? this.x-text_width-this.width: this.x+this.width*2
+    const y = this.x > board_width/2 ? board_width-this.x+nick_height : this.x+this.width+nick_height
+    context.fillText(this.nick, x, y);
   }
 }
 
