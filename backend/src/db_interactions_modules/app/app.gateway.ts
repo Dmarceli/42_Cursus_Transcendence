@@ -48,8 +48,10 @@ import { PlayerPaddle } from '../game/classes/PlayerPaddle';
 
 // Game Service
   @SubscribeMessage('PlayerSelectedPaddle')
-  handlePlayerSelectedPaddle(client: Socket, intra_nick: string, paddleSkin: string) {
+  handlePlayerSelectedPaddle(client: Socket, info: any) {
+    let [intra_nick, paddleSkin] = info;
     this.gameService.CreatePlayer(client, intra_nick, paddleSkin);
+    client.emit("PlayerCreated")
   }
 
   @SubscribeMessage('AddToLobby')

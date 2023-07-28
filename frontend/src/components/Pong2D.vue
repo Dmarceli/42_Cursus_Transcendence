@@ -3,7 +3,7 @@
     <LobbyPage></LobbyPage>
   </div>
   <div class="getready" v-else-if="ImNotReady">
-    <v-btn @click="SigReady" >I'm ready to play</v-btn>
+    <v-btn @click="SigReady">I'm ready to play</v-btn>
   </div>
   <div class="allSet" v-else-if="OtherNotReady">
     <h1>ALL SET! Game is about to start...</h1>
@@ -18,17 +18,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject,  onMounted, onUnmounted } from 'vue'
-import { Socket } from 'socket.io-client';
+import { ref, inject, onMounted, onUnmounted } from 'vue'
+import { Socket } from 'socket.io-client'
 import LobbyPage from './LobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
 
-const socket: Socket | undefined = inject("socket")
-let reconnecting = ref("")
+const socket: Socket | undefined = inject('socket')
+let reconnecting = ref('')
 interface Props {
   intraNick?: string
 }
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
 // State control variables
@@ -54,7 +54,7 @@ let score: Score | null = null
 let disconnectedId: number | null = null
 
 onMounted(() => {
-  console.log('Mounted Pong');
+  console.log('Mounted Pong')
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
@@ -69,7 +69,7 @@ onUnmounted(() => {
   window.removeEventListener('keyup', onKeyUp)
 })
 
-socket?.on('updateGame', game => {
+socket?.on('updateGame', (game) => {
   userDisconnected.value = false
   starting.value = false
   OtherNotReady.value = false
@@ -83,49 +83,46 @@ socket?.on('updateGame', game => {
   update_conversion_rate()
   if (ball == null || paddle1 == null || paddle2 == null || score == null || ctx.value == null) {
     init_values(game)
-  }
-  else {
+  } else {
     ball.update(game.ball)
     paddle1.update(game.playerPaddle1)
     paddle2.update(game.playerPaddle2)
     score.update(game.score)
   }
   render_animation()
-});
+})
 
-socket?.on("PlayerWon", () => {
+socket?.on('PlayerWon', () => {
   emit('PlayerWon')
-});
+})
 
-socket?.on("PlayerLost", () => {
+socket?.on('PlayerLost', () => {
   emit('PlayerLost')
-});
+})
 
-socket?.on("PlayerDisconnected", () => {
+socket?.on('PlayerDisconnected', () => {
   userDisconnected.value = true
-  let ellipsis = "";
+  let ellipsis = ''
   disconnectedId = setInterval(() => {
-    reconnecting.value = "Waiting for other user to reconnect";
+    reconnecting.value = 'Waiting for other user to reconnect'
     if (ellipsis.length < 3) {
-      ellipsis += "."
-    }
-    else {
-      ellipsis = ""
+      ellipsis += '.'
+    } else {
+      ellipsis = ''
     }
     reconnecting.value += ellipsis
-  }, 800);
-});
+  }, 800)
+})
 
-socket?.on("GetReady", () => {
+socket?.on('GetReady', () => {
   inQueue.value = false
-});
+})
 
-socket?.on("Starting", (counter: number) => {
-  console.log("HERE NBIEATCH")
+socket?.on('Starting', (counter: number) => {
   startingCounter.value = counter
   starting.value = true
   OtherNotReady.value = false
-});
+})
 
 function init_values(game: any) {
   if (gamecanvas.value != null) {
@@ -146,10 +143,10 @@ function update_conversion_rate() {
       gamecanvas.value.height = window.innerHeight * 0.8
       gamecanvas.value.width = window.innerHeight * 0.8 * 2
     } else {
-      gamecanvas.value.height = window.innerWidth * 0.8 / 2
+      gamecanvas.value.height = (window.innerWidth * 0.8) / 2
       gamecanvas.value.width = window.innerWidth * 0.8
     }
-    conv_rate = gamecanvas.value.width / board_dims.width;
+    conv_rate = gamecanvas.value.width / board_dims.width
   }
 }
 
@@ -161,7 +158,6 @@ function render_animation() {
     paddle2 != null &&
     gamecanvas.value != null
   ) {
-
     // printAll()
     resetBoard()
     ball.draw(ctx.value)
@@ -180,7 +176,12 @@ function startBoard() {
 
 function clearBoard() {
   if (gamecanvas.value && conv_rate && ctx.value) {
-    ctx.value.clearRect(0, 0, gamecanvas.value.width * conv_rate, gamecanvas.value.height * conv_rate)
+    ctx.value.clearRect(
+      0,
+      0,
+      gamecanvas.value.width * conv_rate,
+      gamecanvas.value.height * conv_rate
+    )
   }
 }
 
@@ -191,8 +192,7 @@ function resetBoard() {
 
 function onWidthChange() {
   update_conversion_rate()
-  if (conv_rate)
-  {
+  if (conv_rate) {
     ball?.updateConvRate(conv_rate)
     paddle1?.updateConvRate(conv_rate)
     paddle2?.updateConvRate(conv_rate)
@@ -205,11 +205,11 @@ function onKeyDown(event: KeyboardEvent) {
     console.log(event.key)
     const handlers: any = {
       ArrowUp: () => {
-        socket?.emit('keydown', "up")
+        socket?.emit('keydown', 'up')
       },
       ArrowDown: () => {
-        socket?.emit('keydown', "down")
-      },
+        socket?.emit('keydown', 'down')
+      }
     }[event.key]
     handlers?.()
   }
@@ -218,21 +218,19 @@ function onKeyDown(event: KeyboardEvent) {
 function onKeyUp(event: KeyboardEvent) {
   const handlers: any = {
     ArrowUp: () => {
-      socket?.emit('keyup', "up")
+      socket?.emit('keyup', 'up')
     },
     ArrowDown: () => {
-      socket?.emit('keyup', "down")
-    },
+      socket?.emit('keyup', 'down')
+    }
   }[event.key]
   handlers?.()
 }
 
-function SigReady()
-{
+function SigReady() {
   ImNotReady.value = false
   socket?.emit('PlayerReady', users_Name)
 }
-
 </script>
 
 <style>

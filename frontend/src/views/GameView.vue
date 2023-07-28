@@ -1,6 +1,6 @@
 <template>
   <div v-if="startmenu" class="start-menu">
-    <StartMenu class="start-menu"></StartMenu>
+    <StartMenu @player-created="startmenu=false" :intra-nick="users_Name" class="start-menu"></StartMenu>
   </div>
   <div v-else-if="playerWon">
     <h1>You Won</h1>
@@ -30,8 +30,7 @@ let playerWon = ref(false)
 let playerLost = ref(false)
 let token: string | null = null;
 let decodedToken: TokenType;
-let userId: number | null = null;
-let users_Name: string | null = null;
+let users_Name = ref("");
 
 interface TokenType
 {
@@ -50,9 +49,7 @@ onMounted(() => {
   token = getCookieValueByName('token');
   if (token)
     decodedToken = jwt_decode(token);
-  userId = decodedToken.user.id;
-  users_Name = decodedToken.user.intra_nick;
-  console.log("userId "+userId)
+  users_Name.value = decodedToken.user.intra_nick;
   console.log("users_name "+users_Name)
 })
 
