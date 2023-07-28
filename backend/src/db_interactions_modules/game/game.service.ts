@@ -9,8 +9,8 @@ import { PlayerPaddle } from './classes/PlayerPaddle';
 
 @Injectable()
 export class GameService {
-  players: PlayerPaddle[]
-  lobby: PlayerPaddle[]
+  players: PlayerPaddle[] = []
+  lobby: PlayerPaddle[] = []
   active_games: Game[] = []
 
   constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>) { }
@@ -89,6 +89,8 @@ export class GameService {
 
   UpdateAllPositions() {
     setInterval(() => {
+      this.addLobbyGames();
+      this.removeFinishedGames();
       for (let game of this.active_games) {
         if (game.playerPaddle1.client && game.playerPaddle2.client) {
           if (game.playerPaddle1.ready && game.playerPaddle2.ready) {
@@ -117,7 +119,12 @@ export class GameService {
     }, 15
     )
   }
-  CheckLobby(playerClient: Socket, nick: string) {
+  removeFinishedGames()
+  {
+    let updated_active_games = this.active_games.filter(game => !game.isFinished);
+    this.active_games = updated_active_games;
+  }
+  addLobbyGames() {
     if (this.lobby.length < 2)
       return
     let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)

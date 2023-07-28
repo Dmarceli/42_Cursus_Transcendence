@@ -1,15 +1,16 @@
 <template>
-  <div class="start-menu">
-    <v-card elevation="18">
+  <div v-if="PlayGame">
+    <img src="racketas.svg" alt="">
+    <v-btn @click="PlayGame=false">Let's Play</v-btn>
+  </div>
+  <div v-else class="start-menu">
+    <v-card elevation="18" class="testclass">
       <div v-if="joinLobbyView" class="join-lobby">
         <img src="../assets/racketas.svg" alt="Green Rackets" />
         <button>Join Lobby</button>
       </div>
       <div v-else-if="choosePaddle" class="carousel">
-        <PaddleCarousel class="carousel2"></PaddleCarousel>
-        <v-card-actions class="chooseButton">
-          <v-btn variant="outlined" block @click="selectPaddle">Choose Paddle</v-btn>
-        </v-card-actions>
+        <PaddleCarousel @chose-paddle="selectPaddle" class="carousel2"></PaddleCarousel>
       </div>
     </v-card>
   </div>
@@ -19,6 +20,8 @@
 import { ref, inject } from 'vue'
 import { Socket } from 'socket.io-client';
 import PaddleCarousel from './PaddleCarousel.vue'
+
+let PlayGame = ref(true)
 
 interface Props {
   intraNick?: string
@@ -30,9 +33,9 @@ let choosePaddle = ref(true)
 
 const socket: Socket | undefined = inject("socket")
 
-function selectPaddle()
+function selectPaddle(paddleSkin: string)
 {
-  socket?.emit('PlayerSelectedPaddle', props.intraNick)
+  socket?.emit('PlayerSelectedPaddle', props.intraNick, paddleSkin)
 }
 
 </script>
@@ -99,13 +102,15 @@ function selectPaddle()
 }
 
 .carousel2 {
-  height: 90%;
+  height: 80%;
 }
 
-.chooseButton {
+.v-card.testclass
+{
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: center; 
 }
+
 </style>

@@ -12,6 +12,7 @@ import { AppService } from '../../app.service';
 import { CreateMsgDto } from '../messages/dtos/message.dto';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { GameService } from '../game/game.service';
+import { PlayerPaddle } from '../game/classes/PlayerPaddle';
 
 @WebSocketGateway({
   cors: {
@@ -46,9 +47,14 @@ import { GameService } from '../game/game.service';
  }
 
 // Game Service
-  @SubscribeMessage('NewPlayer')
+  @SubscribeMessage('PlayerSelectedPaddle')
+  handlePlayerSelectedPaddle(client: Socket, intra_nick: string, paddleSkin: string) {
+    this.gameService.CreatePlayer(client, intra_nick, paddleSkin);
+  }
+
+  @SubscribeMessage('AddToLobby')
   handleNewPlayer(client: Socket, intra_nick: string) {
-    this.gameService.CheckLobby(client, intra_nick)
+    this.gameService.AddPlayerToLobby(client, intra_nick)
   }
   @SubscribeMessage('PlayerReady')
   handlePlayerReady(client: Socket, intra_nick: string) {

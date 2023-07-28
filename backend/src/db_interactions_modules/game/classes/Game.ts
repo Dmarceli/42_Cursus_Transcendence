@@ -75,13 +75,11 @@ export class Game {
     this.isColliding = false
   }
   reset(): void {
-    this.startCounter = 0
-    this.startCounter = 3
-    this.ball = new Ball(700, 350, 20)
-    this.playerPaddle1 = new PlayerPaddle(40, 300, 20, 100)
-    this.playerPaddle2 = new PlayerPaddle(1340, 300, 20, 100)
-    this.score = new Score
-    this.isColliding = false
+    this.isFinished = true
+    this.playerPaddle1.client = null
+    this.playerPaddle1.user = null
+    this.playerPaddle2.client = null
+    this.playerPaddle2.user = null
   }
 
   isBallTouchingTopWall() {

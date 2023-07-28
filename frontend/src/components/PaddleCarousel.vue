@@ -1,29 +1,39 @@
 <template>
   <div>
-    <v-carousel :show-arrows="true" :hide-delimiters="true" v-model="model">
+    <v-carousel :show-arrows="true" :hide-delimiters="true" v-model="model" style="height:100%">
 
       <template v-slot:prev="{ props }">
-        <v-btn variant="elevated" color="pink" @click="props.onClick">Previous</v-btn>
+        <v-btn class="choosePaddle" variant="elevated" color="pink" @click="props.onClick">Previous</v-btn>
       </template>
 
       <template v-slot:next="{ props }">
-        <v-btn variant="elevated" color="pink" @click="props.onClick">Next</v-btn>
+        <v-btn class="choosePaddle" variant="elevated" color="pink" @click="props.onClick">Next</v-btn>
       </template>
 
       <v-carousel-item :content-class="'cardClass'" v-for="(item, i) in items" :key="i">
         <img :src="item.src" class="cardClass" />
       </v-carousel-item>
     </v-carousel>
+    <v-card-actions>
+      <v-btn class="choosePaddle" variant="outlined" block @click="selectPaddle">Choose Paddle</v-btn>
+    </v-card-actions>
   </div>
 </template>
 
 <script setup lang="ts">
 
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
+import type { Ref } from 'vue';
 
-const model = ref(0)
+interface Emits
+{
+  (e: 'chosePaddle', skinPaddlePath: string): void
+}
+const emit = defineEmits<Emits>()
 
-let items = ref([
+const model: Ref<number> = ref(0)
+
+const items = [
   {
     src: "game_paddles/blue_pearl.jpg"
   },
@@ -54,8 +64,12 @@ let items = ref([
   {
     src: "game_paddles/xing_ong.jpg"
   }
-])
+]
 
+function selectPaddle()
+{
+  emit('chosePaddle', items[model.value].src)
+}
 
 </script>
 
@@ -71,10 +85,11 @@ img.cardClass {
   width: 4vw;
 }
 
-v-carousel-item {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+button.v-btn.choosePaddle
+{
+  height: 3vw;
+  width: 10vw;
+  font-size: 1vw;
 }
+
 </style>
