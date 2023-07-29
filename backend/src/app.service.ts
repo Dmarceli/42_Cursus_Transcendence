@@ -7,6 +7,7 @@ import { Channel } from './db_interactions_modules/channels/channel.entity';
 import { CreateMsgDto } from './db_interactions_modules/messages/dtos/message.dto';
 import { UsersService } from './db_interactions_modules/users/users.service';
 import { Socket, Server } from 'socket.io';
+import { UserSocketArray } from './db_interactions_modules/users/classes/UsersSockets';
 @Injectable()
 export class AppService {
  constructor(
@@ -15,7 +16,7 @@ export class AppService {
    @InjectRepository(Channel)private channelRepository: Repository<Channel>,
    private usersService: UsersService
  ) {}
-
+ static UsersOnline: UserSocketArray[] = []
 
  async createMessage(msg_payload: CreateMsgDto){
   const user= await this.userRepository.findOne({where: {
@@ -35,15 +36,15 @@ export class AppService {
  }
 
  async user_remove_disconect(client: Socket){
-  this.usersService.remove_disconnect_User(client)
+  this.usersService.remove_disconnect_User(client, AppService.UsersOnline)
  }
 
  async add_user_to_lobby(client: Socket){
-  return this.usersService.addUserToLobby(client)
+  return this.usersService.addUserToLobby(client,AppService.UsersOnline)
  }
 
  async user_to_notify(client: number){
-  return this.usersService.notifyUser(client)
+  return this.usersService.notifyUser(client,AppService.UsersOnline)
  }
 
 

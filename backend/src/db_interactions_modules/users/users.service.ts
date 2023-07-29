@@ -18,7 +18,7 @@ export class UsersService {
     
   ) {
   }
-  UsersOnline: UserSocketArray[] = []
+  //UsersOnline: UserSocketArray[] = []
 
 
   async createUser(User: CreateUserDto){
@@ -87,7 +87,7 @@ export class UsersService {
    }
 
   
-   async addUserToLobby(client: Socket){
+   async addUserToLobby(client: Socket,UsersOnline : UserSocketArray[]){
     const token = client.handshake.auth.token;
     let payload;
     try {
@@ -105,35 +105,37 @@ export class UsersService {
      if(!resp)
         return null
       
-      this.UsersOnline.push(new UserSocketArray(resp,client))
+      UsersOnline.push(new UserSocketArray(resp,client))
       // let i=0;
-      // this.UsersOnline.forEach((element) => {
-      //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+      // UsersOnline.forEach((element) => {
+      //   console.log(UsersOnline[i].user.id,UsersOnline[i].user.intra_nick,UsersOnline[i++].client.id)
       // })
      return true;
    }
 
-   async notifyUser(user_id: number){
-    //console.log(this.UsersOnline)
+   async notifyUser(user_id: number,UsersOnline : UserSocketArray[]){
+    //console.log(UsersOnline)
      console.log('Notification sent to user:', user_id);
     //  let i=0;
-    //  this.UsersOnline.forEach((user) => {
-    //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+     //console.log("USERS",UsersOnline)
+    //  UsersOnline.forEach((user) => {
+    //   console.log(UsersOnline[i].user.id,UsersOnline[i].user.intra_nick,UsersOnline[i++].client.id)
     // })
-     const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
+
+     const user = UsersOnline.find( User_ => User_.user.id === user_id)
      if(!user)
        return;
      user.client.emit("notification")
    }
 
-   async remove_disconnect_User(client_: Socket){
-    const Index = this.UsersOnline.findIndex( User_ => User_.client === client_)
+   async remove_disconnect_User(client_: Socket,UsersOnline : UserSocketArray[]){
+    const Index = UsersOnline.findIndex( User_ => User_.client === client_)
     if(Index != -1)
-      this.UsersOnline.splice(Index,1)
+      UsersOnline.splice(Index,1)
     
     //   let i=0;
-    //   this.UsersOnline.forEach((user) => {
-    //    console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+    //   UsersOnline.forEach((user) => {
+    //    console.log(UsersOnline[i].user.id,UsersOnline[i].user.intra_nick,UsersOnline[i++].client.id)
     //  })  
    }
 

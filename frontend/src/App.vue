@@ -254,7 +254,6 @@ const fetchNotifications = async () => {
 
 if (socket && islogged.value === true) {
   socket.on('notification', Notification => {
-    console.log("ola");
     fetchNotifications();
   });
 }
