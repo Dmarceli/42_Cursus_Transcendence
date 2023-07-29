@@ -33,7 +33,7 @@ export class UserToChannelService {
       user_id: user,
       channel_id: channel,
       is_owner: is_user_owner,
-      is_admin: false,
+      is_admin: is_user_owner,
       is_muted: false,
       is_banned: false,
     });
@@ -95,6 +95,7 @@ export class UserToChannelService {
 
 
   async ban_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response){
+    console.log(caller_id)
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
     const user_to_ban = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
     if((caller_privileges.is_admin || caller_privileges.is_owner) && !user_to_ban.is_owner){

@@ -492,26 +492,28 @@ const joinChannel = async (channel, ownerPWD) => {
 
 // ADMIN COMMANDS \\
 
-
+// TEMP TESTS COMMENTED
 const isUserMorePowerful = (userList, target) => {
-	for (const userId in userList) {
-		if (target['user_id']['nick'] === users_Name)
-			return false;
-		const entry = userList[userId];
-		if (entry['user_id']['nick'] === users_Name) {
-			if (entry['is_owner'])
-				return true
-			else if (entry['is_admin']) {
-				if (target['is_owner']) {
-					return false
-				}
-				else {
-					return true
-				}
-			}
-		}
-	}
-	return false
+	// console.log("pow", userList, target)
+  // for (const userId in userList) {
+	// 	if (target['user_id']['nick'] === users_Name)
+	// 		return false;
+	// 	const entry = userList[userId];
+	// 	if (entry['user_id']['nick'] === users_Name) {
+	// 		if (entry['is_owner'])
+	// 			return true
+	// 		else if (entry['is_admin']) {
+	// 			if (target['is_owner']) {
+	// 				return false
+	// 			}
+	// 			else {
+	// 				return true
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// return false
+  return true
 }
 
 
