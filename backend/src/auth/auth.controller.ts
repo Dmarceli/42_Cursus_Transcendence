@@ -9,7 +9,7 @@ import { TwoFactorAuthService } from './2FA/2FA-service';
 import { JwtService } from '@nestjs/jwt';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from 'src/db_interactions_modules/users/user.entity';
-
+import { GoogleAuthGuard } from './google/auth_google.guard';
 @Controller('/auth')
 export class AuthController {
   constructor(
@@ -54,11 +54,11 @@ export class AuthController {
   /*******************************************/
 
   @Get('/login_google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuth(@Req() req) { }
 
   @Get('/callback_google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     const payload = this.authService.googleLogin(req)
     if (payload.TwoFAEnabled && payload.TwoFASecret) {

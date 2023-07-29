@@ -12,9 +12,9 @@ export class friendService {
    @InjectRepository(User) private userRepository: Repository<User>
  ) {}
  async createfriend(createfriendDto: CreateFriendDto) {
-  console.log(createfriendDto)
-  const user1 = await this.userRepository.findOne({where: {id: createfriendDto.user1Id} })
-  const user2 = await this.userRepository.findOne({where: {id: createfriendDto.user2Id} })
+  //TODO: Validate if friendship already exist and if users id sent exist
+  const user1= await this.userRepository.findOne({where: {id: createfriendDto.user1Id} })
+  const user2= await this.userRepository.findOne({where: {id: createfriendDto.user2Id} })
    return this.friendRepository.save({...createfriendDto as any, is_block: false});
  }
 

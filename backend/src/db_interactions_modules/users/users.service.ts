@@ -65,6 +65,18 @@ export class UsersService {
      return resp;
    }
 
+  async leaderboardInfo()
+  {
+      const userWins = await this.userRepository
+      .createQueryBuilder('user')
+      .select('user.id', 'id')
+      .addSelect('user.intra_nick', 'name')
+      .addSelect('user.xp_total', 'score')
+      .groupBy('user.id')
+      .orderBy("user.xp_total", "DESC")
+      .getRawMany();
+      return userWins;
+  }
 
    async findById(id_to_search :number) {
   
@@ -90,14 +102,24 @@ export class UsersService {
       return null
     } 
     const resp = await this.userRepository.findOne({where: {id: payload.id}});
-    if(!resp)
-    	return null
+     if(!resp)
+        return null
       
-    this.UsersOnline.push(new UserSocketArray(resp,client))
-    return true;
+      this.UsersOnline.push(new UserSocketArray(resp,client))
+      // let i=0;
+      // this.UsersOnline.forEach((element) => {
+      //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+      // })
+     return true;
    }
 
    async notifyUser(user_id: number){
+    //console.log(this.UsersOnline)
+     console.log('Notification sent to user:', user_id);
+    //  let i=0;
+    //  this.UsersOnline.forEach((user) => {
+    //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+    // })
      const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
      if(!user)
        return;
