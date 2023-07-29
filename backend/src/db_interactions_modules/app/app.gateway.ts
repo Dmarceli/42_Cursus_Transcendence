@@ -41,6 +41,7 @@ import { GameService } from '../game/game.service';
  handleDisconnect(client: Socket) {
    console.log(`Disconnected: ${client.id}`);
    this.appService.user_remove_disconect(client)
+   this.gameService.HandlePlayerDisconnected(client)
  }
  
  
@@ -75,7 +76,7 @@ import { GameService } from '../game/game.service';
 
   @SubscribeMessage('AddToLobby')
   handlAddPlayerToLobby(client: Socket, intra_nick: string) {
-    console.log("Joined lobby"+intra_nick)
+    console.log("Joined lobby "+intra_nick)
     this.gameService.AddPlayerToLobby(client, intra_nick)
   }
   @SubscribeMessage('PlayerReady')

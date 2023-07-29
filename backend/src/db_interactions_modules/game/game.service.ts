@@ -33,11 +33,10 @@ export class GameService {
       }
       this.lobby.push(this.players[index])
       this.players.splice(index, 1);
-      console.log(this.lobby.length)
     }
   }
 
-  RemovePlayerFromGame(client: Socket) {
+  HandlePlayerDisconnected(client: Socket) {
     console.log("PlayerExited " + client.id)
     for (let game of this.active_games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
@@ -111,10 +110,6 @@ export class GameService {
             game.playerPaddle1.handlePlayersNotReady();
             game.playerPaddle2.handlePlayersNotReady();
           }
-        }
-        else {
-          game.playerPaddle1.client?.emit('WaitingForPlayers')
-          game.playerPaddle2.client?.emit('WaitingForPlayers')
         }
       }
     }, 15

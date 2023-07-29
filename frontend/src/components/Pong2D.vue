@@ -117,6 +117,9 @@ socket?.on('PlayerDisconnected', () => {
   }, 800)
 })
 
+// Waiting for user to reconnect
+// Waiting in Lobby at the same time => Handle backend
+
 socket?.on('GetReady', () => {
   inQueue.value = false
 })
