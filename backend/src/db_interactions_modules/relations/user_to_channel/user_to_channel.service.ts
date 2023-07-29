@@ -23,7 +23,7 @@ export class UserToChannelService {
     const channels_users_ = (await this.usersonchannel(channel.id))
     const is_already_on_channel= channels_users_.find(element => element.user_id.id == user.id )
     if(is_already_on_channel)      
-    return
+      return
     const channels_users_count = (channels_users_).length
     if (!channels_users_count){
       is_user_owner = true;

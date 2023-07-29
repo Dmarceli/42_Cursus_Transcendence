@@ -494,27 +494,18 @@ const joinChannel = async (channel, ownerPWD) => {
 
 // TEMP TESTS COMMENTED
 const isUserMorePowerful = (userList, target) => {
-	// console.log("pow", userList, target)
-  // for (const userId in userList) {
-	// 	if (target['user_id']['nick'] === users_Name)
-	// 		return false;
-	// 	const entry = userList[userId];
-	// 	if (entry['user_id']['nick'] === users_Name) {
-	// 		if (entry['is_owner'])
-	// 			return true
-	// 		else if (entry['is_admin']) {
-	// 			if (target['is_owner']) {
-	// 				return false
-	// 			}
-	// 			else {
-	// 				return true
-	// 			}
-	// 		}
-	// 	}
-	// }
-	// return false
-  return true
-}
+  let is_owner_of_channel=false
+  for (const userId in userList) {
+    if (userList[userId]['user_id']['nick'] == users_Nick && userList[userId]['is_owner'])
+        is_owner_of_channel =true;
+  }
+		if (target['user_id']['nick'] === users_Name || !is_owner_of_channel)
+			return false;
+		if (target['is_owner'])
+				return false
+		return true
+	}
+
 
 
 const kickUser = async (KickedUserID) => {
