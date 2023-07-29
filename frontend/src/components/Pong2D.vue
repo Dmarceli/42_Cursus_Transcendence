@@ -72,11 +72,29 @@ onUnmounted(() => {
   window.removeEventListener('keyup', onKeyUp)
 })
 
+socket?.on('GetReady', () => {
+  ImNotReady.value = true
+  inQueue.value = false
+})
+
+socket?.on('WaitingOtherPlayer', () => {
+  OtherNotReady.value = true
+  ImNotReady.value = false
+})
+
+socket?.on('Starting', (counter: number) => {
+  startingCounter.value = counter
+  starting.value = true
+  OtherNotReady.value = false
+})
+
 socket?.on('updateGame', (game) => {
   userDisconnected.value = false
   starting.value = false
-  OtherNotReady.value = false
-  inQueue.value = false
+  if (OtherNotReady.value)
+    OtherNotReady.value = false
+  if (inQueue.value)
+    inQueue.value = false
   if (disconnectedId) {
     clearInterval(disconnectedId)
   }
@@ -115,19 +133,6 @@ socket?.on('PlayerDisconnected', () => {
     }
     reconnecting.value += ellipsis
   }, 800)
-})
-
-// Waiting for user to reconnect
-// Waiting in Lobby at the same time => Handle backend
-
-socket?.on('GetReady', () => {
-  inQueue.value = false
-})
-
-socket?.on('Starting', (counter: number) => {
-  startingCounter.value = counter
-  starting.value = true
-  OtherNotReady.value = false
 })
 
 function init_values(game: any) {

@@ -25,26 +25,67 @@ export class GameService {
 
   AddPlayerToLobby(playerClient: Socket, nick: string)
   {
-    const index = this.players.findIndex(player => player.user.intra_nick === nick)
-    if (index !== -1) {
-      if (this.players[index].client != playerClient)
+    const freePlayerIndex = this.players.findIndex(player => player.user.intra_nick === nick)
+    if (freePlayerIndex !== -1) {
+      if (this.players[freePlayerIndex].client != playerClient)
       {
-        this.players[index].client = playerClient
+        this.players[freePlayerIndex].client = playerClient
       }
-      this.lobby.push(this.players[index])
-      this.players.splice(index, 1);
+      if (this.ReconnectedPlayer(this.players[freePlayerIndex], nick))
+      {
+        console.log("Reconnected "+nick)
+      }
+      else
+      {
+        console.log("Joined lobby "+nick)
+        this.lobby.push(this.players[freePlayerIndex])
+      }
+      this.players.splice(freePlayerIndex, 1);
+    }
+  }
+
+  // TODO: This could be cheating as a way to change skin.
+  // Change we could not update skin but after sending a
+  // "Reconnecting 3 2 1" message
+  ReconnectedPlayer(player: PlayerPaddle, nick: string): boolean
+  {
+    let player1ActiveGameIndex = this.active_games.findIndex(game => game.playerPaddle1.user.intra_nick === nick)
+    if (player1ActiveGameIndex !== -1)
+    {
+      this.active_games[player1ActiveGameIndex].playerPaddle1.client = player.client
+      this.active_games[player1ActiveGameIndex].playerPaddle1.frontEndData.skin = player.frontEndData.skin
+      return true
+    }
+    let player2ActiveGameIndex = this.active_games.findIndex(game => game.playerPaddle2.user.intra_nick === nick)
+    if (player2ActiveGameIndex !== -1)
+    {
+      this.active_games[player2ActiveGameIndex].playerPaddle2.client = player.client
+      this.active_games[player2ActiveGameIndex].playerPaddle2.frontEndData.skin = player.frontEndData.skin
+      return true
+    }
+    return false
+  }
+
+  PlayerReady(intra_nick: string) {
+    for (let game of this.active_games) {
+      if (game.playerPaddle1.user.intra_nick === intra_nick) {
+        game.playerPaddle1.ready = true
+      }
+      else if (game.playerPaddle2.user.intra_nick === intra_nick)
+        game.playerPaddle2.ready = true
     }
   }
 
   HandlePlayerDisconnected(client: Socket) {
-    console.log("PlayerExited " + client.id)
     for (let game of this.active_games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
         game.playerPaddle1.ready = false
         game.playerPaddle2.client?.emit("PlayerDisconnected")
+        console.log("PlayerExited " + game.playerPaddle1.user.intra_nick)
       } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
-        game.playerPaddle1.client?.emit("PlayerDisconnected")
         game.playerPaddle2.ready = false
+        game.playerPaddle1.client?.emit("PlayerDisconnected")
+        console.log("PlayerExited " + game.playerPaddle2.user.intra_nick)
       }
     }
   }
@@ -107,18 +148,13 @@ export class GameService {
           }
           else
           {
-            game.playerPaddle1.handlePlayersNotReady();
-            game.playerPaddle2.handlePlayersNotReady();
+              game.playerPaddle1.handlePlayersNotReady(!game.timeStart);
+              game.playerPaddle2.handlePlayersNotReady(!game.timeStart);
           }
         }
       }
     }, 15
     )
-  }
-  removeFinishedGames()
-  {
-    let updated_active_games = this.active_games.filter(game => !game.isFinished);
-    this.active_games = updated_active_games;
   }
   addLobbyGames() {
     if (this.lobby.length < 2)
@@ -127,14 +163,9 @@ export class GameService {
     this.lobby.splice(0, 2)
     this.active_games.push(game)
   }
-
-  PlayerReady(intra_nick: string) {
-    for (let game of this.active_games) {
-      if (game.playerPaddle1.user.intra_nick === intra_nick) {
-        game.playerPaddle1.ready = true
-      }
-      else if (game.playerPaddle2.user.intra_nick === intra_nick)
-        game.playerPaddle2.ready = true
-    }
+  removeFinishedGames()
+  {
+    let updated_active_games = this.active_games.filter(game => !game.isFinished);
+    this.active_games = updated_active_games;
   }
 }

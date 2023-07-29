@@ -76,7 +76,6 @@ import { GameService } from '../game/game.service';
 
   @SubscribeMessage('AddToLobby')
   handlAddPlayerToLobby(client: Socket, intra_nick: string) {
-    console.log("Joined lobby "+intra_nick)
     this.gameService.AddPlayerToLobby(client, intra_nick)
   }
   @SubscribeMessage('PlayerReady')
