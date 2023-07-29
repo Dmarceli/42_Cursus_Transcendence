@@ -871,6 +871,18 @@ socket.on('recMessage', message => {
 });
 
 
+socket.on('notification', Notification => {
+	Vue.component('App', {
+    methods: {
+      fetchNotifications: function(){
+  this.$root.$refs('App')
+  }
+    }
+  })
+  
+});
+
+
 watch(messages, () => {
 	scrollToBottom();
 });

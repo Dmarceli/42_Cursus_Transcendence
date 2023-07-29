@@ -142,22 +142,13 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
-<<<<<<< HEAD
       socket = io(process.env.VUE_APP_BACKEND_URL, {
-=======
-		socket = io(process.env.VUE_APP_BACKEND_URL,{
->>>>>>> main
         auth: {
           token: token
         }
       });
       provide('socket', socket)
-<<<<<<< HEAD
     };
-=======
-	};
-    }
->>>>>>> main
   }
 }
 
@@ -195,15 +186,9 @@ async function authtempBYPASS(idvalue: number) {
 async function executeLoginwithId(idvalue: number) {
   console.log(idvalue)
   let verify = await authtempBYPASS(idvalue)
-<<<<<<< HEAD
   if (verify) {
     islogged.value = true;
     window.location.reload()
-=======
-  if (verify){
-  islogged.value = true;
-  window.location.reload()
->>>>>>> main
 
   }
 }
@@ -219,15 +204,9 @@ const markAllNotificationsAsSeen = async () => {
   let token = getCookieValueByName('token');
   try {
     const unseenNotificationIds = notifications.value
-<<<<<<< HEAD
       .filter((notification) => !notification.already_seen)
       .map((notification) => notification.id);
     if (!unseenNotificationIds.length)
-=======
-    .filter((notification) => !notification.already_seen)
-    .map((notification) => notification.id);
-    if(!unseenNotificationIds.length)
->>>>>>> main
       return;
     await fetch(process.env.VUE_APP_BACKEND_URL + '/events/mark_seen_all', {
       method: 'POST',
@@ -249,11 +228,7 @@ const toggleNotifications = async () => {
     await fetchNotifications();
   }
   showNotifications.value = !showNotifications.value;
-<<<<<<< HEAD
 };
-=======
-}; 
->>>>>>> main
 
 const fetchNotifications = async () => {
   let token = getCookieValueByName('token');
@@ -268,11 +243,7 @@ const fetchNotifications = async () => {
     });
     if (response.ok) {
       const data = await response.json();
-<<<<<<< HEAD
       notifications.value = data;
-=======
-      notifications.value = data; 
->>>>>>> main
     } else {
       console.log('Error:', response.status);
     }
@@ -336,17 +307,12 @@ nav a {
     font-size: 1.5rem;
   }
 
-<<<<<<< HEAD
-  .notify-button {
-=======
   .notify-button{
->>>>>>> main
     background-color: #555;
     width: 50px;
     height: 50px;
     background-image: url('src/assets/notification-bell.svg');
     background-size: contain;
-<<<<<<< HEAD
 
   }
 
@@ -366,24 +332,6 @@ nav a {
     height: 20px;
     border-radius: 50%;
   }
-=======
-    
-  }
-  .notification-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: red; /* Choose your desired background color */
-  color: white; /* Choose your desired text color */
-  font-size: 12px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-}
->>>>>>> main
 
 }
 </style>
