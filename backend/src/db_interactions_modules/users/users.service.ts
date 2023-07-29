@@ -1,17 +1,32 @@
-import { Injectable, Catch, ConflictException} from '@nestjs/common';
+import { Injectable, Catch, ConflictException, UnauthorizedException} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository, QueryFailedError } from 'typeorm';
 import { Response } from 'express';
 import { CreateUserDto } from './dtos/user.dto';
-
+import { Socket, Server } from 'socket.io';
+import { UserSocketArray } from './classes/UsersSockets';
+import { getUserIDFromToken } from './getUserIDFromToken';
+import { JwtService } from '@nestjs/jwt';
+import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
+import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
+import { Channel } from '../channels/channel.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+    @InjectRepository(UserToChannel)
+    private readonly userToChannel: Repository<UserToChannel>,
+    @InjectRepository(Channel)
+    private readonly channelRepository: Repository<Channel>,
+    private jwtService: JwtService,
+    private readonly userToChannelService: UserToChannelService,
+    
+  ) {
+  }
+  UsersOnline: UserSocketArray[] = []
 
 
   async createUser(User: CreateUserDto){
@@ -79,16 +94,59 @@ export class UsersService {
      return resp;
    }
 
+  
+   async addUserToLobby(client: Socket, server: Server,ChannelList: string[]){
+    const token = client.handshake.auth.token;
+    let payload;
+    try {
+       payload = await this.jwtService.verifyAsync(
+        token,
+        {
+          secret: `${process.env.JWT_SECRET_KEY}`
+        }
+      );
+    } catch {
+      console.log("User Unhautorized")
+      return null
+    } 
+    const resp = await this.userRepository.findOne({where: {id: payload.id}});
+     if(!resp)
+        return null
+    const userChannels = await this.userToChannelService.findChannelsByID(resp.id);   
+    userChannels.forEach((element) => {
+     ChannelList.push(element.channel_id.id.toString())
+    })
+      this.UsersOnline.push(new UserSocketArray(resp,client))
+      // let i=0;
+      // this.UsersOnline.forEach((element) => {
+      //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+      // })
+     return true;
+   }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} user`;
-  // }
+   async notifyUser(user_id: number){
+    //console.log(this.UsersOnline)
+     console.log('Notification sent to user:', user_id);
+    //  let i=0;
+    //  this.UsersOnline.forEach((user) => {
+    //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+    // })
+     const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
+     if(!user)
+       return;
+     user.client.emit("notification")
+   }
 
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
+   async remove_disconnect_User(client_: Socket){
+    const Index = this.UsersOnline.findIndex( User_ => User_.client === client_)
+    if(Index != -1)
+      this.UsersOnline.splice(Index,1)
+    
+    //   let i=0;
+    //   this.UsersOnline.forEach((user) => {
+    //    console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+    //  })  
+   }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} user`;
-  // }
-  }
+
+}

@@ -5,6 +5,9 @@ import { Channel } from './channel.entity';
 import { ChannelCreateDto } from './dtos/channelcreate.dto';
 import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 import { channel } from 'diagnostics_channel';
+import { User } from '../users/user.entity';
+import { EventsService } from '../events/events.service';
+import { EventCreateDto } from '../events/dtos/events.dto';
 
 @Injectable()
 export class ChannelsService {
@@ -12,11 +15,12 @@ export class ChannelsService {
    constructor(
    @InjectRepository(Channel) private ChannelsRepository: Repository<Channel>,
    private UserToChannelService_: UserToChannelService ,
+   @InjectRepository(User) private UserRepository: Repository<User>,
+   private eventService: EventsService
  ) {}
 
 
- async create(createChannelDto: ChannelCreateDto) {
-  
+ async create(createChannelDto: ChannelCreateDto, creator_user: number) {
     const all_channels = await this.ChannelsRepository.findOne({where: {type: MoreThan(0), channel_name: createChannelDto.channel_name}})
     if(all_channels){
       throw new ConflictException('Duplicate key value found.');
@@ -27,6 +31,19 @@ export class ChannelsService {
       pwd = null;
     }    
     const response = await this.ChannelsRepository.save({...createChannelDto, password: pwd})
+    const userRequester = await this.UserRepository.findOne({where: {id: creator_user}})
+    createChannelDto.invitedusers.forEach( async element => {
+      const user_to_join = await this.UserRepository.findOne({where: {id: element}})
+      if(user_to_join){
+        await this.UserToChannelService_.joinchannel(response,user_to_join,pwd)
+        const eventDto = {
+          requester_user: creator_user,
+          decider_user: user_to_join.id,
+          message: `${userRequester.intra_nick} added you to channel ${createChannelDto.channel_name}`
+        }
+        await this.eventService.create(eventDto,1)
+      }
+    })
     return response
   
   
