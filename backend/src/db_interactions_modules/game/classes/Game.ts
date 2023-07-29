@@ -58,7 +58,6 @@ export class Game {
   start(): void {
     let interval = setInterval(() => {
       if (this.startCounter < 1) {
-        console.log("ENTERED")
         clearInterval(interval);
         this.timeStart = new Date()
         this.starting = false

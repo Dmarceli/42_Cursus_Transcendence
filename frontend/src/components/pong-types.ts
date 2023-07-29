@@ -9,6 +9,7 @@ interface Rectangle {
   height: number
   width: number
   conv_rate: number
+  skin: string
   update(paddleref: any): void
   updateConvRate(conv_rate: number): void
   draw(context: CanvasRenderingContext2D): void
@@ -21,6 +22,7 @@ class Paddle implements Rectangle {
   width: number
   nick: string
   conv_rate: number
+  skin: string
   constructor(paddleref: any, conv: number) {
     this.conv_rate = conv
     this.height = paddleref.height * this.conv_rate
@@ -28,12 +30,14 @@ class Paddle implements Rectangle {
     this.x = paddleref.x * this.conv_rate
     this.y = paddleref.y * this.conv_rate
     this.nick = paddleref.nick
+    this.skin = paddleref.skin
   }
   update(paddleref: any): void {
     this.height = paddleref.height * this.conv_rate
     this.width = paddleref.width * this.conv_rate
     this.x = paddleref.x * this.conv_rate
     this.y = paddleref.y * this.conv_rate
+    this.skin = paddleref.skin
   }
   updateConvRate(conv_rate: number): void {
     this.conv_rate = conv_rate
@@ -45,7 +49,7 @@ class Paddle implements Rectangle {
   drawRectangle(context: CanvasRenderingContext2D)
   {
     const img = new Image();
-  img.src = "game_paddles/brown_wood.jpg"
+  img.src = this.skin
   context.drawImage(img, this.x, this.y, this.width, this.height)
   }
   drawNick(context: CanvasRenderingContext2D)

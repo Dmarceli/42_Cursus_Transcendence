@@ -55,11 +55,13 @@ import { PlayerPaddle } from '../game/classes/PlayerPaddle';
   }
 
   @SubscribeMessage('AddToLobby')
-  handleNewPlayer(client: Socket, intra_nick: string) {
+  handlAddPlayerToLobby(client: Socket, intra_nick: string) {
+    console.log("Joined lobby"+intra_nick)
     this.gameService.AddPlayerToLobby(client, intra_nick)
   }
   @SubscribeMessage('PlayerReady')
   handlePlayerReady(client: Socket, intra_nick: string) {
+    console.log("New Player ready "+intra_nick)
     this.gameService.PlayerReady(intra_nick)
   }
   @SubscribeMessage('keydown')

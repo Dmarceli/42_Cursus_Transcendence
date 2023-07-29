@@ -1,14 +1,17 @@
 <template>
-  <div class="lobbypage" v-if="inQueue">
-    <LobbyPage></LobbyPage>
+  <div class="states" v-if="!choseType">
+    <v-btn @click="onJoinLobby">Join Lobby</v-btn>
   </div>
-  <div class="getready" v-else-if="ImNotReady">
+  <div class="states" v-else-if="inQueue">
+    <WaitingLobbyPage></WaitingLobbyPage>
+  </div>
+  <div class="states" v-else-if="ImNotReady">
     <v-btn @click="SigReady">I'm ready to play</v-btn>
   </div>
-  <div class="allSet" v-else-if="OtherNotReady">
+  <div class="states" v-else-if="OtherNotReady">
     <h1>ALL SET! Game is about to start...</h1>
   </div>
-  <div class="starting" v-else-if="starting">
+  <div class="states" v-else-if="starting">
     <h1>Starting game {{ startingCounter }}</h1>
   </div>
   <div class="overlays" v-else>
@@ -20,7 +23,7 @@
 <script setup lang="ts">
 import { ref, inject, onMounted, onUnmounted } from 'vue'
 import { Socket } from 'socket.io-client'
-import LobbyPage from './LobbyPage.vue'
+import WaitingLobbyPage from './WaitingLobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
 
 const socket: Socket | undefined = inject('socket')
@@ -32,7 +35,8 @@ const props = defineProps<Props>()
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
 // State control variables
-let inQueue = ref(true)
+let choseType = ref(false)
+let inQueue = ref(false)
 let ImNotReady = ref(true)
 let OtherNotReady = ref(true)
 let starting = ref(false)
@@ -58,7 +62,6 @@ onMounted(() => {
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
-  socket?.emit('NewPlayer', props.intraNick)
 })
 
 onUnmounted(() => {
@@ -73,10 +76,10 @@ socket?.on('updateGame', (game) => {
   userDisconnected.value = false
   starting.value = false
   OtherNotReady.value = false
+  inQueue.value = false
   if (disconnectedId) {
     clearInterval(disconnectedId)
   }
-  inQueue.value = false
   if (gamecanvas.value) {
     ctx.value = gamecanvas.value.getContext('2d')
   }
@@ -229,12 +232,20 @@ function onKeyUp(event: KeyboardEvent) {
 
 function SigReady() {
   ImNotReady.value = false
-  socket?.emit('PlayerReady', users_Name)
+  socket?.emit('PlayerReady', props.intraNick)
 }
+
+function onJoinLobby()
+{
+  choseType.value = true;
+  inQueue.value = true;
+  socket?.emit('AddToLobby', props.intraNick)
+}
+
 </script>
 
 <style>
-.lobbypage {
+.states {
   display: flex;
   justify-content: center;
   align-items: center;

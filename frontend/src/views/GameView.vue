@@ -1,6 +1,6 @@
 <template>
   <div v-if="startmenu" class="start-menu">
-    <StartMenu @player-created="startmenu=false" :intra-nick="users_Name" class="start-menu"></StartMenu>
+    <StartMenu @player-created="handlePlayerCreated" :intra-nick="users_Name" class="start-menu"></StartMenu>
   </div>
   <div v-else-if="playerWon">
     <h1>You Won</h1>
@@ -15,7 +15,7 @@
     </v-btn>
 </div>
   <div v-else class="board">
-    <Pong2D @player-won="playerWon = true" @player-lost="playerLost = true"/>
+    <Pong2D :intra-nick="users_Name" @player-won="playerWon = true" @player-lost="playerLost = true"/>
   </div>
 </template>
 
@@ -50,8 +50,19 @@ onMounted(() => {
   if (token)
     decodedToken = jwt_decode(token);
   users_Name.value = decodedToken.user.intra_nick;
+  playerWon.value=false
+  playerLost.value=false
   console.log("users_name "+users_Name)
 })
+
+function handlePlayerCreated()
+{
+  startmenu.value=false
+  playerWon.value=false
+  playerLost.value=false
+
+}
+
 
 function getCookieValueByName(name: any) {
   const cookies = document.cookie.split(';');

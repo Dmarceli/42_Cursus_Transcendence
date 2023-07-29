@@ -30,7 +30,8 @@ export class PlayerPaddle {
     }
     setInitialPosition(x: number, y: number)
     {
-      
+      this.frontEndData.x = x
+      this.frontEndData.y = y
     }
     updatePosition(canvasHeight: number): void {
         if (this.movingDown && this.frontEndData.y + this.frontEndData.height + 10 < canvasHeight) {

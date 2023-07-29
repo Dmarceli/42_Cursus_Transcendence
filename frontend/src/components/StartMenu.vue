@@ -5,11 +5,7 @@
   </div>
   <div v-else class="start-menu">
     <v-card elevation="18" class="testclass">
-      <div v-if="joinLobbyView" class="join-lobby">
-        <img src="../assets/racketas.svg" alt="Green Rackets" />
-        <button>Join Lobby</button>
-      </div>
-      <div v-else-if="choosePaddle" class="carousel">
+      <div class="carousel">
         <PaddleCarousel @chose-paddle="selectPaddle" class="carousel2"></PaddleCarousel>
       </div>
     </v-card>

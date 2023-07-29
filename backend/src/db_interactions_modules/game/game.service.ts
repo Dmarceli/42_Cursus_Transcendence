@@ -33,6 +33,7 @@ export class GameService {
       }
       this.lobby.push(this.players[index])
       this.players.splice(index, 1);
+      console.log(this.lobby.length)
     }
   }
 
@@ -128,6 +129,7 @@ export class GameService {
     if (this.lobby.length < 2)
       return
     let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)
+    this.lobby.splice(0, 2)
     this.active_games.push(game)
   }
 
