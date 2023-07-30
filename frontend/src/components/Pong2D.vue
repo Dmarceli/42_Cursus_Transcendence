@@ -1,5 +1,5 @@
 <template>
-  <div class="states" v-if="!choseType">
+  <div class="states" v-if="NotchoseType">
     <v-btn @click="onJoinLobby">Join Lobby</v-btn>
   </div>
   <div class="states" v-else-if="inQueue">
@@ -35,7 +35,7 @@ const props = defineProps<Props>()
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
 // State control variables
-let choseType = ref(false)
+let NotchoseType = ref(true)
 let inQueue = ref(false)
 let ImNotReady = ref(true)
 let OtherNotReady = ref(true)
@@ -74,27 +74,37 @@ onUnmounted(() => {
 
 socket?.on('GetReady', () => {
   ImNotReady.value = true
+
+  NotchoseType.value = false
   inQueue.value = false
+  OtherNotReady.value = false
 })
 
 socket?.on('WaitingOtherPlayer', () => {
   OtherNotReady.value = true
+
+  NotchoseType.value = false
+  inQueue.value = false
   ImNotReady.value = false
 })
 
 socket?.on('Starting', (counter: number) => {
-  startingCounter.value = counter
   starting.value = true
+  startingCounter.value = counter
+  
+  NotchoseType.value = false
+  inQueue.value = false
+  ImNotReady.value = false
   OtherNotReady.value = false
 })
 
 socket?.on('updateGame', (game) => {
-  userDisconnected.value = false
+  NotchoseType.value = false
+  inQueue.value = false
+  ImNotReady.value = false
+  OtherNotReady.value = false
   starting.value = false
-  if (OtherNotReady.value)
-    OtherNotReady.value = false
-  if (inQueue.value)
-    inQueue.value = false
+  userDisconnected.value = false
   if (disconnectedId) {
     clearInterval(disconnectedId)
   }
@@ -238,17 +248,17 @@ function onKeyUp(event: KeyboardEvent) {
   handlers?.()
 }
 
-function SigReady() {
-  ImNotReady.value = false
-  socket?.emit('PlayerReady', props.intraNick)
-}
-
 function onJoinLobby()
 {
-  choseType.value = true;
+  NotchoseType.value = false;
   inQueue.value = true;
   socket?.emit('AddToLobby', props.intraNick)
 }
+
+function SigReady() {
+  socket?.emit('PlayerReady', props.intraNick)
+}
+
 
 </script>
 

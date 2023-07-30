@@ -23,7 +23,7 @@ export class UsersService {
     private readonly channelRepository: Repository<Channel>,
     private jwtService: JwtService,
     private readonly userToChannelService: UserToChannelService,
-    
+
   ) {
   }
   UsersOnline: UserSocketArray[] = []
