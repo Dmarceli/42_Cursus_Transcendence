@@ -8,14 +8,13 @@ import { Socket } from 'socket.io';
 import { UserSocketArray } from './classes/UsersSockets';
 import { getUserIDFromToken } from './getUserIDFromToken';
 import { JwtService } from '@nestjs/jwt';
-
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private jwtService: JwtService,
-    
+
   ) {
   }
   UsersOnline: UserSocketArray[] = []

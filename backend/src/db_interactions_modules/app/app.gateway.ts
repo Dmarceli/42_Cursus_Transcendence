@@ -42,9 +42,8 @@ import { UsersModule } from '../users/users.module';
  
  handleDisconnect(client: Socket) {
    console.log(`Disconnected: ${client.id}`);
-   
    this.appService.user_remove_disconect(client)
-   this.gameService.RemovePlayerFromGame(client)
+   this.gameService.HandlePlayerDisconnected(client)
  }
  
  //1º step após conexão
@@ -60,13 +59,21 @@ import { UsersModule } from '../users/users.module';
 
 
 // Game Service
-  @SubscribeMessage('NewPlayer')
-  handleNewPlayer(client: Socket, intra_nick: string) {
-    this.gameService.AddPlayerToGame(client, intra_nick)
+  @SubscribeMessage('PlayerSelectedPaddle')
+  handlePlayerSelectedPaddle(client: Socket, info: any) {
+    let [intra_nick, paddleSkin] = info;
+    this.gameService.CreatePlayer(client, intra_nick, paddleSkin);
+    client.emit("PlayerCreated")
   }
-  @SubscribeMessage('PlayerExited')
-  handlePlayerExited(client: Socket) {
-    this.gameService.RemovePlayerFromGame(client)
+
+  @SubscribeMessage('AddToLobby')
+  handlAddPlayerToLobby(client: Socket, intra_nick: string) {
+    this.gameService.AddPlayerToLobby(client, intra_nick)
+  }
+  @SubscribeMessage('PlayerReady')
+  handlePlayerReady(client: Socket, intra_nick: string) {
+    console.log("New Player ready "+intra_nick)
+    this.gameService.PlayerReady(intra_nick)
   }
   @SubscribeMessage('keydown')
   handlePlayerKeyDown(client: Socket, key: string)

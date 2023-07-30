@@ -5,62 +5,102 @@ import { GameHistoryService } from '../game_history/game_history.service';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
+import { PlayerPaddle } from './classes/PlayerPaddle';
 
 @Injectable()
 export class GameService {
-  constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>){}
-  games: Game[] = []
-  async AddPlayerToGame(playerClient: Socket, nick: string) {
-    console.log("NewPlayer " + playerClient + " with intra " + nick)
-    const user = await this.userRepository.findOne({where: {intra_nick: nick}})
-    for (let i = 0; i < this.games.length; i++) {
-      if (this.games[i].playerPaddle1.frontEndData.nick == nick) {
-        this.games[i].playerPaddle1.user = user
-        this.games[i].playerPaddle1.client = playerClient
-        return
-      }
-      if (this.games[i].playerPaddle2.frontEndData.nick == nick) {
-        this.games[i].playerPaddle2.user = user
-        this.games[i].playerPaddle2.client = playerClient
-        return
-      }
-    }
-    for (let i = 0; i < this.games.length; i++) {
-      if (this.games[i].playerPaddle1.client == playerClient || this.games[i].playerPaddle1.client == playerClient)
-        return
-      if (!this.games[i].playerPaddle1.client) {
-        this.games[i].playerPaddle1.user = user
-        this.games[i].playerPaddle1.frontEndData.nick = nick
-        this.games[i].playerPaddle1.client = playerClient
-        return
-      }
-      else if (!this.games[i].playerPaddle2.client) {
-        this.games[i].playerPaddle2.user = user
-        this.games[i].playerPaddle2.frontEndData.nick = nick
-        this.games[i].playerPaddle2.client = playerClient
-        return
-      }
-    }
-    let game = new Game(this.gameHistoryService, this.userRepository)
-    game.playerPaddle1.client = playerClient
-    game.playerPaddle1.frontEndData.nick = nick
-    game.playerPaddle1.user = user
-    this.games.push(game)
+  players: PlayerPaddle[] = []
+  lobby: PlayerPaddle[] = []
+  active_games: Game[] = []
+
+  constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>) { }
+
+  async CreatePlayer(playerClient: Socket, nick: string, skin: string)
+  {
+    console.log("Creating new Player " + playerClient + " with intra " + nick + " and skin " + skin)
+    const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
+    let newPlayer = new PlayerPaddle(playerClient, user, skin);
+    this.players.push(newPlayer);
   }
-  RemovePlayerFromGame(client: Socket) {
-    console.log("PlayerExited " + client.id)
-    for (let game of this.games) {
+
+  AddPlayerToLobby(playerClient: Socket, nick: string)
+  {
+    const freePlayerIndex = this.players.findIndex(player => player.user.intra_nick === nick)
+    if (freePlayerIndex !== -1) {
+      if (this.players[freePlayerIndex].client != playerClient)
+      {
+        this.players[freePlayerIndex].client = playerClient
+      }
+      if (this.ReconnectedPlayer(this.players[freePlayerIndex], nick))
+      {
+        console.log("Reconnected "+nick)
+      }
+      else
+      {
+        console.log("Joined lobby "+nick)
+        this.lobby.push(this.players[freePlayerIndex])
+      }
+      this.players.splice(freePlayerIndex, 1);
+    }
+  }
+
+  // TODO: This could be cheating as a way to change skin.
+  // Change we could not update skin but after sending a
+  // "Reconnecting 3 2 1" message
+  ReconnectedPlayer(player: PlayerPaddle, nick: string): boolean
+  {
+    let player1ActiveGameIndex = this.active_games.findIndex(game => game.playerPaddle1.user.intra_nick === nick)
+    if (player1ActiveGameIndex !== -1)
+    {
+      this.active_games[player1ActiveGameIndex].playerPaddle1.client = player.client
+      this.active_games[player1ActiveGameIndex].playerPaddle1.frontEndData.skin = player.frontEndData.skin
+
+      this.active_games[player1ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
+      this.active_games[player1ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
+      return true
+    }
+    let player2ActiveGameIndex = this.active_games.findIndex(game => game.playerPaddle2.user.intra_nick === nick)
+    if (player2ActiveGameIndex !== -1)
+    {
+      this.active_games[player2ActiveGameIndex].playerPaddle2.client = player.client
+      this.active_games[player2ActiveGameIndex].playerPaddle2.frontEndData.skin = player.frontEndData.skin
+
+      this.active_games[player2ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
+      this.active_games[player2ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
+      return true
+    }
+    return false
+  }
+
+  PlayerReady(intra_nick: string) {
+    for (let game of this.active_games) {
+      if (game.playerPaddle1.user.intra_nick === intra_nick) {
+        game.playerPaddle1.ready = true
+        game.playerPaddle1.handlePlayersNotReady();
+        game.playerPaddle2.handlePlayersNotReady();
+      }
+      else if (game.playerPaddle2.user.intra_nick === intra_nick)
+        game.playerPaddle2.ready = true
+        game.playerPaddle1.handlePlayersNotReady();
+        game.playerPaddle2.handlePlayersNotReady();
+    }
+  }
+
+  HandlePlayerDisconnected(client: Socket) {
+    for (let game of this.active_games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
-        game.playerPaddle1.client = null
+        game.playerPaddle1.ready = false
         game.playerPaddle2.client?.emit("PlayerDisconnected")
+        console.log("PlayerExited " + game.playerPaddle1.user.intra_nick)
       } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
+        game.playerPaddle2.ready = false
         game.playerPaddle1.client?.emit("PlayerDisconnected")
-        game.playerPaddle2.client = null
+        console.log("PlayerExited " + game.playerPaddle2.user.intra_nick)
       }
     }
   }
   PlayerKeyUp(client: Socket, key: string) {
-    for (let game of this.games) {
+    for (let game of this.active_games) {
       if (game.playerPaddle1.client?.id === client.id) {
         if (key === "up") {
           game.playerPaddle1.movingUp = false
@@ -79,7 +119,7 @@ export class GameService {
     }
   }
   PlayerKeyDown(client: Socket, key: string) {
-    for (let game of this.games) {
+    for (let game of this.active_games) {
       if (game.playerPaddle1.client.id === client.id) {
         if (key === "up") {
           game.playerPaddle1.movingUp = true
@@ -100,17 +140,40 @@ export class GameService {
 
   UpdateAllPositions() {
     setInterval(() => {
-      for (let game of this.games) {
+      this.addLobbyGames();
+      this.removeFinishedGames();
+      for (let game of this.active_games) {
         if (game.playerPaddle1.client && game.playerPaddle2.client) {
-          game.update();
-          game.checkStatus();
-        }
-        else {
-          game.playerPaddle1.client?.emit('WaitingForPlayers')
-          game.playerPaddle2.client?.emit('WaitingForPlayers')
+          if (game.playerPaddle1.ready && game.playerPaddle2.ready) {
+            if (!game.timeStart ) {
+              if(!game.starting)
+              {
+                game.starting=true
+                game.start();
+              }
+            } else {
+              game.update();
+              game.checkStatus();
+            }
+          }
         }
       }
     }, 15
     )
+  }
+  addLobbyGames() {
+    if (this.lobby.length < 2)
+      return
+    console.log("Creating new game between "+this.lobby[0].user.intra_nick+" and "+this.lobby[1].user.intra_nick)
+    let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)
+    this.lobby.splice(0, 2)
+    this.active_games.push(game)
+    game.playerPaddle1.handlePlayersNotReady();
+    game.playerPaddle2.handlePlayersNotReady();
+  }
+  removeFinishedGames()
+  {
+    let updated_active_games = this.active_games.filter(game => !game.isFinished);
+    this.active_games = updated_active_games;
   }
 }

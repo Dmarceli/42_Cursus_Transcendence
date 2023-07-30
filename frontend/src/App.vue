@@ -29,7 +29,7 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <div v-if="islogged">
+  <div v-if="islogged" :class="{'game-view': isGameRoute}">
     <RouterView />
   </div>
   <div v-else>
@@ -39,12 +39,14 @@
 
 <script setup lang="ts">
 
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterLink, RouterView, useRoute } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
-import { ref, provide, inject , onBeforeMount, computed} from 'vue'
+import { ref, provide, onBeforeMount, computed} from 'vue'
 
 const islogged = ref(false);
+const route = useRoute();
+const isGameRoute = computed(() => route.path === '/')
 
 
 let socket: Socket | null = null;
@@ -249,6 +251,7 @@ nav {
   font-size: 12px;
   text-align: center;
   line-height: 2.2rem;
+  margin-bottom: 2%;
 }
 
 nav a.router-link-exact-active {
@@ -276,6 +279,7 @@ nav a {
     text-align: left;
     margin-left: 0rem;
     font-size: 1.5rem;
+    margin: 0%;
   }
 
   .notify-button{
@@ -300,6 +304,13 @@ nav a {
   height: 20px;
   border-radius: 50%;
 }
-
 }
+
+.game-view
+{
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
 </style>
