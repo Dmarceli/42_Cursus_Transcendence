@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject,forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserToChannel } from './user_to_channel.entity';
@@ -7,13 +7,16 @@ import { User } from 'src/db_interactions_modules/users/user.entity';
 import { Channel } from 'src/db_interactions_modules/channels/channel.entity';
 import { Response } from 'express';
 import { channel } from 'diagnostics_channel';
+import { UsersService } from 'src/db_interactions_modules/users/users.service';
+import { AppService } from 'src/app.service';
 
 @Injectable()
 export class UserToChannelService {
   constructor(
     @InjectRepository(UserToChannel) private UserToChannelRepository: Repository<UserToChannel>,
     @InjectRepository(Channel) private ChannelRepository: Repository<Channel> ,
-    @InjectRepository(User) private UserRepository: Repository<User> 
+    @InjectRepository(User) private UserRepository: Repository<User>,
+    @Inject(forwardRef(() => UsersService))private usersService: UsersService,
   ) { }
 
 
@@ -29,6 +32,9 @@ export class UserToChannelService {
       if (password.password != pass)
         return
     }
+
+    this.usersService.update_channels_on_list(user.id,channel.id)
+
     return await this.UserToChannelRepository.save({
       user_id: user,
       channel_id: channel,

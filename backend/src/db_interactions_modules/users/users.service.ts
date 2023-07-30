@@ -95,7 +95,14 @@ export class UsersService {
    }
 
   
+   async update_channels_on_list(UserId: number,ChannelId: number){
+    const element= this.UsersOnline.find(element => element.user.id == UserId);
+    element.client.join(ChannelId.toString())
+   }
+
    async addUserToLobby(client: Socket, server: Server,ChannelList: string[]){
+    
+    
     const token = client.handshake.auth.token;
     let payload;
     try {

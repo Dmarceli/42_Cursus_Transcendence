@@ -10,15 +10,19 @@ import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { Events } from 'src/db_interactions_modules/events/events.entity';
 import { EventsService } from 'src/db_interactions_modules/events/events.service';
 import { AppModule } from 'src/app.module';
+import { UsersModule } from 'src/db_interactions_modules/users/users.module';
+import { AppService } from 'src/app.service';
+import { Messages } from 'src/db_interactions_modules/messages/messages.entity';
+import { EventsModule } from 'src/db_interactions_modules/events/events.module';
 
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserToChannel, Channel, User, Events])
-        ,forwardRef(() => AppModule)
+        TypeOrmModule.forFeature([UserToChannel, Channel, User, Events, Messages])
+        ,forwardRef(() => AppModule),
     ],
     controllers: [UserToChannelController],
-    providers: [UserToChannelService, ChannelsService, UsersService, EventsService],
+    providers: [UserToChannelService],
     exports:[UserToChannelService]
 })
 export class UserToChannelModule { }

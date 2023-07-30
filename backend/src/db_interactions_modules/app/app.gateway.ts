@@ -33,9 +33,11 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
  @UsePipes(new ValidationPipe())
  async handleSendMessage(client: Socket, payload: CreateMsgDto): Promise<void> {
   //console.log(new Date(),payload)
-  //console.log("ROOM-",payload.channelId.toString())
+  console.log("ROOM-",payload.channelId.toString())
+  console.log( this.server.sockets.adapter.rooms.get(payload.channelId.toString()))
+  console.log(payload)
+  await this.appService.createMessage(payload);
   this.server.to(payload.channelId.toString()).emit('recMessage', payload);
-   await this.appService.createMessage(payload);
  }
  
  afterInit(server: Server) {
