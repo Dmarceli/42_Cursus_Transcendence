@@ -4,17 +4,25 @@ import { User } from './user.entity';
 import { Repository, QueryFailedError } from 'typeorm';
 import { Response } from 'express';
 import { CreateUserDto } from './dtos/user.dto';
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { UserSocketArray } from './classes/UsersSockets';
 import { getUserIDFromToken } from './getUserIDFromToken';
 import { JwtService } from '@nestjs/jwt';
+import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
+import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
+import { Channel } from '../channels/channel.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserToChannel)
+    private readonly userToChannel: Repository<UserToChannel>,
+    @InjectRepository(Channel)
+    private readonly channelRepository: Repository<Channel>,
     private jwtService: JwtService,
+    private readonly userToChannelService: UserToChannelService,
     
   ) {
   }
@@ -87,7 +95,7 @@ export class UsersService {
    }
 
   
-   async addUserToLobby(client: Socket){
+   async addUserToLobby(client: Socket, server: Server,ChannelList: string[]){
     const token = client.handshake.auth.token;
     let payload;
     try {
@@ -104,7 +112,10 @@ export class UsersService {
     const resp = await this.userRepository.findOne({where: {id: payload.id}});
      if(!resp)
         return null
-      
+    const userChannels = await this.userToChannelService.findChannelsByID(resp.id);   
+    userChannels.forEach((element) => {
+     ChannelList.push(element.channel_id.id.toString())
+    })
       this.UsersOnline.push(new UserSocketArray(resp,client))
       // let i=0;
       // this.UsersOnline.forEach((element) => {
