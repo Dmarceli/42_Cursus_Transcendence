@@ -54,6 +54,9 @@ export class GameService {
     {
       this.active_games[player1ActiveGameIndex].playerPaddle1.client = player.client
       this.active_games[player1ActiveGameIndex].playerPaddle1.frontEndData.skin = player.frontEndData.skin
+
+      this.active_games[player1ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
+      this.active_games[player1ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
       return true
     }
     let player2ActiveGameIndex = this.active_games.findIndex(game => game.playerPaddle2.user.intra_nick === nick)
@@ -61,6 +64,9 @@ export class GameService {
     {
       this.active_games[player2ActiveGameIndex].playerPaddle2.client = player.client
       this.active_games[player2ActiveGameIndex].playerPaddle2.frontEndData.skin = player.frontEndData.skin
+
+      this.active_games[player2ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
+      this.active_games[player2ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
       return true
     }
     return false
@@ -70,9 +76,13 @@ export class GameService {
     for (let game of this.active_games) {
       if (game.playerPaddle1.user.intra_nick === intra_nick) {
         game.playerPaddle1.ready = true
+        game.playerPaddle1.handlePlayersNotReady();
+        game.playerPaddle2.handlePlayersNotReady();
       }
       else if (game.playerPaddle2.user.intra_nick === intra_nick)
         game.playerPaddle2.ready = true
+        game.playerPaddle1.handlePlayersNotReady();
+        game.playerPaddle2.handlePlayersNotReady();
     }
   }
 
@@ -146,11 +156,6 @@ export class GameService {
               game.checkStatus();
             }
           }
-          else
-          {
-              game.playerPaddle1.handlePlayersNotReady(!game.timeStart);
-              game.playerPaddle2.handlePlayersNotReady(!game.timeStart);
-          }
         }
       }
     }, 15
@@ -159,9 +164,12 @@ export class GameService {
   addLobbyGames() {
     if (this.lobby.length < 2)
       return
+    console.log("Creating new game between "+this.lobby[0].user.intra_nick+" and "+this.lobby[1].user.intra_nick)
     let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)
     this.lobby.splice(0, 2)
     this.active_games.push(game)
+    game.playerPaddle1.handlePlayersNotReady();
+    game.playerPaddle2.handlePlayersNotReady();
   }
   removeFinishedGames()
   {
