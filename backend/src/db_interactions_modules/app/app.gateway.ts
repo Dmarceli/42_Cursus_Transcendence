@@ -12,6 +12,9 @@ import { AppService } from '../../app.service';
 import { CreateMsgDto } from '../messages/dtos/message.dto';
 import { UsePipes, ValidationPipe, UseGuards } from '@nestjs/common';
 import { GameService } from '../game/game.service';
+import { UsersService } from '../users/users.service';
+import { UsersModule } from '../users/users.module';
+
 
 @WebSocketGateway({
   cors: {
@@ -28,10 +31,9 @@ import { GameService } from '../game/game.service';
  @SubscribeMessage('sendMessage')
  @UsePipes(new ValidationPipe())
  async handleSendMessage(client: Socket, payload: CreateMsgDto): Promise<void> {
-  //console.log(new Date(),payload)
-  //console.log("ROOM-",payload.channelId.toString())
-  this.server.to(payload.channelId.toString()).emit('recMessage', payload);
+  console.log(new Date(),payload)
    await this.appService.createMessage(payload);
+   this.server.emit('recMessage', payload);
  }
  
  afterInit(server: Server) {
@@ -44,25 +46,15 @@ import { GameService } from '../game/game.service';
    this.gameService.HandlePlayerDisconnected(client)
  }
  
- 
-
  //1º step após conexão
- async handleConnection(client: Socket, server: Server/* ...args: any[]*/) {
+ async handleConnection(client: Socket/* ...args: any[]*/) {
   console.log(`Connected ${client.id}`);
-  let Channel_List:string [] = [];
-  
-  const authorization = await this.appService.add_user_to_lobby(client, server,Channel_List)
-  //console.log(Channel_List)
-  client.join(Channel_List)
-  //console.log(client.rooms)
-  //console.log(this.server.of('/').adapter.rooms)
+  const authorization = await this.appService.add_user_to_lobby(client)
   if(!authorization){
     client.disconnect();
-    console.log(`Disconnected Auth missing -  ${client.id}`)
+    console.log(`Discnnected Auth missing -  ${client.id}`)
+  }
  }
- }
-
-
 
 
 
