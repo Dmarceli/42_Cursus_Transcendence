@@ -15,7 +15,7 @@
             <img class="arrow" src="arrow-up.png"><span>Press <b>arrow up</b> on the keyboard to move paddle up.</span>
           </div>
           <div class="descript">
-            <img class="arrow" src="arrow-down.png"><span>Press <b>arrow down</b> on the keyboard to move paddle up</span>
+            <img class="arrow" src="arrow-down.png"><span>Press <b>arrow down</b> on the keyboard to move paddle down</span>
           </div>
         <p>Points are scored when your opponent misses the ball.</p>
         <p>First player to score 5 points wins.</p>
