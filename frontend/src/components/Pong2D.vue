@@ -62,7 +62,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   console.log('Unmounting Pong')
-  socket.emit('PlayerExited')
+  socket.emit('PlayerLeft')
   window.removeEventListener('resize', onWidthChange)
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)

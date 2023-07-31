@@ -162,7 +162,15 @@ function handleNewAvatar(event: Event) {
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
       </div>
       <h1 class="nickname" >{{ userProfile.nick }}</h1>
-        <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
+      <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
+			<div class="user-actions">
+					<v-btn class="ma-2 blockBtn" color="red-darken-4">
+						Block User<v-icon end icon="mdi-account-cancel-outline"></v-icon>
+					</v-btn>
+					<v-btn class="ma-2 chatInviteBtn" color="green">
+						Invite to chat<v-icon end icon="mdi-email"></v-icon>
+					</v-btn>
+			</div>
     </div>
     <div class="profile-body">
       <!-- Statistics -->
@@ -308,6 +316,14 @@ function handleNewAvatar(event: Event) {
     flex-direction: column;
     text-align: center;
   }
+
+	.avatar-container img {
+		position: relative;
+	}
+
+	.profile-header .stat-item {
+		margin-bottom: 10px;
+	}
 }
 
 .avatar-container-settings {
@@ -346,10 +362,16 @@ label[for="nickname"] {
 }
 
 .nickname {
-  text-align: center;
-  flex: 1;
-  font-size: 24px;
+  font-size: 1.5rem;
+	font-weight: bold;
   color: white; /* Customize the color if needed */
+}
+
+.user-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
 
 .profile-body {
