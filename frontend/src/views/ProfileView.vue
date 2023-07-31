@@ -113,11 +113,20 @@ function openSettings() {
 }
 
 function saveSettings() {
+	if (updateNickname.value === '') {
+		return;
+	}
   userProfile.value.nick = updateNickname.value;
   userProfile.value.avatar = updateAvatar.value;
   //send it to backend here
   closeSettings();
 }
+
+const state = reactive({
+	rules: [
+		value => value.length > 0 || 'Nick must not be empty',
+	],
+});
 
 function closeSettings() {
   isSettingsOpen.value = false;
@@ -158,9 +167,9 @@ function handleNewAvatar(event: Event) {
 	<div class="profile">
     <!-- Avatar and Nick -->
     <div class="profile-header">
-      <div class="avatar-container">
+      <v-avatar class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
-      </div>
+			</v-avatar>
       <h1 class="nickname" >{{ userProfile.nick }}</h1>
       <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
 			<div class="user-actions">
@@ -236,7 +245,7 @@ function handleNewAvatar(event: Event) {
         <h2>Edit Profile</h2>
         <!-- Avatar -->
         <div class="settings-section">
-          <label for="avatar" class="avatar-label">Avatar</label>
+          <label for="avatar" class="avatar-label"></label>
           <div class="avatar-container-settings">
             <img :src="updateAvatar || userProfile.avatar" alt="Avatar" class="avatar-settings" />
           </div>
@@ -244,12 +253,11 @@ function handleNewAvatar(event: Event) {
         </div>
         <!-- Nickname -->
         <div class="settings-section">
-          <label for="nickname">Nickname</label>
-          <input v-model="updateNickname" type="text" id="nickname" />
+					<v-text-field v-model="updateNickname" label="Nickname" class="nickname-settings" :rules="state.rules"/>
         </div>
         <div class="modal-buttons">
-          <button @click="saveSettings">Save</button>
-          <button @click="closeSettings">Cancel</button>
+          <v-btn variant="outlined" @click="saveSettings" class="save">Save</v-btn>
+          <v-btn @click="closeSettings" class="cancel">Cancel</v-btn>
         </div>
       </div>
     </div>
@@ -278,6 +286,13 @@ function handleNewAvatar(event: Event) {
   position: relative;
 }
 
+.v-avatar.v-avatar--density-default {
+	width: 20vw;
+  max-width: 200px;
+  height: 20vw;
+  max-height: 200px;
+}
+
 .avatar-container {
   width: 20vw;
   max-width: 200px;
@@ -302,7 +317,7 @@ function handleNewAvatar(event: Event) {
   object-fit: cover;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 760px) {
   .avatar-container {
     width: 100px;
     height: 100px;
@@ -324,6 +339,11 @@ function handleNewAvatar(event: Event) {
 	.profile-header .stat-item {
 		margin-bottom: 10px;
 	}
+
+	.user-actions {
+		max-width: 170px;
+		margin: 0 auto;
+	}
 }
 
 .avatar-container-settings {
@@ -336,20 +356,21 @@ function handleNewAvatar(event: Event) {
   display: flex;
   justify-content: center;
   align-items: center;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 .avatar-settings {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border: 2px solid hsla(160, 100%, 37%, 1);
 }
 
-.avatar {
+/* .avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
+} */
 
 label[for="nickname"] {
   font-weight: bold;
@@ -362,7 +383,7 @@ label[for="nickname"] {
 }
 
 .nickname {
-  font-size: 1.5rem;
+  font-size: 2.5rem;
 	font-weight: bold;
   color: white; /* Customize the color if needed */
 }
@@ -553,7 +574,13 @@ td {
 .modal-buttons {
   display: flex;
   justify-content: flex-end;
+	align-content: space-around;
   margin-top: 10px;
+}
+
+.save {
+	margin-right: 10px;
+	color: #87cefa;
 }
 
 .dimmed-background {
