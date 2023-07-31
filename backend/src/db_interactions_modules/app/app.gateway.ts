@@ -52,9 +52,11 @@ import { UsersModule } from '../users/users.module';
  }
  
  //1º step após conexão
- async handleConnection(client: Socket/* ...args: any[]*/) {
+ async handleConnection(client: Socket, server: Server) {
   console.log(`Connected ${client.id}`);
-  const authorization = await this.appService.add_user_to_lobby(client)
+  let Channel_List:string [] = [];
+  const authorization = await this.appService.add_user_to_lobby(client, server,Channel_List)
+  client.join(Channel_List)
   if(!authorization){
     client.disconnect();
     console.log(`Discnnected Auth missing -  ${client.id}`)

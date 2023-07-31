@@ -1,19 +1,24 @@
-import { Injectable, Catch, ConflictException, UnauthorizedException} from '@nestjs/common';
+import { Injectable, Catch, ConflictException, UnauthorizedException, Inject, forwardRef} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository, QueryFailedError } from 'typeorm';
 import { Response } from 'express';
 import { CreateUserDto } from './dtos/user.dto';
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { UserSocketArray } from './classes/UsersSockets';
 import { getUserIDFromToken } from './getUserIDFromToken';
 import { JwtService } from '@nestjs/jwt';
+import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
+import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private jwtService: JwtService,
+    @InjectRepository(UserToChannel)
+    private readonly userToChannel: Repository<UserToChannel>,
+    @Inject(forwardRef(() => UserToChannelService))private userToChannelService: UserToChannelService,
 
   ) {
   }
@@ -92,7 +97,7 @@ export class UsersService {
     element.client.join(ChannelId.toString())
    }
 
-   async addUserToLobby(client: Socket){
+   async addUserToLobby(client: Socket, server: Server,ChannelList: string[]){
 
     const token = client.handshake.auth.token;
     let payload;
@@ -110,6 +115,10 @@ export class UsersService {
     const resp = await this.userRepository.findOne({where: {id: payload.id}});
      if(!resp)
         return null
+        const userChannels = await this.userToChannelService.findChannelsByID(resp.id);   
+    userChannels.forEach((element) => {
+     ChannelList.push(element.channel_id.id.toString())
+    })
       
       this.UsersOnline.push(new UserSocketArray(resp,client))
       // let i=0;

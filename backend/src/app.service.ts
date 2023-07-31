@@ -38,8 +38,8 @@ export class AppService {
   this.usersService.remove_disconnect_User(client)
  }
 
- async add_user_to_lobby(client: Socket){
-  return this.usersService.addUserToLobby(client)
+ async add_user_to_lobby(client: Socket, server:Server, ChannelList: string[]){
+  return this.usersService.addUserToLobby(client, server,ChannelList)
  }
 
  async user_to_notify(client: number){
