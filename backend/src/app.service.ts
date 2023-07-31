@@ -7,6 +7,7 @@ import { Channel } from './db_interactions_modules/channels/channel.entity';
 import { CreateMsgDto } from './db_interactions_modules/messages/dtos/message.dto';
 import { UsersService } from './db_interactions_modules/users/users.service';
 import { Socket, Server } from 'socket.io';
+import { UserSocketArray } from './db_interactions_modules/users/classes/UsersSockets';
 @Injectable()
 export class AppService {
  constructor(
@@ -15,6 +16,7 @@ export class AppService {
    @InjectRepository(Channel)private channelRepository: Repository<Channel>,
    private usersService: UsersService
  ) {}
+ static UsersOnline: UserSocketArray[] = []
 
 
  async createMessage(msg_payload: CreateMsgDto){
