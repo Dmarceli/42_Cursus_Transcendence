@@ -12,17 +12,13 @@ import { GoogleStrategy } from './google/auth_google.strategy';
 import { TwoFactorAuthService } from './2FA/2FA-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/db_interactions_modules/users/user.entity';
-
-import { GoogleAuthGuard } from './google/auth_google.guard';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
-import { UserToChannel } from 'src/db_interactions_modules/relations/user_to_channel/user_to_channel.entity';
-import { Channel } from 'src/db_interactions_modules/channels/channel.entity';
-import { UserToChannelService } from 'src/db_interactions_modules/relations/user_to_channel/user_to_channel.service';
+import { GoogleAuthGuard } from './google/auth_google.guard';
 
 @Module({
   imports: [ 
     // UsersModule,
-    TypeOrmModule.forFeature([User, UserToChannel,Channel]),
+    TypeOrmModule.forFeature([User]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
@@ -42,7 +38,6 @@ import { UserToChannelService } from 'src/db_interactions_modules/relations/user
     GoogleStrategy,
     UsersService,
     TwoFactorAuthService,
-    UserToChannelService
   ]
 })
 export class AuthModule {}
