@@ -92,7 +92,7 @@ export class UsersService {
     element.client.join(ChannelId.toString())
    }
 
-   async addUserToLobby(client: Socket, server: Server,ChannelList: string[]){
+   async addUserToLobby(client: Socket){
 
     const token = client.handshake.auth.token;
     let payload;
