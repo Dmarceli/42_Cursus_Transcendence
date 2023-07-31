@@ -1,16 +1,27 @@
 <template>
-
     <v-dialog
       v-model="props.dialog"
       width="auto"
       transition="dialog-bottom-transition"
     >
       <v-card>
+        <v-toolbar
+              color="#26654E"
+              title="Instructions"
+            ></v-toolbar>
         <v-card-text>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          <p>Control your paddle using the arrow keys.</p>
+          <div class="descript">
+            <img class="arrow" src="arrow-up.png"><span>Press <b>arrow up</b> on the keyboard to move paddle up.</span>
+          </div>
+          <div class="descript">
+            <img class="arrow" src="arrow-down.png"><span>Press <b>arrow down</b> on the keyboard to move paddle up</span>
+          </div>
+        <p>Points are scored when your opponent misses the ball.</p>
+        <p>First player to score 5 points wins.</p>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" block @click="" dialog = false">Close Dialog</v-btn>
+          <v-btn color="primary" block @click='emit("close-window")'>Close Dialog</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -18,50 +29,26 @@
 
 <script setup lang="ts">
 
-import { ref } from 'vue';
-
-// define emits
-
 let props = defineProps<{
   dialog: boolean
 }>()
 
+const emit = defineEmits(['close-window'])
+
 </script>
 
-<style>
-
-button.start-menu {
-  padding: 2% 4%;
-  font-size: 100%;
-  text-transform: uppercase;
-  letter-spacing: 0.1rem;
-  color: #fff;
-  background-color: #e91e63;
-  border: none;
-  border-radius: 45px;
-  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease 0s;
-  cursor: pointer;
-  outline: none;
-}
-
-.start-menu button:hover {
-  background-color: #fff;
-  box-shadow: 0px 15px 20px rgba(255, 255, 255, 0.4);
-  color: #e91e63;
-  transform: translateY(-7px);
-}
-
-.start-menu button:active {
-  transform: translateY(-1px);
-}
-
-button.play-game {
-  margin-top: 1%;
+<style scoped>
+.descript
+{
   display: flex;
-  flex-direction: column;
+  margin-top: 5%;
+  margin-bottom: 5%;
   align-items: center;
-  justify-content: center;
+}
+
+.arrow
+{
+  height: 40px;
 }
 
 </style>

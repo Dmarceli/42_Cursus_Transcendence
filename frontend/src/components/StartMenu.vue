@@ -2,8 +2,8 @@
   <div v-if="PlayGame">
     <img src="racketas.svg" alt="" />
     <v-btn class="play-game" @click="PlayGame = false">Let's Play</v-btn>
-    <v-btn class="play-game" @click="instructions = true">Instructions</v-btn>
-    <InstructionsPage :dialog="instructions"></InstructionsPage>
+    <v-btn class="play-game" @click="instructions = true">How to Play</v-btn>
+    <InstructionsPage :dialog="instructions" @close-window="instructions = false" ></InstructionsPage>
   </div>
   <div v-else class="start-menu">
     <v-card elevation="18" class="testclass">
