@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module , forwardRef} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 // import { UsersModule } from 'src/db_interactions_modules/users/users.module';
@@ -14,11 +14,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { GoogleAuthGuard } from './google/auth_google.guard';
-
+import { UserToChannel } from 'src/db_interactions_modules/relations/user_to_channel/user_to_channel.entity';
+import { Channel } from 'src/db_interactions_modules/channels/channel.entity';
+import { UsersModule } from 'src/db_interactions_modules/users/users.module';
+import { AppModule } from 'src/app.module';
+import { UserToChannelService } from 'src/db_interactions_modules/relations/user_to_channel/user_to_channel.service';
 @Module({
   imports: [ 
     // UsersModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, UserToChannel,Channel]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
@@ -38,6 +42,7 @@ import { GoogleAuthGuard } from './google/auth_google.guard';
     GoogleStrategy,
     UsersService,
     TwoFactorAuthService,
+    UserToChannelService
   ]
 })
 export class AuthModule {}

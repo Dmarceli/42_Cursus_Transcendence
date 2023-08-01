@@ -53,6 +53,6 @@ import { MessagesService } from './db_interactions_modules/messages/messages.ser
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway, UsersService, ChannelsService, UserToChannelService,EventsService, MessagesService],
-  exports: [AppService, AppGateway, UsersService, ChannelsService, UserToChannelService,EventsService, MessagesService]
+  exports: [AppService, AppGateway,  ChannelsService, UserToChannelService,EventsService, MessagesService, UsersService]
 })
 export class AppModule {}
