@@ -148,9 +148,15 @@ export class UsersService {
     //  })  
    }
 
-	 async uploadFile(file: string, user_id: number) {
-		 const user = await this.findById(user_id);
+	 async updateAvatar(file: string, user_id: number) {
+		//  const user = await this.findById(user_id);
 		//  user.avatar = file;
-		 await this.userRepository.save(user);
-	 }
+		//  await this.userRepository.save(user);
+      return {
+        status: 'success',
+        message: 'File has been uploaded successfully',
+      };
+    }
+
+
 }

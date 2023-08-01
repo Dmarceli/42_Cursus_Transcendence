@@ -16,30 +16,18 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
-	// @Post('/file_upload/:id')
-	// uploadFile(@Body() newFile: string, @Param('id') id: number) {
-	// 	return this.usersService.uploadFile(newFile, id);
-	// }
-  
-	@Post('/file_upload')
-		@UseInterceptors(FileInterceptor('file', { dest: '../../../uploads'}))
-		async uploadFile(@UploadedFile() file: Express.Multer.File) {
-      const uploadFolder = join(__dirname, '..', '..' , '..', 'uploads');
-      await fs.mkdir(uploadFolder, { recursive: true });
-      const newPath = join(uploadFolder, file.originalname);
-      await fs.writeFile(newPath, file.buffer);
-			return {
-				status: 'success',
-				message: 'File has been uploaded successfully',
-        path: newPath
-			};
+	@Post('/avatar/')
+		@UseInterceptors(FileInterceptor('file', { dest: './uploads'}))
+		async uploadFile(@UploadedFile() file: Express.Multer.File, @Body('userId') userId: number) {
+      console.log(file);
+      console.log("USER ID IS "+userId)
+      return this.usersService.updateAvatar(file.path, userId);
 	}
 
-  @Get('/avatar')
-  async getAvatar(path: string) {
-
+  @Get('/avatar/:filepath')
+  seeUploadedFile(@Param('filepath') file, @Res() res) {
+    return res.sendFile(file, { root: './uploads' });
   }
-	
 
   @Get('/getUsers')
   findAll(@Req() req: any) {

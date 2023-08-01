@@ -138,7 +138,8 @@ const handleNewAvatar = async (event: Event) => {
       try {
 				const formData = new FormData();
 				formData.append('file', file);
-    		const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/file_upload", {
+        formData.append('userId', userData.id);
+    		const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/avatar", {
     		  method: 'POST',
     		  body: formData,
     		});
