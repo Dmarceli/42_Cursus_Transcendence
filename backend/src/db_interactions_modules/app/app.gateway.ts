@@ -31,9 +31,14 @@ import { UsersModule } from '../users/users.module';
  @SubscribeMessage('sendMessage')
  @UsePipes(new ValidationPipe())
  async handleSendMessage(client: Socket, payload: CreateMsgDto): Promise<void> {
-  console.log(new Date(),payload)
-   await this.appService.createMessage(payload);
-   this.server.emit('recMessage', payload);
+
+  //console.log(new Date(),payload)
+  //console.log("ROOM-",payload.channelId.toString(), client.id)
+  //console.log( this.server.sockets.adapter.rooms.get(payload.channelId.toString()))
+  //console.log(payload)
+  await this.appService.createMessage(payload);
+  this.server.to(payload.channelId.toString()).emit('recMessage', payload);
+
  }
  
  afterInit(server: Server) {
@@ -42,15 +47,16 @@ import { UsersModule } from '../users/users.module';
  
  handleDisconnect(client: Socket) {
    console.log(`Disconnected: ${client.id}`);
-   
    this.appService.user_remove_disconect(client)
-   this.gameService.RemovePlayerFromGame(client)
+   this.gameService.HandlePlayerDisconnected(client)
  }
  
  //1º step após conexão
- async handleConnection(client: Socket/* ...args: any[]*/) {
+ async handleConnection(client: Socket, server: Server) {
   console.log(`Connected ${client.id}`);
-  const authorization = await this.appService.add_user_to_lobby(client)
+  let Channel_List:string [] = [];
+  const authorization = await this.appService.add_user_to_lobby(client, server,Channel_List)
+  client.join(Channel_List)
   if(!authorization){
     client.disconnect();
     console.log(`Discnnected Auth missing -  ${client.id}`)
@@ -60,13 +66,21 @@ import { UsersModule } from '../users/users.module';
 
 
 // Game Service
-  @SubscribeMessage('NewPlayer')
-  handleNewPlayer(client: Socket, intra_nick: string) {
-    this.gameService.AddPlayerToGame(client, intra_nick)
+  @SubscribeMessage('PlayerSelectedPaddle')
+  handlePlayerSelectedPaddle(client: Socket, info: any) {
+    let [intra_nick, paddleSkin] = info;
+    this.gameService.CreatePlayer(client, intra_nick, paddleSkin);
+    client.emit("PlayerCreated")
   }
-  @SubscribeMessage('PlayerExited')
-  handlePlayerExited(client: Socket) {
-    this.gameService.RemovePlayerFromGame(client)
+
+  @SubscribeMessage('AddToLobby')
+  handlAddPlayerToLobby(client: Socket, intra_nick: string) {
+    this.gameService.AddPlayerToLobby(client, intra_nick)
+  }
+  @SubscribeMessage('PlayerReady')
+  handlePlayerReady(client: Socket, intra_nick: string) {
+    console.log("New Player ready "+intra_nick)
+    this.gameService.PlayerReady(intra_nick)
   }
   @SubscribeMessage('keydown')
   handlePlayerKeyDown(client: Socket, key: string)

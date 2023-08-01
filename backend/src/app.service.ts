@@ -18,6 +18,7 @@ export class AppService {
  ) {}
  static UsersOnline: UserSocketArray[] = []
 
+
  async createMessage(msg_payload: CreateMsgDto){
   const user= await this.userRepository.findOne({where: {
      id:  msg_payload.authorId }    
@@ -36,11 +37,11 @@ export class AppService {
  }
 
  async user_remove_disconect(client: Socket){
-  this.usersService.remove_disconnect_User(client, AppService.UsersOnline)
+  this.usersService.remove_disconnect_User(client)
  }
 
- async add_user_to_lobby(client: Socket){
-  return this.usersService.addUserToLobby(client,AppService.UsersOnline)
+ async add_user_to_lobby(client: Socket, server:Server, ChannelList: string[]){
+  return this.usersService.addUserToLobby(client, server,ChannelList)
  }
 
  async user_to_notify(client: number){
