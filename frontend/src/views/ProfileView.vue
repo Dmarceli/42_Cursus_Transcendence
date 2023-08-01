@@ -132,25 +132,38 @@ function closeSettings() {
   isSettingsOpen.value = false;
 }
 
-function handleNewAvatar(event: Event) {
+const handleNewAvatar = async (event: Event) => {
   if (event.target instanceof HTMLInputElement && event.target.files) {
     const file = event.target.files[0];
     if (file) {
       // Need to make validation for image files
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          updateAvatar.value = result;
-        }
-        else {
-          console.error('Error reading file');
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+				const formData = new FormData();
+				formData.append('file', file);
+    		const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/file_upload", {
+    		  method: 'POST',
+    		  body: formData,
+    		  // headers: {
+    		  //   'Content-Type': 'multipart/form-data' 
+    		  // },
+    		});
+    		if (response.ok) {
+    		  //console.log(response.headers.get('token2'))
+    		  return response.json();
+    		} else {
+    		  return false;
+    		}
+			} catch (error) {
+    			console.log('Error:', error);
+    			return false;
+ 				}
     }
-  }
+    else {
+      console.error('Error reading file');
+    	}
+  };
 }
+
 
 // watch(() => userProfile.value.nickname, (newNickname, oldNickname) => {
 //   lastGames.value.forEach((game) => {

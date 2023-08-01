@@ -1,4 +1,6 @@
-import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete, Res, Req } from '@nestjs/common';
+import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete, Res, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express'
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
@@ -11,7 +13,24 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
   }
+
+	// @Post('/file_upload/:id')
+	// uploadFile(@Body() newFile: string, @Param('id') id: number) {
+	// 	return this.usersService.uploadFile(newFile, id);
+	// }
   
+	@Post('/file_upload')
+		@UseInterceptors(FileInterceptor('file'))
+		uploadFile(@UploadedFile() file: Express.Multer.File) {
+			console.log("YOYOYO");
+			console.log(file);
+			return {
+				status: 'success',
+				message: 'File has been uploaded successfully'
+			};
+	}
+	
+
   @Get('/getUsers')
   findAll(@Req() req: any) {
     return this.usersService.findAll();
@@ -26,6 +45,8 @@ export class UsersController {
   findLeaderboardInfo() {
     return this.usersService.leaderboardInfo();
   }
+
+
 
 /* 
 
