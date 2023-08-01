@@ -4,6 +4,8 @@ import { Express } from 'express'
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { join } from 'path';
+import { promises as fs } from 'fs';
 
 @Controller('users')
 export class UsersController {
@@ -20,15 +22,23 @@ export class UsersController {
 	// }
   
 	@Post('/file_upload')
-		@UseInterceptors(FileInterceptor('file'))
-		uploadFile(@UploadedFile() file: Express.Multer.File) {
-			console.log("YOYOYO");
-			console.log(file);
+		@UseInterceptors(FileInterceptor('file', { dest: '../../../uploads'}))
+		async uploadFile(@UploadedFile() file: Express.Multer.File) {
+      const uploadFolder = join(__dirname, '..', '..' , '..', 'uploads');
+      await fs.mkdir(uploadFolder, { recursive: true });
+      const newPath = join(uploadFolder, file.originalname);
+      await fs.writeFile(newPath, file.buffer);
 			return {
 				status: 'success',
-				message: 'File has been uploaded successfully'
+				message: 'File has been uploaded successfully',
+        path: newPath
 			};
 	}
+
+  @Get('/avatar')
+  async getAvatar(path: string) {
+
+  }
 	
 
   @Get('/getUsers')

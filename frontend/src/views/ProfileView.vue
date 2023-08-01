@@ -106,7 +106,7 @@ const getPlayerAvatar = (playerNick: string) => {
 const isSettingsOpen = ref(false);
 
 const updateNickname = ref(userProfile.value.nick);
-const updateAvatar = ref('');
+const updateAvatar = ref(userProfile.value.avatar);
 
 function openSettings() {
   isSettingsOpen.value = true;
@@ -116,8 +116,6 @@ function saveSettings() {
 	if (updateNickname.value === '') {
 		return;
 	}
-  userProfile.value.nick = updateNickname.value;
-  userProfile.value.avatar = updateAvatar.value;
   //send it to backend here
   closeSettings();
 }
@@ -143,13 +141,10 @@ const handleNewAvatar = async (event: Event) => {
     		const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/file_upload", {
     		  method: 'POST',
     		  body: formData,
-    		  // headers: {
-    		  //   'Content-Type': 'multipart/form-data' 
-    		  // },
     		});
     		if (response.ok) {
-    		  //console.log(response.headers.get('token2'))
-    		  return response.json();
+          let imageUrl = response.url;
+          console.log(imageUrl);
     		} else {
     		  return false;
     		}
@@ -262,7 +257,7 @@ const handleNewAvatar = async (event: Event) => {
           <div class="avatar-container-settings">
             <img :src="updateAvatar || userProfile.avatar" alt="Avatar" class="avatar-settings" />
           </div>
-          <input type="file" @change="handleNewAvatar($event)" id="avatar" />
+          <input type="file" @change="handleNewAvatar" id="avatar" />
         </div>
         <!-- Nickname -->
         <div class="settings-section">

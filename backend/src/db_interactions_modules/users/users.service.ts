@@ -48,7 +48,7 @@ export class UsersService {
    const resp= await this.userRepository.findOne({where: {
       nick: nick_
     }});
-    console.log(resp)
+    // console.log(resp)
     if(!resp)
       return res.status(404).json()
     else
@@ -150,7 +150,7 @@ export class UsersService {
 
 	 async uploadFile(file: string, user_id: number) {
 		 const user = await this.findById(user_id);
-		 user.avatar = file;
+		//  user.avatar = file;
 		 await this.userRepository.save(user);
 	 }
 }
