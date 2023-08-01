@@ -2,6 +2,8 @@
   <div v-if="PlayGame">
     <img src="racketas.svg" alt="" />
     <v-btn class="play-game" @click="PlayGame = false">Let's Play</v-btn>
+    <v-btn class="play-game" @click="instructions = true">How to Play</v-btn>
+    <InstructionsPage :dialog="instructions" @close-window="instructions = false" ></InstructionsPage>
   </div>
   <div v-else class="start-menu">
     <v-card elevation="18" class="testclass">
@@ -16,15 +18,17 @@
 import { ref, inject } from 'vue'
 import { Socket } from 'socket.io-client'
 import PaddleCarousel from './PaddleCarousel.vue'
+import InstructionsPage from './InstructionsPage.vue'
 
 let PlayGame = ref(true)
+let instructions = ref(false)
 
 interface Props {
   intraNick: string | null
 }
 const props = defineProps<Props>()
 
-const emits = defineEmits(['PlayerCreated'])
+const emits = defineEmits(['PlayerCreated', "closeInstructions"])
 
 let joinLobbyView = ref(false)
 let choosePaddle = ref(true)
@@ -39,6 +43,7 @@ function selectPaddle(paddleSkin: string) {
 socket?.on('PlayerCreated', () => {
   emits('PlayerCreated')
 })
+
 </script>
 
 <style scoped>
@@ -113,9 +118,11 @@ socket?.on('PlayerCreated', () => {
 }
 
 button.play-game {
+  margin-top: 2%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
+
 </style>
