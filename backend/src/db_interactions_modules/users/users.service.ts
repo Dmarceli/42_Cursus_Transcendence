@@ -161,13 +161,12 @@ export class UsersService {
     if (existsSync(prevAvatar)) {
       unlinkSync(prevAvatar);
     }
-    
-    let newPathName = file.path+file.originalname; 
-    console.log("New Pathname "+newPathName)
+    let extension = "."+file.originalname.split(".").pop()
+    let newPathName = file.path+extension;
     if (existsSync(file.path)) {
       renameSync(file.path, newPathName);
     }
-    let fileUrl = process.env.BACKEND_URL+"/users/avatar/"+file.filename+file.originalname
+    let fileUrl = process.env.BACKEND_URL+"/users/avatar/"+file.filename+extension;
 		 user.avatar = fileUrl;
 		 await this.userRepository.save(user);
       return {

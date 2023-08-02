@@ -24,8 +24,7 @@ export class UsersController {
 
   @Get('/avatar/:filename')
   seeUploadedFile(@Param('filename') file, @Res() res) {
-    res.setHeader('Content-Type', 'image/png');
-    createReadStream("./uploads/"+file).pipe(res);
+    return res.sendFile(file, { root: './uploads' });
   }
 
   @Get('/getUsers')
