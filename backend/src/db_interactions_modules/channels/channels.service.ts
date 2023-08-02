@@ -42,7 +42,7 @@ export class ChannelsService {
           decider_user: user_to_join.id,
           message: `${userRequester.intra_nick} added you to channel ${createChannelDto.channel_name}`
         }
-        await this.eventService.create(eventDto,1)
+        await this.eventService.create(eventDto,0)
       }
     })
     return response

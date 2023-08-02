@@ -22,8 +22,8 @@ export class EventsController {
   }
 
   @Post('/event_decision/:event_id/:decision')
-  event_decision(@Param('decision') decision: boolean, @Param('event_id') event_id: number) {
-    return this.eventsService.closedecision(decision, event_id);
+  async event_decision(@Param('decision') decision: string, @Param('event_id') event_id: number) {
+    return await this.eventsService.closedecision(decision, event_id);
   }
 
   @Get('/notifications')

@@ -22,13 +22,19 @@ export class EventsService {
    ) {}
 
   async create(createEventDto: EventCreateDto, event_type: number) {
-    try {
-      await this.eventsRepository.save({
+     const already_requested= await this.eventsRepository.findOne({where: {decider_user:{id: createEventDto.decider_user},requester_user: {id: createEventDto.requester_user}, type:event_type},
+      relations: ['requester_user', 'decider_user'],})
+      if(already_requested)
+        return
+    console.log(event_type)
+        try {
+      const AA=await this.eventsRepository.save({
         ...createEventDto as any,
         time: new Date(),
-        type: event_type,
+        type: event_type.valueOf(),
         already_seen: false
       });
+      console.log(AA)
     } catch (error) {
       console.error('Error notifying user:', error);
     }
@@ -39,24 +45,23 @@ export class EventsService {
     }
   }
 
-  async closedecision(decision: boolean, event_id: number){
+  async closedecision(decision_: string, event_id: number){
     const event = await this.eventsRepository.findOne({
       where: { 
         id: event_id },
         relations: ['requester_user', 'decider_user'],
     });
-    if (event)
-    {
+   
+    if(decision_ == 'true' && event){
       if (event.type == 1){
         const newfriend: CreateFriendDto = {
           user1Id : event.decider_user.id , 
           user2Id : event.requester_user.id
         }
-        this.FriendsService.createfriend(newfriend)
-      }
-        
+        await this.FriendsService.createfriend(newfriend);
+      }        
     } 
-    await this.eventsRepository.delete(event)
+    await this.eventsRepository.delete(event);
   }
 
 
