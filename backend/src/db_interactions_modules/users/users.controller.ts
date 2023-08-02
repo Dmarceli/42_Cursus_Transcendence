@@ -4,6 +4,9 @@ import { Express } from 'express'
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
+import { User } from './user.entity';
+
 
 @Controller('users')
 export class UsersController {
@@ -14,10 +17,10 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
-	@Post('/avatar/')
+	@Post('/profile/')
 		@UseInterceptors(FileInterceptor('file', { dest: './uploads'}))
-		async uploadFile(@UploadedFile() file: Express.Multer.File, @Body('userId') userId: number) {
-      return this.usersService.updateAvatar(file, userId);
+		async uploadFile(@UploadedFile() file: Express.Multer.File, @Body('userId') userId: number,  @Body('nickUpdate') nickUpdate: string) {
+      return this.usersService.updateProfile(file, userId, nickUpdate);
 	}
 
   @Get('/avatar/:filename')
@@ -35,12 +38,16 @@ export class UsersController {
     return this.usersService.findbyusername_(nick_, res);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/getUserInfo/')
+  getUserInfo(@getUserIDFromToken() user: User) {
+    return this.usersService.findById(user['id'])
+  }
+
   @Get('leaderboard')
   findLeaderboardInfo() {
     return this.usersService.leaderboardInfo();
   }
-
-
 
 /* 
 

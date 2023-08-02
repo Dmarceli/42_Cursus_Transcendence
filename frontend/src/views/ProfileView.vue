@@ -43,13 +43,12 @@ function getCookieValueByName(name: string) {
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
 let useNick;
-userData.id = decodedToken.id;
-userData.nick =  decodedToken.user['nick'];
+userData.id = decodedToken.user["id"];
 
 let avatarUpload = ref<File|null>(null);
 
 const isOwnProfile = computed(() => {
-	return userProfile.value.nick === userData.nick;
+	return userProfile.value.id === userData.id;
 });
 
 const route = useRoute();
@@ -61,9 +60,7 @@ const fetchUserProfile = async () => {
 		} else {
 			useNick = route.params.nick;
 		}
-		console.log("USER NICK IS "+useNick);
-		console.log(userData.nick)
-		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/' + useNick;
+		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
 		const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -119,14 +116,18 @@ async function saveSettings() {
 		return;
   }
   userProfile.value.nick = updateNickname.value;
-  userProfile.value.avatar = updateAvatar.value;
+  if (updateAvatar.value)
+  {
+    userProfile.value.avatar = updateAvatar.value;
+  }
   if (avatarUpload.value) {
     // Need to make validation for image files
     try {
       const formData = new FormData();
       formData.append('file', avatarUpload.value);
       formData.append('userId', userData.id);
-      const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/avatar", {
+      formData.append('nickUpdate', userProfile.value.nick);
+      const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
         method: 'POST',
         body: formData,
       });
@@ -335,7 +336,7 @@ const handleNewAvatar = async (event: Event) => {
   position: relative;
 }
 
-.avatar-container img {
+img.avatar-container {
   position: absolute;
   top: 0;
   left: 0;

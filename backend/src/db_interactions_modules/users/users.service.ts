@@ -12,7 +12,6 @@ import { UserToChannel } from '../relations/user_to_channel/user_to_channel.enti
 import { Channel } from '../channels/channel.entity';
 import { unlinkSync, existsSync, renameSync } from 'fs';
 
-
 import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 import { AppService } from 'src/app.service';
 @Injectable()
@@ -157,24 +156,12 @@ export class UsersService {
     //  })  
    }
 
-	 async updateAvatar(file: Express.Multer.File, userId: number) {
+	 async updateProfile(file: Express.Multer.File, userId: number, nickUpdate: string) {
     console.log(file);
 		 const user = await this.findById(userId);
-     let prevUrl = user.avatar.split('/').pop();
-     let prevAvatar = './uploads/' + prevUrl
-
-    console.log("PREVIOUS AVATAR "+prevAvatar)
-    if (existsSync(prevAvatar)) {
-      unlinkSync(prevAvatar);
-    }
-    let extension = "."+file.originalname.split(".").pop()
-    let newPathName = file.path+extension;
-    if (existsSync(file.path)) {
-      renameSync(file.path, newPathName);
-    }
-    let fileUrl = process.env.BACKEND_URL+"/users/avatar/"+file.filename+extension;
-		 user.avatar = fileUrl;
-		 await this.userRepository.save(user);
+     this.updateAvatar(user, file);
+     this.updateNick(user, nickUpdate);
+     await this.userRepository.save(user);
       return {
         status: 'success',
         message: 'File has been uploaded successfully',
@@ -182,5 +169,26 @@ export class UsersService {
       };
     }
 
+    updateAvatar(user: User, file: Express.Multer.File) {
+      let prevUrl = user.avatar.split('/').pop();
+      let prevAvatar = './uploads/' + prevUrl
+      if (existsSync(prevAvatar)) {
+        console.log("Deleting PREVIOUS AVATAR "+prevAvatar)
+        unlinkSync(prevAvatar);
+      }
+      let extension = "."+file.originalname.split(".").pop()
+      let newPathName = file.path+extension;
+      if (existsSync(file.path)) {
+        renameSync(file.path, newPathName);
+      }
+      let fileUrl = process.env.BACKEND_URL+"/users/avatar/"+file.filename+extension;
+      user.avatar = fileUrl;
+    }
 
+    updateNick(user: User, nickUpdate: string){
+      console.log("UPDATING NICK");
+      console.log(user.nick);
+      console.log(nickUpdate);
+      user.nick = nickUpdate;
+    }
 }
