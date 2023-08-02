@@ -111,11 +111,8 @@ function openSettings() {
   isSettingsOpen.value = true;
 }
 
-async function saveSettings() {
-	let currentnNick = userProfile.value.nick;
-	let currentAvatar = userProfile.value.avatar;
-	
-	if (updateNickname.value === ''){
+async function saveSettings() {	
+	if (updateNickname.value === '' || usernameRegex.test(updateNickname.value) === false){
 		return;
   }
   userProfile.value.nick = updateNickname.value;
@@ -152,9 +149,13 @@ async function saveSettings() {
   closeSettings();
 }
 
-const state = reactive({
+const usernameRegex = /^[a-zA-Z0-9._-]{1,20}$/;
+
+const nickname = reactive({
 	rules: [
-		value => value.length > 0 || 'Nick must not be empty',
+		value => value.length < 20 || 'Nickname too long',
+		value => value.length > 0 || 'Nickname cannot be empty',
+		value => usernameRegex.test(value) || 'Invalid Characters found',
 	],
 });
 
@@ -289,7 +290,7 @@ const handleNewAvatar = async (event: Event) => {
         </div>
         <!-- Nickname -->
         <div class="settings-section">
-					<v-text-field v-model="updateNickname" label="Nickname" class="nickname-settings" :rules="state.rules"/>
+					<v-text-field v-model="updateNickname" label="Nickname" class="nickname-settings" :rules="nickname.rules"/>
         </div>
         <div class="modal-buttons">
           <v-btn variant="outlined" @click="saveSettings" class="save">Save</v-btn>
