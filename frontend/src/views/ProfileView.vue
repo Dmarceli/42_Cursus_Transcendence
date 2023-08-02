@@ -112,6 +112,9 @@ function openSettings() {
 }
 
 async function saveSettings() {
+	let currentnNick = userProfile.value.nick;
+	let currentAvatar = userProfile.value.avatar;
+	
 	if (updateNickname.value === ''){
 		return;
   }
@@ -164,6 +167,11 @@ const handleNewAvatar = async (event: Event) => {
     avatarUpload.value = event.target.files[0];
     if (avatarUpload.value)
     {
+			let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
+			if (!regex.test(avatarUpload.value.name)) {
+				alert("Please upload an image file");
+			return;
+			}
       const reader = new FileReader();
         reader.onload = (e) => {
           const result = e.target?.result;
@@ -322,26 +330,22 @@ const handleNewAvatar = async (event: Event) => {
 }
 
 .avatar-container {
-  width: 20vw;
-  max-width: 200px;
-  height: 20vw;
-  max-height: 200px;
+  width:100px;
+  height:100px;
   border-radius: 50%;
   overflow: hidden;
-  margin-right: 20px;
-  border: 2px solid white; /* Customize the color if needed */
+  margin-bottom: 10px;
+  border: 2px solid white;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
-img.avatar-container {
-  position: absolute;
-  top: 0;
-  left: 0;
+.avatar {
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
 }
 
