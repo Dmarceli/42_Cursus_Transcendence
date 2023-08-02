@@ -11,6 +11,9 @@ import { JwtService } from '@nestjs/jwt';
 import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
 import { Channel } from '../channels/channel.entity';
+import { unlinkSync, existsSync, renameSync } from 'fs';
+import { join } from 'path';
+
 
 @Injectable()
 export class UsersService {
@@ -148,13 +151,29 @@ export class UsersService {
     //  })  
    }
 
-	 async updateAvatar(file: string, user_id: number) {
-		//  const user = await this.findById(user_id);
-		//  user.avatar = file;
-		//  await this.userRepository.save(user);
+	 async updateAvatar(file: Express.Multer.File, userId: number) {
+    console.log(file);
+		 const user = await this.findById(userId);
+     let prevUrl = user.avatar.split('/').pop();
+     let prevAvatar = './uploads/' + prevUrl
+
+    console.log("PREVIOUS AVATAR "+prevAvatar)
+    if (existsSync(prevAvatar)) {
+      unlinkSync(prevAvatar);
+    }
+    
+    let newPathName = file.path+file.originalname; 
+    console.log("New Pathname "+newPathName)
+    if (existsSync(file.path)) {
+      renameSync(file.path, newPathName);
+    }
+    let fileUrl = process.env.BACKEND_URL+"/users/avatar/"+file.filename+file.originalname
+		 user.avatar = fileUrl;
+		 await this.userRepository.save(user);
       return {
         status: 'success',
         message: 'File has been uploaded successfully',
+        newAvatar: user.avatar
       };
     }
 

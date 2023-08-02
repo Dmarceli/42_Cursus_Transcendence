@@ -4,8 +4,8 @@ import { Express } from 'express'
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
-import { join } from 'path';
 import { promises as fs } from 'fs';
+import { createReadStream } from 'fs';
 
 @Controller('users')
 export class UsersController {
@@ -19,14 +19,13 @@ export class UsersController {
 	@Post('/avatar/')
 		@UseInterceptors(FileInterceptor('file', { dest: './uploads'}))
 		async uploadFile(@UploadedFile() file: Express.Multer.File, @Body('userId') userId: number) {
-      console.log(file);
-      console.log("USER ID IS "+userId)
-      return this.usersService.updateAvatar(file.path, userId);
+      return this.usersService.updateAvatar(file, userId);
 	}
 
-  @Get('/avatar/:filepath')
-  seeUploadedFile(@Param('filepath') file, @Res() res) {
-    return res.sendFile(file, { root: './uploads' });
+  @Get('/avatar/:filename')
+  seeUploadedFile(@Param('filename') file, @Res() res) {
+    res.setHeader('Content-Type', 'image/png');
+    createReadStream("./uploads/"+file).pipe(res);
   }
 
   @Get('/getUsers')
