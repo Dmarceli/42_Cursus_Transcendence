@@ -59,7 +59,7 @@ const fetchUserProfile = async () => {
 		} else {
 			useNick = route.params.nick;
 		}
-		console.log(useNick);
+		console.log("USER NICK IS "+useNick);
 		console.log(userData.nick)
 		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/' + useNick;
 		const response = await fetch(url, {
@@ -144,8 +144,8 @@ const handleNewAvatar = async (event: Event) => {
     		  body: formData,
     		});
     		if (response.ok) {
-          let imageUrl = response.url;
-          console.log(imageUrl);
+          let data = await response.json();
+          console.log("NEW URL BITCH "+data.newAvatar);
     		} else {
     		  return false;
     		}
@@ -178,6 +178,7 @@ const handleNewAvatar = async (event: Event) => {
     <div class="profile-header">
       <v-avatar class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
+        {{ userProfile.avatar }}
 			</v-avatar>
       <h1 class="nickname" >{{ userProfile.nick }}</h1>
       <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
