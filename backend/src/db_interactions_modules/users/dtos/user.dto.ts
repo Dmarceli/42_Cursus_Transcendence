@@ -10,7 +10,6 @@ import { IsString, MaxLength,MinLength, ValidateIf, IsIn, IsNumber, isNumber, ma
 
     @IsString()
     avatar: string;
-		
   }
   
   

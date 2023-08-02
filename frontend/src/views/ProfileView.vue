@@ -46,6 +46,8 @@ let useNick;
 userData.id = decodedToken.id;
 userData.nick =  decodedToken.user['nick'];
 
+let avatarUpload = ref<File|null>(null);
+
 const isOwnProfile = computed(() => {
 	return userProfile.value.nick === userData.nick;
 });
@@ -106,16 +108,42 @@ const getPlayerAvatar = (playerNick: string) => {
 const isSettingsOpen = ref(false);
 
 const updateNickname = ref(userProfile.value.nick);
-const updateAvatar = ref(userProfile.value.avatar);
+const updateAvatar = ref('');
 
 function openSettings() {
   isSettingsOpen.value = true;
 }
 
-function saveSettings() {
-	if (updateNickname.value === '') {
+async function saveSettings() {
+	if (updateNickname.value === ''){
 		return;
-	}
+  }
+  userProfile.value.nick = updateNickname.value;
+  userProfile.value.avatar = updateAvatar.value;
+  if (avatarUpload.value) {
+    // Need to make validation for image files
+    try {
+      const formData = new FormData();
+      formData.append('file', avatarUpload.value);
+      formData.append('userId', userData.id);
+      const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/avatar", {
+        method: 'POST',
+        body: formData,
+      });
+      if (response.ok) {
+        let data = await response.json();
+        console.log("NEW URL "+data.newAvatar);
+      } else {
+        return false;
+      }
+    } catch (error) {
+        console.log('Error:', error);
+        return false;
+      }
+  }
+  else {
+    console.error('Error reading file');
+  }
   //send it to backend here
   closeSettings();
 }
@@ -132,32 +160,22 @@ function closeSettings() {
 
 const handleNewAvatar = async (event: Event) => {
   if (event.target instanceof HTMLInputElement && event.target.files) {
-    const file = event.target.files[0];
-    if (file) {
-      // Need to make validation for image files
-      try {
-				const formData = new FormData();
-				formData.append('file', file);
-        formData.append('userId', userData.id);
-    		const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/avatar", {
-    		  method: 'POST',
-    		  body: formData,
-    		});
-    		if (response.ok) {
-          let data = await response.json();
-          console.log("NEW URL BITCH "+data.newAvatar);
-    		} else {
-    		  return false;
-    		}
-			} catch (error) {
-    			console.log('Error:', error);
-    			return false;
- 				}
+    avatarUpload.value = event.target.files[0];
+    if (avatarUpload.value)
+    {
+      const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result;
+          if (typeof result === 'string') {
+            updateAvatar.value = result;
+          }
+          else {
+            console.error('Error reading file');
+          }
+        };
+        reader.readAsDataURL(avatarUpload.value);
     }
-    else {
-      console.error('Error reading file');
-    	}
-  };
+  }
 }
 
 
@@ -178,7 +196,6 @@ const handleNewAvatar = async (event: Event) => {
     <div class="profile-header">
       <v-avatar class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
-        {{ userProfile.avatar }}
 			</v-avatar>
       <h1 class="nickname" >{{ userProfile.nick }}</h1>
       <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />

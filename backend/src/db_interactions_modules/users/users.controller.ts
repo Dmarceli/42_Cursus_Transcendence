@@ -4,8 +4,6 @@ import { Express } from 'express'
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
-import { promises as fs } from 'fs';
-import { createReadStream } from 'fs';
 
 @Controller('users')
 export class UsersController {
