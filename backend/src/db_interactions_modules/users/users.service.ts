@@ -1,4 +1,4 @@
-import { Injectable, Catch, ConflictException, UnauthorizedException} from '@nestjs/common';
+import { Injectable, Catch, ConflictException, UnauthorizedException, Inject, forwardRef} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository, QueryFailedError } from 'typeorm';
@@ -8,25 +8,23 @@ import { Socket, Server } from 'socket.io';
 import { UserSocketArray } from './classes/UsersSockets';
 import { getUserIDFromToken } from './getUserIDFromToken';
 import { JwtService } from '@nestjs/jwt';
-import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
 import { Channel } from '../channels/channel.entity';
 import { unlinkSync, existsSync, renameSync } from 'fs';
-import { join } from 'path';
 
 
+import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
+import { AppService } from 'src/app.service';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private jwtService: JwtService,
     @InjectRepository(UserToChannel)
     private readonly userToChannel: Repository<UserToChannel>,
-    @InjectRepository(Channel)
-    private readonly channelRepository: Repository<Channel>,
-    private jwtService: JwtService,
-    private readonly userToChannelService: UserToChannelService,
-    
+    @Inject(forwardRef(() => UserToChannelService))private userToChannelService: UserToChannelService,
+
   ) {
   }
   UsersOnline: UserSocketArray[] = []
@@ -98,7 +96,15 @@ export class UsersService {
    }
 
   
+
+   async update_channels_on_list(UserId: number,ChannelId: number){
+    const element= AppService.UsersOnline.find(element => element.user.id == UserId);
+    if(element)
+      element.client.join(ChannelId.toString())
+   }
+
    async addUserToLobby(client: Socket, server: Server,ChannelList: string[]){
+
     const token = client.handshake.auth.token;
     let payload;
     try {
@@ -115,13 +121,13 @@ export class UsersService {
     const resp = await this.userRepository.findOne({where: {id: payload.id}});
      if(!resp)
         return null
-    const userChannels = await this.userToChannelService.findChannelsByID(resp.id);   
+        const userChannels = await this.userToChannelService.findChannelsByID(resp.id);   
     userChannels.forEach((element) => {
      ChannelList.push(element.channel_id.id.toString())
     })
-      this.UsersOnline.push(new UserSocketArray(resp,client))
+      AppService.UsersOnline.push(new UserSocketArray(resp,client))
       // let i=0;
-      // this.UsersOnline.forEach((element) => {
+      // AppService.UsersOnline.forEach((element) => {
       //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
       // })
      return true;
@@ -131,22 +137,22 @@ export class UsersService {
     //console.log(this.UsersOnline)
      console.log('Notification sent to user:', user_id);
     //  let i=0;
-    //  this.UsersOnline.forEach((user) => {
+    //  AppService.UsersOnline.forEach((user) => {
     //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
     // })
-     const user = this.UsersOnline.find( User_ => User_.user.id === user_id)
+     const user = AppService.UsersOnline.find( User_ => User_.user.id === user_id)
      if(!user)
        return;
      user.client.emit("notification")
    }
 
    async remove_disconnect_User(client_: Socket){
-    const Index = this.UsersOnline.findIndex( User_ => User_.client === client_)
+    const Index = AppService.UsersOnline.findIndex( User_ => User_.client === client_)
     if(Index != -1)
-      this.UsersOnline.splice(Index,1)
+      AppService.UsersOnline.splice(Index,1)
     
     //   let i=0;
-    //   this.UsersOnline.forEach((user) => {
+    //   AppService.UsersOnline.forEach((user) => {
     //    console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
     //  })  
    }

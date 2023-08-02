@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module , forwardRef} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 // import { UsersModule } from 'src/db_interactions_modules/users/users.module';
@@ -12,13 +12,13 @@ import { GoogleStrategy } from './google/auth_google.strategy';
 import { TwoFactorAuthService } from './2FA/2FA-service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/db_interactions_modules/users/user.entity';
-
-import { GoogleAuthGuard } from './google/auth_google.guard';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
+import { GoogleAuthGuard } from './google/auth_google.guard';
 import { UserToChannel } from 'src/db_interactions_modules/relations/user_to_channel/user_to_channel.entity';
 import { Channel } from 'src/db_interactions_modules/channels/channel.entity';
+import { UsersModule } from 'src/db_interactions_modules/users/users.module';
+import { AppModule } from 'src/app.module';
 import { UserToChannelService } from 'src/db_interactions_modules/relations/user_to_channel/user_to_channel.service';
-
 @Module({
   imports: [ 
     // UsersModule,
