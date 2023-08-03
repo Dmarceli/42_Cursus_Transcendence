@@ -9,6 +9,9 @@ import { UserSocketArray } from './classes/UsersSockets';
 import { getUserIDFromToken } from './getUserIDFromToken';
 import { JwtService } from '@nestjs/jwt';
 import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
+import { Channel } from '../channels/channel.entity';
+import { unlinkSync, existsSync, renameSync } from 'fs';
+
 import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 import { AppService } from 'src/app.service';
 @Injectable()
@@ -45,7 +48,7 @@ export class UsersService {
    const resp= await this.userRepository.findOne({where: {
       nick: nick_
     }});
-    console.log(resp)
+    // console.log(resp)
     if(!resp)
       return res.status(404).json()
     else
@@ -153,5 +156,39 @@ export class UsersService {
     //  })  
    }
 
+	 async updateProfile(file: Express.Multer.File, userId: number, nickUpdate: string) {
+    console.log(file);
+		 const user = await this.findById(userId);
+     this.updateAvatar(user, file);
+     this.updateNick(user, nickUpdate);
+     await this.userRepository.save(user);
+      return {
+        status: 'success',
+        message: 'File has been uploaded successfully',
+        newAvatar: user.avatar
+      };
+    }
 
+    updateAvatar(user: User, file: Express.Multer.File) {
+      let prevUrl = user.avatar.split('/').pop();
+      let prevAvatar = './uploads/' + prevUrl
+      if (existsSync(prevAvatar)) {
+        console.log("Deleting PREVIOUS AVATAR "+prevAvatar)
+        unlinkSync(prevAvatar);
+      }
+      let extension = "."+file.originalname.split(".").pop()
+      let newPathName = file.path+extension;
+      if (existsSync(file.path)) {
+        renameSync(file.path, newPathName);
+      }
+      let fileUrl = process.env.BACKEND_URL+"/users/avatar/"+file.filename+extension;
+      user.avatar = fileUrl;
+    }
+
+    updateNick(user: User, nickUpdate: string){
+      console.log("UPDATING NICK");
+      console.log(user.nick);
+      console.log(nickUpdate);
+      user.nick = nickUpdate;
+    }
 }
