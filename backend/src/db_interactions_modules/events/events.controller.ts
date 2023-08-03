@@ -1,4 +1,4 @@
-import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { EventCreateDto } from './dtos/events.dto';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
@@ -12,8 +12,12 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post('/friendship_request')
-  create_friendship_request(@Body() createEventDto: EventCreateDto) {
-    return this.eventsService.create(createEventDto, 1);
+  async create_friendship_request(@Body() createEventDto: EventCreateDto, @Res() res: any) {
+    const ret = await this.eventsService.create(createEventDto, 1);
+		if (ret == 2)
+		{
+			res.status(303).json({ message: 'Friendship Request Already Sent' });
+		}
   }
 
   @Post('/channel_join_request')

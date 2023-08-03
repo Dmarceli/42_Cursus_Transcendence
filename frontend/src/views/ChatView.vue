@@ -813,7 +813,11 @@ const addFriend = async (friendId) => {
 			const data = await response.json();
 			getFriends();
 		} else {
-			console.log('Error:', response.status);
+			if (response.status == 303){
+				window.alert('friendship request already sent!')
+			}
+			else
+				console.log('Error:', response.status);
 		}
 	} catch (error) {
 		console.log('Error:', error);
