@@ -14,10 +14,11 @@ export class EventsController {
   @Post('/friendship_request')
   async create_friendship_request(@Body() createEventDto: EventCreateDto, @Res() res: any) {
     const ret = await this.eventsService.create(createEventDto, 1);
-		if (ret == 2)
+		if (ret == "2")
 		{
-			res.status(303).json({ message: 'Friendship Request Already Sent' });
+			return res.status(303).json({ message: 'Friendship Request Already Sent' });
 		}
+    return res.status(200).json({ message: 'Friendship Requested' });
   }
 
   @Post('/channel_join_request')

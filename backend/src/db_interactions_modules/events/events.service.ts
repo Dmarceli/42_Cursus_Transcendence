@@ -24,9 +24,13 @@ export class EventsService {
   async create(createEventDto: EventCreateDto, event_type: number) {
 		const already_requested = await this.eventsRepository.findOne({where: {decider_user:{id: createEventDto.decider_user},requester_user: {id: createEventDto.requester_user}, type:event_type},
       relations: ['requester_user', 'decider_user'],})
-		const already_friends = this.FriendsService.findFriendshipByIDS(createEventDto.decider_user, createEventDto.requester_user)
-      if(already_requested || already_friends)
-        return 2
+		// if(event_type == 1){
+    //   const already_friends = this.FriendsService.findFriendshipByIDS(createEventDto.decider_user, createEventDto.requester_user)
+    //   if(already_friends)
+    //     return "2"
+    // }
+    if(already_requested)
+      return "2"
     console.log(event_type)
         try {
       const AA=await this.eventsRepository.save({

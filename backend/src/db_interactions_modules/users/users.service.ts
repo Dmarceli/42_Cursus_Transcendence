@@ -137,8 +137,10 @@ export class UsersService {
     //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
     // })
      const user = AppService.UsersOnline.find( User_ => User_.user.id === user_id)
-     if(!user)
-       return;
+     if(!user){
+        console.log("FALHOU Notificação", user_id) 
+      return;
+     }
      user.client.emit("notification")
    }
 

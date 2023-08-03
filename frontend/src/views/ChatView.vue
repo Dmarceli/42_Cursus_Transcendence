@@ -811,7 +811,7 @@ const addFriend = async (friendId) => {
 		});
 		if (response.ok) {
 			const data = await response.json();
-			getFriends();
+			//getFriends();
 		} else {
 			if (response.status == 303){
 				window.alert('friendship request already sent!')
