@@ -47,7 +47,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { RouterLink, RouterView, useRoute } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
@@ -267,7 +266,7 @@ if (socket)  {
 			fetchNotifications();
 		});
 	}
-	socket.on('logout', Notification => {
+	  socket.on('logout', Notification => {
 			logout();
 		});
 }

@@ -44,8 +44,8 @@ export class AppService {
   return this.usersService.addUserToLobby(client, server,ChannelList)
  }
 
- async user_to_notify(client: number){
-  return this.usersService.notifyUser(client,AppService.UsersOnline)
+ async user_to_notify(userID: number){
+  return this.usersService.notifyUser(userID,AppService.UsersOnline)
  }
 
 
