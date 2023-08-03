@@ -9,6 +9,7 @@
         <v-icon color="green">mdi-bell</v-icon>
         <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
       </v-btn>
+   		<v-btn @click="logout">Logout</v-btn>
     </nav>
   </header>
   <v-dialog v-model="showNotifications" max-width="400">
@@ -77,6 +78,11 @@ async function decideNotification(NotificationID: number, Decision: boolean) {
   }
 }
 
+function logout() {
+  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  islogged.value = false;
+  window.location.href = '/login';
+}
 
 let socket: Socket | null = null;
 async function setupSocket(token) {
@@ -254,10 +260,16 @@ const fetchNotifications = async () => {
   }
 };
 
-if (socket && islogged.value === true) {
-  socket.on('notification', Notification => {
-    fetchNotifications();
-  });
+if (socket)  {
+	if (islogged.value === true)
+	{
+		socket.on('notification', Notification => {
+			fetchNotifications();
+		});
+	}
+	socket.on('logout', Notification => {
+			logout();
+		});
 }
 
 onBeforeMount(() => {
