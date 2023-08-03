@@ -306,7 +306,9 @@ nav a {
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
 }
-
+.notifications-box{
+  overflow-y: scroll;
+}
 @media (min-width: 1024px) {
   header {
     place-items: center;

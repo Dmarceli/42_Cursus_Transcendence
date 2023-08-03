@@ -871,6 +871,8 @@ socket.on('recMessage', message => {
 
 
 socket.on('notification', Notification => {
+  getUsers();
+  getChannelsJoined();
   fetchFriends();
 });
 
