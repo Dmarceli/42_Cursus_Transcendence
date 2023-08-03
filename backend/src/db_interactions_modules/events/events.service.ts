@@ -22,24 +22,22 @@ export class EventsService {
    ) {}
 
   async create(createEventDto: EventCreateDto, event_type: number) {
-		const already_requested = await this.eventsRepository.findOne({where: {decider_user:{id: createEventDto.decider_user},requester_user: {id: createEventDto.requester_user}, type:event_type},
+		if(event_type == 1){
+    const already_requested = await this.eventsRepository.findOne({where: {decider_user:{id: createEventDto.decider_user},requester_user: {id: createEventDto.requester_user}, type:1},
       relations: ['requester_user', 'decider_user'],})
-		// if(event_type == 1){
-    //   const already_friends = this.FriendsService.findFriendshipByIDS(createEventDto.decider_user, createEventDto.requester_user)
-    //   if(already_friends)
-    //     return "2"
-    // }
-    if(already_requested)
-      return "2"
+      const already_friends = this.FriendsService.findFriendshipByIDS(createEventDto.decider_user, createEventDto.requester_user)
+      if(already_friends || already_requested)
+        return "2"
+    }
     console.log(event_type)
         try {
-      const AA=await this.eventsRepository.save({
+      const event_created=await this.eventsRepository.save({
         ...createEventDto as any,
         time: new Date(),
         type: event_type.valueOf(),
         already_seen: false
       });
-      console.log(AA)
+      //console.log(event_created)
     } catch (error) {
       console.error('Error notifying user:', error);
     }
