@@ -602,8 +602,6 @@
   background-image: url(../src/assets/burguer.svg);
 }
 
-
-
 .channel-name{
   text-align: left;
   font-family: 'Roboto', sans-serif;
@@ -614,6 +612,11 @@
   text-align: center;
   align-items: center;
   margin-left: 5%;
+}
+
+.fightButton
+{
+  padding-right: 15px;
 }
 
 .more-options {

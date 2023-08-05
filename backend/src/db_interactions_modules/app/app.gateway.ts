@@ -74,8 +74,32 @@ import { UsersModule } from '../users/users.module';
     client.emit("PlayerCreated")
   }
 
+  @SubscribeMessage('InviteToGame')
+  handleInviteToGame(client: Socket, opponent_id: number)
+  {
+    console.log("INVITING TO GAME "+opponent_id)
+    const new_opponent = AppService.UsersOnline.find((online) => online.user.id == opponent_id);
+  
+    // let opponent_socket = this.server.sockets.sockets.get(opponent_id);
+    // console.log(this.server.sockets.sockets.entries());
+    // for (const checkSocket in this.server.sockets.sockets)
+    // {
+    //   console.log("Socket is "+checkSocket);
+    // }
+    // console.log("Our socket is "+opponent_socket);
+    // opponent_socket?.emit("NewGameInvite");
+    // Find client id of opponent
+    // Notify other user
+  }
+
+  // @SubscribeMessage('PrivateGame')
+  // handlePrivateGame(client: Socket, payload: PrivateGameDto)
+  // {
+  //   this.gameService.createPrivateGame(client, player1_intra_nick, player2_intra_nick);
+  // }
+
   @SubscribeMessage('AddToLobby')
-  handlAddPlayerToLobby(client: Socket, intra_nick: string) {
+  handleAddPlayerToLobby(client: Socket, intra_nick: string) {
     this.gameService.AddPlayerToLobby(client, intra_nick)
   }
   @SubscribeMessage('PlayerReady')

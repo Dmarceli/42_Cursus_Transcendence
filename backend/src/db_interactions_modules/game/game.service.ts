@@ -6,16 +6,29 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { PlayerPaddle } from './classes/PlayerPaddle';
+import { AppService } from 'src/app.service';
+
+class PrivateGame
+{
+  player1: string
+  player2: string 
+  constructor(player1: string, player2: string,)
+  {
+    this.player1 = player1;
+    this.player2 = player2
+  }
+}
 
 @Injectable()
 export class GameService {
   players: PlayerPaddle[] = []
   lobby: PlayerPaddle[] = []
+  private_games: PrivateGame[] = []
   active_games: Game[] = []
 
   constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>) { }
 
-  async CreatePlayer(playerClient: Socket, nick: string, skin: string)
+  async CreatePlayer(playerClient: Socket, nick: string, skin: string="")
   {
     console.log("Creating new Player " + playerClient + " with intra " + nick + " and skin " + skin)
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
@@ -42,6 +55,13 @@ export class GameService {
       }
       this.players.splice(freePlayerIndex, 1);
     }
+  }
+
+  async createPrivateGame(player1_client: Socket, player1_intra_nick: string, player2_intra_nick: string)
+  {
+    console.log("Creating new Private Game for " + player1_client + " with intra " + player1_intra_nick);
+    await this.CreatePlayer(player1_client, player1_intra_nick);
+    this.private_games.push(new PrivateGame(player1_intra_nick, player2_intra_nick));
   }
 
   // TODO: This could be cheating as a way to change skin.
