@@ -78,16 +78,8 @@ import { UsersModule } from '../users/users.module';
   handleInviteToGame(client: Socket, opponent_id: number)
   {
     console.log("INVITING TO GAME "+opponent_id)
-    const new_opponent = AppService.UsersOnline.find((online) => online.user.id == opponent_id);
-  
-    // let opponent_socket = this.server.sockets.sockets.get(opponent_id);
-    // console.log(this.server.sockets.sockets.entries());
-    // for (const checkSocket in this.server.sockets.sockets)
-    // {
-    //   console.log("Socket is "+checkSocket);
-    // }
-    // console.log("Our socket is "+opponent_socket);
-    // opponent_socket?.emit("NewGameInvite");
+    const opponent = AppService.UsersOnline.find((online) => online.user.id == opponent_id);
+    opponent.client?.emit("NewGameInvite");
     // Find client id of opponent
     // Notify other user
   }

@@ -1,6 +1,6 @@
 <template>
   <div v-if="startmenu" class="start-menu">
-    <StartMenu @player-created="handlePlayerCreated" :intra-nick="users_Name" class="start-menu"></StartMenu>
+    <StartMenu @player-created="handlePlayerCreated" :is-private-game="isPrivateGame" :intra-nick="users_Name" class="start-menu"></StartMenu>
   </div>
   <div v-else-if="playerWon">
     <h1>You Won</h1>
@@ -22,8 +22,11 @@
 <script setup lang="ts">
 import Pong2D from '../components/Pong2D.vue'
 import StartMenu from '../components/StartMenu.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import jwt_decode from 'jwt-decode';
+import type { Socket } from 'socket.io-client';
+import { onBeforeRouteUpdate } from 'vue-router';
+import { onBeforeMount } from 'vue';
 
 let startmenu = ref(true)
 let playerWon = ref(false)
@@ -31,6 +34,8 @@ let playerLost = ref(false)
 let token: string | null = null;
 let decodedToken: TokenType;
 let users_Name = ref("");
+let isPrivateGame = ref(false)
+const socket: Socket | undefined = inject('socket')
 
 interface TokenType
 {
@@ -44,7 +49,11 @@ interface TokenType
   exp: number
 }
 
-onMounted(() => {
+onBeforeMount(() => {
+  
+})
+
+onMounted(async () => {
   console.log('Mounted Game View');
   token = getCookieValueByName('token');
   if (token)
@@ -53,6 +62,11 @@ onMounted(() => {
   playerWon.value=false
   playerLost.value=false
   console.log("users_name "+users_Name)
+  const response = await fetch(process.env.VUE_APP_BACKEND_URL +'/games/private');
+  if (response.ok) {
+    let games = await response.json();
+    console.log(games);
+  }
 })
 
 function handlePlayerCreated()

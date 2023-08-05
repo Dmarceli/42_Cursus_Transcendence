@@ -192,13 +192,14 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 import { ref, inject, onBeforeMount, watch, nextTick } from 'vue';
 import jwt_decode from 'jwt-decode';
 import { Md5 } from 'ts-md5';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from 'vue-router';
 
 library.add(fas)
 
@@ -218,6 +219,7 @@ const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
 let createChannelOptions = ref(null)
+let route = useRouter();
 
 
 let channelName = ref('');
@@ -886,15 +888,14 @@ function inviteToPrivateGame()
     {
       console.log("OTHER USER IS "+usersInChannels.value[id].user_id.nick);
       socket.emit('InviteToGame', usersInChannels.value[id].user_id.id);
-      
     }
   }
   // if (usersInChannels.value.length())
 }
 
-socket.on('NewGameInvite', message => {
+socket.on('NewGameInvite', () => {
   console.log("GOT HERE");
-  console.log(message);
+  route.push('/');
 });
 
 

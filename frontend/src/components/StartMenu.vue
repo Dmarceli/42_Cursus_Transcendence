@@ -1,7 +1,7 @@
 <template>
-  <div v-if="PlayGame">
+  <div v-if="!isPrivate">
     <img src="racketas.svg" alt="" />
-    <v-btn class="play-game" @click="PlayGame = false">Let's Play</v-btn>
+    <v-btn class="play-game" @click="isPrivate = false">Let's Play</v-btn>
     <v-btn class="play-game" @click="instructions = true">How to Play</v-btn>
     <InstructionsPage :dialog="instructions" @close-window="instructions = false" ></InstructionsPage>
   </div>
@@ -19,12 +19,14 @@ import { ref, inject } from 'vue'
 import { Socket } from 'socket.io-client'
 import PaddleCarousel from './PaddleCarousel.vue'
 import InstructionsPage from './InstructionsPage.vue'
+import { onMounted } from 'vue';
 
-let PlayGame = ref(true)
+let isPrivate = ref(false)
 let instructions = ref(false)
 
 interface Props {
   intraNick: string | null
+  isPrivateGame: boolean
 }
 const props = defineProps<Props>()
 
@@ -34,6 +36,11 @@ let joinLobbyView = ref(false)
 let choosePaddle = ref(true)
 
 const socket: Socket | undefined = inject('socket')
+
+onMounted(() => {
+  isPrivate.value = props.isPrivateGame
+})
+
 
 function selectPaddle(paddleSkin: string) {
   console.log(props.intraNick)

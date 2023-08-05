@@ -8,7 +8,7 @@ import { User } from '../users/user.entity';
 import { PlayerPaddle } from './classes/PlayerPaddle';
 import { AppService } from 'src/app.service';
 
-class PrivateGame
+export class PrivateGame
 {
   player1: string
   player2: string 
@@ -27,6 +27,11 @@ export class GameService {
   active_games: Game[] = []
 
   constructor(private readonly gameHistoryService: GameHistoryService, @InjectRepository(User) private userRepository: Repository<User>) { }
+
+  getPrivate()
+  {
+    return this.private_games;
+  }
 
   async CreatePlayer(playerClient: Socket, nick: string, skin: string="")
   {

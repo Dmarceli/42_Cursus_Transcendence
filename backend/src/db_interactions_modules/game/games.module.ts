@@ -4,12 +4,14 @@ import { GameHistoryModule } from '../game_history/game_history.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GameHistory } from '../game_history/game_history.entity';
 import { User } from '../users/user.entity';
+import { GameController } from './game.controller'
 
 @Module({
   imports: [
     GameHistoryModule,
     TypeOrmModule.forFeature([GameHistory, User])
   ],
+  controllers: [GameController],
   providers: [GameService],
   exports: [GameService],
 })
