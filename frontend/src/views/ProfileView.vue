@@ -150,6 +150,7 @@ const nickname = reactive({
 		value => value.length < 20 || 'Nickname too long',
 		value => value.length > 0 || 'Nickname cannot be empty',
 		value => usernameRegex.test(value) || 'Invalid Characters found',
+		value => value !== userProfile.value.intra_nick || 'Nickname cannot be the same as before',
 	],
 });
 

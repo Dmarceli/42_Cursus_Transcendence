@@ -1,5 +1,5 @@
 <template>
-	<v-card width="300" class="mx-auto" elevation="1">
+	<v-card v-if="!doneValidation" width="300" class="mx-auto" elevation="1">
     <v-form fast-fail @submit.prevent>
 			<v-card-title class="py-5 font-weight-black text-center">Welcome to Raquetas!</v-card-title>
 			<v-card-text class="font-weight-regular text-justify" >
@@ -28,8 +28,11 @@
 import { ref, reactive, onBeforeMount } from 'vue';
 import jwt_decode from 'jwt-decode';
 
+const doneValidation = ref(false);
+
 const userData = ref({
 	id: 0,
+	intra_nick: '',
 	nick: '',
 	avatar: '',
 });
@@ -69,11 +72,16 @@ const fetchUserProfile = async () => {
 
 onBeforeMount(() => {
 	fetchUserProfile();
+	if (userData.value.nick === userData.value.intra_nick) {
+		doneValidation.value = false;
+	}
+	else {
+		doneValidation.value = true;
+	}
 });
 
 let token = getCookieValueByName('token');
-const decodedToken = jwt_decode(token);
-console.log(userData.value.avatar);
+// const decodedToken = jwt_decode(token);
 
 const usernameRegex = /^[a-zA-Z0-9._-]{1,20}$/;
 
@@ -86,6 +94,7 @@ const nickname = reactive({
 		value => value.length < 20 || 'Nickname too long',
 		value => value.length > 0 || 'Nickname cannot be empty',
 		value => usernameRegex.test(value) || 'Invalid Characters found',
+		value => value !== userData.value.intra_nick || 'Nickname cannot be the same as your auth login',
 	],
 });
 
@@ -147,9 +156,9 @@ async function Submit() {
       }
   }
   else {
-    console.error('Error reading file');
+    // console.error('Error reading file');
   }
-  closeSettings();
+  doneValidation.value = true;
 }
 
 </script>
