@@ -7,7 +7,6 @@ export class GameController {
 
   @Get("private")
   findAll() : PrivateGame[] {
-    console.log("GOT HERE")
     return this.gameService.getPrivate();
   }
 

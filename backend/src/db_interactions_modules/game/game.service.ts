@@ -21,7 +21,8 @@ export class PrivateGame
 
 @Injectable()
 export class GameService {
-  players: PlayerPaddle[] = []
+  lobbyPlayers: PlayerPaddle[] = []
+  privateGamePlayers: PlayerPaddle[] = []
   lobby: PlayerPaddle[] = []
   private_games: PrivateGame[] = []
   active_games: Game[] = []
@@ -33,39 +34,51 @@ export class GameService {
     return this.private_games;
   }
 
-  async CreatePlayer(playerClient: Socket, nick: string, skin: string="")
+  async CreateLobbyPlayer(playerClient: Socket, nick: string, skin: string="")
   {
-    console.log("Creating new Player " + playerClient + " with intra " + nick + " and skin " + skin)
+    console.log("Creating new Lobby Player " + playerClient + " with intra " + nick + " and skin " + skin)
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
     let newPlayer = new PlayerPaddle(playerClient, user, skin);
-    this.players.push(newPlayer);
+    this.lobbyPlayers.push(newPlayer);
   }
 
   AddPlayerToLobby(playerClient: Socket, nick: string)
   {
-    const freePlayerIndex = this.players.findIndex(player => player.user.intra_nick === nick)
+    const freePlayerIndex = this.lobbyPlayers.findIndex(player => player.user.intra_nick === nick)
     if (freePlayerIndex !== -1) {
-      if (this.players[freePlayerIndex].client != playerClient)
+      if (this.lobbyPlayers[freePlayerIndex].client != playerClient)
       {
-        this.players[freePlayerIndex].client = playerClient
+        this.lobbyPlayers[freePlayerIndex].client = playerClient
       }
-      if (this.ReconnectedPlayer(this.players[freePlayerIndex], nick))
+      if (this.ReconnectedPlayer(this.lobbyPlayers[freePlayerIndex], nick))
       {
         console.log("Reconnected "+nick)
       }
       else
       {
         console.log("Joined lobby "+nick)
-        this.lobby.push(this.players[freePlayerIndex])
+        this.lobby.push(this.lobbyPlayers[freePlayerIndex])
       }
-      this.players.splice(freePlayerIndex, 1);
+      this.lobbyPlayers.splice(freePlayerIndex, 1);
     }
+  }
+
+  IsInPrivateGame(intra_nick: string)
+  {
+    return (this.private_games.some(private_game => private_game.player1 === intra_nick || private_game.player2 === intra_nick));
+  }
+
+  async CreatePrivateGamePlayer(playerClient: Socket, nick: string, skin: string="")
+  {
+    console.log("Creating new Private Game Player " + playerClient + " with intra " + nick + " and skin " + skin)
+    const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
+    let newPlayer = new PlayerPaddle(playerClient, user, skin);
+    this.privateGamePlayers.push(newPlayer);
   }
 
   async createPrivateGame(player1_client: Socket, player1_intra_nick: string, player2_intra_nick: string)
   {
     console.log("Creating new Private Game for " + player1_client + " with intra " + player1_intra_nick);
-    await this.CreatePlayer(player1_client, player1_intra_nick);
     this.private_games.push(new PrivateGame(player1_intra_nick, player2_intra_nick));
   }
 

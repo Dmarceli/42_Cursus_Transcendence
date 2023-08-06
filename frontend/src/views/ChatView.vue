@@ -887,7 +887,10 @@ function inviteToPrivateGame()
     if (usersInChannels.value[id].user_id.id != userId)
     {
       console.log("OTHER USER IS "+usersInChannels.value[id].user_id.nick);
-      socket.emit('InviteToGame', usersInChannels.value[id].user_id.id);
+      // socket.emit('InviteToGame', usersInChannels.value[id].user_id.id);
+      let toSend = { player1_intra_nick: users_Name,  player2_intra_nick: usersInChannels.value[id].user_id.intra_nick, opponent_id: parseInt(usersInChannels.value[id].user_id.id)};
+      console.log(toSend);
+      socket.emit('PrivateGame', toSend);
     }
   }
   // if (usersInChannels.value.length())

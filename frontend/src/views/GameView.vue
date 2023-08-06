@@ -15,7 +15,7 @@
     </v-btn>
 </div>
   <div v-else class="board">
-    <Pong2D :intra-nick="users_Name" @player-won="playerWon = true" @player-lost="playerLost = true"/>
+    <Pong2D :is-private-game="isPrivateGame" :intra-nick="users_Name" @player-won="playerWon = true" @player-lost="playerLost = true"/>
   </div>
 </template>
 
@@ -49,11 +49,29 @@ interface TokenType
   exp: number
 }
 
-onBeforeMount(() => {
-  
+onBeforeMount(async () => {
+  const response = await fetch(process.env.VUE_APP_BACKEND_URL +'/games/private');
+  if (response.ok) {
+    let games = await response.json();
+    // console.log("GAMES ARE "+games);
+    let existing_private_game = games.find((privateGame: any) => {
+      console.log(privateGame.player1)
+      console.log(privateGame.player2)
+      return (privateGame.player1 == users_Name.value || privateGame.player2 == users_Name.value)
+    });
+    console.log("EXISTING PRIVATE GAME "+existing_private_game);
+    if (!existing_private_game)
+    {
+      isPrivateGame.value = false;
+      return ;
+    }
+    console.log("PRIVATE GAME IS TRUE")
+    isPrivateGame.value = true;
+    return ;
+  }
 })
 
-onMounted(async () => {
+onMounted(() => {
   console.log('Mounted Game View');
   token = getCookieValueByName('token');
   if (token)
@@ -62,11 +80,6 @@ onMounted(async () => {
   playerWon.value=false
   playerLost.value=false
   console.log("users_name "+users_Name)
-  const response = await fetch(process.env.VUE_APP_BACKEND_URL +'/games/private');
-  if (response.ok) {
-    let games = await response.json();
-    console.log(games);
-  }
 })
 
 function handlePlayerCreated()

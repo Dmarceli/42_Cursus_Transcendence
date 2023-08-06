@@ -1,7 +1,7 @@
 <template>
-  <div v-if="!isPrivate">
+  <div v-if="isPrivate == false">
     <img src="racketas.svg" alt="" />
-    <v-btn class="play-game" @click="isPrivate = false">Let's Play</v-btn>
+    <v-btn class="play-game" @click="isPrivate = true">Let's Play</v-btn>
     <v-btn class="play-game" @click="instructions = true">How to Play</v-btn>
     <InstructionsPage :dialog="instructions" @close-window="instructions = false" ></InstructionsPage>
   </div>
@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject } from 'vue'
+import { ref, inject, watch } from 'vue'
 import { Socket } from 'socket.io-client'
 import PaddleCarousel from './PaddleCarousel.vue'
 import InstructionsPage from './InstructionsPage.vue'
@@ -38,9 +38,13 @@ let choosePaddle = ref(true)
 const socket: Socket | undefined = inject('socket')
 
 onMounted(() => {
-  isPrivate.value = props.isPrivateGame
+  isPrivate.value = props.isPrivateGame;
 })
 
+watch(() => props.isPrivateGame, (newValue, oldValue) => {
+      console.log("PRIVATE GAME CHANGED FROM "+oldValue+" to "+newValue);
+      isPrivate.value = props.isPrivateGame;
+    });
 
 function selectPaddle(paddleSkin: string) {
   console.log(props.intraNick)

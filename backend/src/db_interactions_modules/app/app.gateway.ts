@@ -14,7 +14,7 @@ import { UsePipes, ValidationPipe, UseGuards, Res } from '@nestjs/common';
 import { GameService } from '../game/game.service';
 import { UsersService } from '../users/users.service';
 import { UsersModule } from '../users/users.module';
-
+import { PrivateGameDto } from '../game/dtos/game.dto';
 
 @WebSocketGateway({
   cors: {
@@ -64,13 +64,14 @@ import { UsersModule } from '../users/users.module';
   }
  }
 
-
-
 // Game Service
   @SubscribeMessage('PlayerSelectedPaddle')
   handlePlayerSelectedPaddle(client: Socket, info: any) {
     let [intra_nick, paddleSkin] = info;
-    this.gameService.CreatePlayer(client, intra_nick, paddleSkin);
+    if (this.gameService.IsInPrivateGame(intra_nick))
+      this.gameService.CreatePrivateGamePlayer(client, intra_nick, paddleSkin);
+    else
+      this.gameService.CreateLobbyPlayer(client, intra_nick, paddleSkin);
     client.emit("PlayerCreated")
   }
 
@@ -78,17 +79,20 @@ import { UsersModule } from '../users/users.module';
   handleInviteToGame(client: Socket, opponent_id: number)
   {
     console.log("INVITING TO GAME "+opponent_id)
-    const opponent = AppService.UsersOnline.find((online) => online.user.id == opponent_id);
-    opponent.client?.emit("NewGameInvite");
+    // const opponent = AppService.UsersOnline.find((online) => online.user.id == opponent_id);
+    // opponent.client?.emit("NewGameInvite");
     // Find client id of opponent
     // Notify other user
   }
 
-  // @SubscribeMessage('PrivateGame')
-  // handlePrivateGame(client: Socket, payload: PrivateGameDto)
-  // {
-  //   this.gameService.createPrivateGame(client, player1_intra_nick, player2_intra_nick);
-  // }
+  @SubscribeMessage('PrivateGame')
+  handlePrivateGame(client: Socket, privateGame: PrivateGameDto)
+  {
+    console.log(privateGame);
+    this.gameService.createPrivateGame(client, privateGame.player1_intra_nick, privateGame.player2_intra_nick);
+    const opponent = AppService.UsersOnline.find((online) => online.user.id == privateGame.opponent_id);
+    opponent.client?.emit("NewGameInvite");
+  }
 
   @SubscribeMessage('AddToLobby')
   handleAddPlayerToLobby(client: Socket, intra_nick: string) {
