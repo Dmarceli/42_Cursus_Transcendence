@@ -1,4 +1,7 @@
 <template>
+	<!-- <div>
+		<userValidation></userValidation>
+	</div> -->
   <header v-if="islogged">
     <nav>
       <RouterLink to="/">Pong</RouterLink>
@@ -43,6 +46,7 @@ import { RouterLink, RouterView, useRoute } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
 import { ref, provide, onBeforeMount, computed} from 'vue'
+import userValidation from './components/UserValidation.vue'
 
 const islogged = ref(false);
 const route = useRoute();
