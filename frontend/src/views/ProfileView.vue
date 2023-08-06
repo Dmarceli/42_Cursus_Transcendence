@@ -55,11 +55,6 @@ const route = useRoute();
 
 const fetchUserProfile = async () => {
 	try {
-		if (route.name === 'myProfile') {
-			useNick = userData.nick;
-		} else {
-			useNick = route.params.nick;
-		}
 		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
 		const response = await fetch(url, {
       headers: {
@@ -145,7 +140,6 @@ async function saveSettings() {
   else {
     console.error('Error reading file');
   }
-  //send it to backend here
   closeSettings();
 }
 
@@ -187,16 +181,6 @@ const handleNewAvatar = async (event: Event) => {
     }
   }
 }
-
-
-// watch(() => userProfile.value.nickname, (newNickname, oldNickname) => {
-//   lastGames.value.forEach((game) => {
-//     if (game.user.nick === oldNickname) {
-//       game.user.nick = newNickname;
-//     }
-//   });
-// });
-
 
 </script>
 

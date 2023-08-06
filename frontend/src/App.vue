@@ -1,7 +1,7 @@
 <template>
-	<!-- <div>
+	<div>
 		<userValidation></userValidation>
-	</div> -->
+	</div>
   <header v-if="islogged">
     <nav>
       <RouterLink to="/">Pong</RouterLink>
