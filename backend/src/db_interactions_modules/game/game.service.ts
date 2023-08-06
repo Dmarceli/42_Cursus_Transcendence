@@ -78,7 +78,17 @@ export class GameService {
 
   async createPrivateGame(player1_client: Socket, player1_intra_nick: string, player2_intra_nick: string)
   {
-    console.log("Creating new Private Game for " + player1_client + " with intra " + player1_intra_nick);
+    console.log("Creating new Private Game for " + player1_intra_nick + " and " + player2_intra_nick);
+    if (this.IsInPrivateGame(player1_intra_nick))
+    {
+      console.log("Already existing game for player "+player1_intra_nick)
+      return ;
+    }
+    if (this.IsInPrivateGame(player2_intra_nick))
+    {
+      console.log("Already existing game for player "+player2_intra_nick)
+      return ;
+    }
     this.private_games.push(new PrivateGame(player1_intra_nick, player2_intra_nick));
   }
 
@@ -178,6 +188,7 @@ export class GameService {
 
   UpdateAllPositions() {
     setInterval(() => {
+      this.addPrivateGames();
       this.addLobbyGames();
       this.removeFinishedGames();
       for (let game of this.active_games) {
@@ -199,6 +210,36 @@ export class GameService {
     }, 15
     )
   }
+
+  addPrivateGames()
+  {
+    for (let game_id in this.private_games)
+    {
+      // console.log("for real"+this.privateGamePlayers.length)
+      const indexPlayer1 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === this.private_games[game_id].player1);
+      // console.log("Player 1 "+indexPlayer1);
+
+      const indexPlayer2 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === this.private_games[game_id].player2);
+      // console.log("Player 2 "+indexPlayer2);
+      if (indexPlayer1 !== -1 && indexPlayer2 !== -1)
+      {
+        console.log("ADDING PRIVATE GAME for player "+this.private_games[game_id].player1+" and "+this.private_games[game_id].player2)
+        let game = new Game(this.privateGamePlayers[indexPlayer1], this.privateGamePlayers[indexPlayer2], this.gameHistoryService, this.userRepository)
+        this.active_games.push(game)
+        if (indexPlayer1 > indexPlayer2)
+        {
+          this.privateGamePlayers.splice(indexPlayer1, 1);
+          this.privateGamePlayers.splice(indexPlayer2, 1);
+        }
+        else
+        {
+          this.privateGamePlayers.splice(indexPlayer2, 1);
+          this.privateGamePlayers.splice(indexPlayer1, 1);
+        }
+      }
+    }
+  }
+
   addLobbyGames() {
     if (this.lobby.length < 2)
       return
