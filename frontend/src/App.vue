@@ -1,8 +1,8 @@
 <template>
-	<div>
-		<userValidation></userValidation>
-	</div>
   <header v-if="islogged">
+    <div v-if="first_login_modal">
+      <userValidation></userValidation>
+    </div>
     <nav>
       <RouterLink to="/">Pong</RouterLink>
       <RouterLink to="/chat">Chat</RouterLink>
@@ -49,6 +49,7 @@ import { ref, provide, onBeforeMount, computed} from 'vue'
 import userValidation from './components/UserValidation.vue'
 
 const islogged = ref(false);
+const first_login_modal = ref(false);
 const route = useRoute();
 const isGameRoute = computed(() => route.path === '/')
 
@@ -112,6 +113,7 @@ async function verifyCode(token: string, code: any) {
       if (new_code) {
         console.log('Verification successful', new_code);
         document.cookie = `token=${new_code.code}`
+        first_login_modal.value = await fetch_logged_previous()
         islogged.value = true;
       } else {
         console.log('Invalid code');
@@ -119,6 +121,7 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
+      first_login_modal.value = await fetch_logged_previous()
 		socket = io(process.env.VUE_APP_BACKEND_URL,{
         auth: {
           token: token
@@ -157,6 +160,29 @@ async function authtempBYPASS(idvalue: number) {
     console.log('Error:', error);
     return false;
   }
+}
+
+
+  async function fetch_logged_previous(){
+	try {
+    let token = getCookieValueByName('token');
+		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
+		const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.is_first_login
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching User Profile data:', response.statusText);
+    }
+	} catch (error) {
+		console.error('Error fetching User Profile data', error);
+	}
 }
 
 
@@ -237,7 +263,9 @@ if (socket && islogged.value === true) {
 }
 
 onBeforeMount(() => {
-  fetchNotifications();
+  let token = getCookieValueByName('token');
+  if(token)
+    fetchNotifications();
 });
 </script>
 

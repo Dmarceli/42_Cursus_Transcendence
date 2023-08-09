@@ -72,7 +72,8 @@ const fetchUserProfile = async () => {
 }
 
 onBeforeMount(() => {
-	fetchUserProfile();
+  if(token)
+	  fetchUserProfile();
 	if (userData.value.nick === userData.value.intra_nick) {
 		doneValidation.value = false;
 	}
