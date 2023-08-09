@@ -61,6 +61,7 @@ const fetchUserProfile = async () => {
     if (response.ok) {
       const data = await response.json();
       userData.value = data;
+      console.log(data.is_first_login)
     } else {
       // Handle the case when the request fails
       console.error('Error fetching User Profile data:', response.statusText);

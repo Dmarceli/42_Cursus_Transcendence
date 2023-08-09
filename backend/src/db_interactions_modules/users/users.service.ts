@@ -161,6 +161,7 @@ export class UsersService {
 		 const user = await this.findById(userId);
      this.updateAvatar(user, file);
      this.updateNick(user, nickUpdate);
+     user.is_first_login= false
      await this.userRepository.save(user);
       return {
         status: 'success',
