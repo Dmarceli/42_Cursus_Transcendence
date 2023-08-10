@@ -10,7 +10,7 @@ OnGatewayDisconnect,
 import { Socket, Server } from 'socket.io';
 import { AppService } from '../../app.service';
 import { CreateMsgDto } from '../messages/dtos/message.dto';
-import { UsePipes, ValidationPipe, UseGuards } from '@nestjs/common';
+import { UsePipes, ValidationPipe, UseGuards, Res } from '@nestjs/common';
 import { GameService } from '../game/game.service';
 import { UsersService } from '../users/users.service';
 import { UsersModule } from '../users/users.module';
@@ -52,12 +52,13 @@ import { UsersModule } from '../users/users.module';
  }
  
  //1º step após conexão
- async handleConnection(client: Socket, server: Server) {
+ async handleConnection(client: Socket, server: Server, @Res() res: any) {
   console.log(`Connected ${client.id}`);
   let Channel_List:string [] = [];
   const authorization = await this.appService.add_user_to_lobby(client, server,Channel_List)
   client.join(Channel_List)
   if(!authorization){
+		client.emit('logout')
     client.disconnect();
     console.log(`Discnnected Auth missing -  ${client.id}`)
   }

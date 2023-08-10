@@ -12,14 +12,16 @@ import { MessagesModule } from '../messages/messages.module';
 import { MessagesService } from '../messages/messages.service';
 import { Messages } from '../messages/messages.entity';
 import { Channel } from '../channels/channel.entity';
+import { FriendModule } from '../relations/friend/friend.module';
+import { friendService } from '../relations/friend/friend.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Events, Channel,User, Messages]),
     UsersModule,
     MessagesModule,
-   
-],
+    forwardRef(() => FriendModule),
+  ],
   controllers: [EventsController],
   providers: [EventsService,AppService],
   exports: [EventsService]

@@ -32,6 +32,16 @@ export class friendService {
   return await this.friendRepository.find({relations: ['user1Id', 'user2Id' ], where: {is_block: false}});
 }
 
+async findFriendshipByIDS(id1: number,id2: number){
+  const friendship = await this.friendRepository.findOne({
+    where: [{ user1Id: {id: id1}, user2Id: {id: id2}}, 
+           { user1Id: {id: id2}, user2Id: {id: id1}}
+          ], 
+    relations:['user1Id', 'user2Id']
+	});
+	return friendship ? true : false;
+}
+
 async findByUserId(userId: number) {
   let friendList: Array<User> = [];
   const friendship = await this.friendRepository.find({
@@ -65,7 +75,7 @@ async delete_friend(id1: number,id2: number) {
            { user1Id: {id: id2}, user2Id: {id: id1}}
           ], 
     relations:['user1Id', 'user2Id']
-});
+	});
   await this.friendRepository.remove(friendship)
   return friendship
 }
