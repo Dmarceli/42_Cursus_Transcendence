@@ -8,6 +8,7 @@ import { UsersService } from '../users/users.service';
 import { friendService } from '../relations/friend/friend.service';
 import { AppService } from 'src/app.service';
 import { CreateFriendDto } from '../relations/friend/dtos/friend.dto';
+import { GameService } from '../game/game.service';
 
 @Injectable()
 export class EventsService {
@@ -18,6 +19,7 @@ export class EventsService {
     private usersService: UsersService,
     private FriendsService: friendService,
     private appService: AppService,
+    private gameService: GameService
  
    ) {}
 
@@ -57,18 +59,30 @@ export class EventsService {
    
     if(decision_ == 'true' && event){
       if (event.type == 1){
-        const newfriend: CreateFriendDto = {
-          user1Id : event.decider_user.id , 
-          user2Id : event.requester_user.id
-        }
-        await this.FriendsService.createfriend(newfriend);
-        this.appService.user_to_notify(event.decider_user.id)
-        this.appService.user_to_notify(event.requester_user.id)
-      }        
+        await this.createFriendShip(event)
+      } else if (event.type == 2)
+      {
+        this.createGame(event)
+      }
+      this.appService.user_to_notify(event.decider_user.id)
+      this.appService.user_to_notify(event.requester_user.id)
     } 
     await this.eventsRepository.delete(event);
   }
 
+  async createFriendShip(event)
+  {
+    const newfriend: CreateFriendDto = {
+      user1Id : event.decider_user.id , 
+      user2Id : event.requester_user.id
+    }
+    await this.FriendsService.createfriend(newfriend);
+  }
+
+  createGame(event)
+  {
+    this.gameService.createPrivateGame(event.decider_user.intra_nick, event.requester_user.intra_nick)
+  }
 
   async findAll_for_user(user_id :number) {
     const user = await this.UserRepository.findOneBy({id: user_id})

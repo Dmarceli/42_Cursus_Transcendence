@@ -21,7 +21,7 @@
         <div v-if="notifications.length > 0" class="notifications-box">
           <div v-for="notification in notifications" :key="notification.id" class="notification-item">
             {{ notification.message }}
-            <div v-if="notification.type">
+            <div v-if="notification.type > 0">
               <v-btn @click="decideNotification(notification.id, true)">
                 Accept
               </v-btn>
@@ -60,7 +60,7 @@ let routerKey = ref(0)
 async function decideNotification(NotificationID: number, Decision: boolean) {
   let token = getCookieValueByName('token');
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/events/event_decision/' + NotificationID + '/' + Decision ;
+    let url = process.env.VUE_APP_BACKEND_URL + '/events/event_decision/'+ NotificationID + '/' + Decision ;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -276,8 +276,7 @@ onBeforeMount(() => {
   fetchNotifications();
 });
 
-socket.on('NewGameInvite', async () => {
-  console.log('GOT HERE')
+socket.on('StartPaddleSelection', async () => {
   await nextTick()
   if (router.currentRoute.value.path !== '/') {
     router.push('/')

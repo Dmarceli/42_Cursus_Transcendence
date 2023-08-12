@@ -14,16 +14,20 @@ import { Messages } from '../messages/messages.entity';
 import { Channel } from '../channels/channel.entity';
 import { FriendModule } from '../relations/friend/friend.module';
 import { friendService } from '../relations/friend/friend.service';
+import { GameService } from '../game/game.service';
+import { GameHistoryModule } from '../game_history/game_history.module';
+
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Events, Channel,User, Messages]),
     UsersModule,
     MessagesModule,
+    GameHistoryModule,
     forwardRef(() => FriendModule),
   ],
   controllers: [EventsController],
-  providers: [EventsService,AppService],
+  providers: [EventsService,AppService, GameService],
   exports: [EventsService]
 })
 export class EventsModule {}

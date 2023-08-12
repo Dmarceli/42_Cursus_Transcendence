@@ -76,7 +76,7 @@ export class GameService {
     this.privateGamePlayers.push(newPlayer);
   }
 
-  async createPrivateGame(player1_client: Socket, player1_intra_nick: string, player2_intra_nick: string)
+  async createPrivateGame(player1_intra_nick: string, player2_intra_nick: string)
   {
     console.log("Creating new Private Game for " + player1_intra_nick + " and " + player2_intra_nick);
     if (this.IsInPrivateGame(player1_intra_nick))
@@ -90,6 +90,11 @@ export class GameService {
       return ;
     }
     this.private_games.push(new PrivateGame(player1_intra_nick, player2_intra_nick));
+    const player1User = AppService.UsersOnline.find((online) => online.user.intra_nick == player1_intra_nick);
+    const player2User = AppService.UsersOnline.find((online) => online.user.intra_nick == player2_intra_nick);
+    player1User.client?.emit("StartPaddleSelection");
+    player2User.client?.emit("StartPaddleSelection");
+    
   }
 
   // TODO: This could be cheating as a way to change skin.
