@@ -39,6 +39,7 @@ const socket: Socket | undefined = inject('socket')
 
 onMounted(() => {
   isPrivate.value = props.isPrivateGame;
+  console.log("TRYING TO MOUNT MENU"+isPrivate.value)
 })
 
 watch(() => props.isPrivateGame, (newValue, oldValue) => {

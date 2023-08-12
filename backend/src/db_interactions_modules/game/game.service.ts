@@ -211,19 +211,15 @@ export class GameService {
     )
   }
 
-  addPrivateGames()
+  PrivateGameStillNotAdded(private_game: PrivateGame)
   {
-    for (let game_id in this.private_games)
-    {
-      // console.log("for real"+this.privateGamePlayers.length)
-      const indexPlayer1 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === this.private_games[game_id].player1);
-      // console.log("Player 1 "+indexPlayer1);
-
-      const indexPlayer2 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === this.private_games[game_id].player2);
-      // console.log("Player 2 "+indexPlayer2);
+    if (!this.privateGamePlayers)
+      return true;
+      const indexPlayer1 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player1);
+      const indexPlayer2 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player2);
       if (indexPlayer1 !== -1 && indexPlayer2 !== -1)
       {
-        console.log("ADDING PRIVATE GAME for player "+this.private_games[game_id].player1+" and "+this.private_games[game_id].player2)
+        console.log("ADDING PRIVATE GAME for player "+private_game.player1+" and "+private_game.player2)
         let game = new Game(this.privateGamePlayers[indexPlayer1], this.privateGamePlayers[indexPlayer2], this.gameHistoryService, this.userRepository)
         this.active_games.push(game)
         if (indexPlayer1 > indexPlayer2)
@@ -236,8 +232,15 @@ export class GameService {
           this.privateGamePlayers.splice(indexPlayer2, 1);
           this.privateGamePlayers.splice(indexPlayer1, 1);
         }
+        return false;
       }
-    }
+      return true;
+  }
+
+  addPrivateGames()
+  {
+    let updated_private_games = this.private_games.filter(this.PrivateGameStillNotAdded.bind(this))
+    this.private_games = updated_private_games
   }
 
   addLobbyGames() {

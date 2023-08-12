@@ -217,7 +217,6 @@ import { Md5 } from 'ts-md5';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
-import { useRouter } from 'vue-router';
 
 library.add(fas)
 
@@ -237,7 +236,6 @@ const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
 let createChannelOptions = ref(null);
-let route = useRouter();
 
 
 let channelName = ref('');
@@ -892,7 +890,7 @@ socket.on('notification', Notification => {
 });
 
 watch(messages, () => {
-  scrollToBottom()
+  scrollToBottom();
 })
 
 function inviteToPrivateGame() {
@@ -914,10 +912,6 @@ function inviteToPrivateGame() {
   // if (usersInChannels.value.length())
 }
 
-socket.on('NewGameInvite', () => {
-  console.log('GOT HERE')
-  route.push('/')
-})
 </script>
 
 

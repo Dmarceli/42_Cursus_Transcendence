@@ -151,10 +151,10 @@ export class Game {
     this.handleGameContinue()
   }
   isGameFinished() {
-    return (this.score.player1 > 4 || this.score.player2 > 4)
+    return (this.score.player1 > 2 || this.score.player2 > 2)
   }
   async handleFinishGame() {
-    let winningPlayer = this.score.player1 > 4 ? this.playerPaddle1 : this.playerPaddle2;
+    let winningPlayer = this.score.player1 > this.score.player2 ? this.playerPaddle1 : this.playerPaddle2;
     let losingPlayer = winningPlayer == this.playerPaddle1 ? this.playerPaddle2 : this.playerPaddle1;
     let losingScore = this.score.player1 < this.score.player2 ? this.score.player1 : this.score.player2
     this.finish(winningPlayer, losingPlayer, losingScore)

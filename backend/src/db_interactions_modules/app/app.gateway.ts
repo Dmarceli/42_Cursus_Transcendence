@@ -91,6 +91,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
     console.log(privateGame);
     this.gameService.createPrivateGame(client, privateGame.player1_intra_nick, privateGame.player2_intra_nick);
     const opponent = AppService.UsersOnline.find((online) => online.user.id == privateGame.opponent_id);
+    client?.emit("NewGameInvite");
     opponent.client?.emit("NewGameInvite");
   }
 

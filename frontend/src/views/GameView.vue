@@ -4,13 +4,13 @@
   </div>
   <div v-else-if="playerWon">
     <h1>You Won</h1>
-    <v-btn @click="startmenu=true">
+    <v-btn @click="ResetView">
       Start Menu
     </v-btn>
   </div>
   <div v-else-if="playerLost">
     <h1>You Lost</h1>
-    <v-btn @click="startmenu=true">
+    <v-btn @click="ResetView">
       Start Menu
     </v-btn>
 </div>
@@ -25,7 +25,6 @@ import StartMenu from '../components/StartMenu.vue'
 import { ref, onMounted, inject } from 'vue'
 import jwt_decode from 'jwt-decode';
 import type { Socket } from 'socket.io-client';
-import { onBeforeRouteUpdate } from 'vue-router';
 import { onBeforeMount } from 'vue';
 
 let startmenu = ref(true)
@@ -36,6 +35,11 @@ let decodedToken: TokenType;
 let users_Name = ref("");
 let isPrivateGame = ref(false)
 const socket: Socket | undefined = inject('socket')
+
+interface Props {
+  id: number
+}
+const props = defineProps<Props>()
 
 interface TokenType
 {
@@ -53,15 +57,16 @@ onBeforeMount(async () => {
   const response = await fetch(process.env.VUE_APP_BACKEND_URL +'/games/private');
   if (response.ok) {
     let games = await response.json();
-    // console.log("GAMES ARE "+games);
+    console.log("GAMES ARE "+games);
     let existing_private_game = games.find((privateGame: any) => {
-      console.log(privateGame.player1)
-      console.log(privateGame.player2)
+      console.log("GAME P1 is "+privateGame.player1)
+      console.log("GAME P2 is "+privateGame.player2)
       return (privateGame.player1 == users_Name.value || privateGame.player2 == users_Name.value)
     });
     console.log("EXISTING PRIVATE GAME "+existing_private_game);
     if (!existing_private_game)
     {
+      console.log("PRIVATE GAME IS FALSE")
       isPrivateGame.value = false;
       return ;
     }
@@ -90,6 +95,13 @@ function handlePlayerCreated()
 
 }
 
+function ResetView()
+{
+  startmenu.value=true
+  isPrivateGame.value=false
+  playerWon.value=false
+  playerLost.value=false
+}
 
 function getCookieValueByName(name: any) {
   const cookies = document.cookie.split(';');

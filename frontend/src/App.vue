@@ -39,7 +39,7 @@
     </v-card>
   </v-dialog>
   <div v-if="islogged" :class="{'game-view': isGameRoute}">
-    <RouterView />
+    <RouterView :key="routerKey"/>
   </div>
   <div v-else>
     <Login @clicked42="login42" @clickedgoogle="loginGoogle" @id_to_login="executeLoginwithId" />
@@ -47,14 +47,15 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink, RouterView, useRoute } from 'vue-router';
+import { RouterLink, RouterView, routerKey, useRoute } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
-import { ref, provide, inject, onBeforeMount, computed } from 'vue'
+import { ref, provide, inject, onBeforeMount, computed, nextTick } from 'vue'
+import router from './router';
 
 const islogged = ref(false);
-const route = useRoute();
-const isGameRoute = computed(() => route.path === '/')
+const isGameRoute = computed(() => router.currentRoute.value.path === '/')
+let routerKey = ref(0)
 
 async function decideNotification(NotificationID: number, Decision: boolean) {
   let token = getCookieValueByName('token');
@@ -274,6 +275,16 @@ if (socket)  {
 onBeforeMount(() => {
   fetchNotifications();
 });
+
+socket.on('NewGameInvite', async () => {
+  console.log('GOT HERE')
+  await nextTick()
+  if (router.currentRoute.value.path !== '/') {
+    router.push('/')
+  }
+  routerKey.value++
+})
+
 </script>
 
 <style scoped>
