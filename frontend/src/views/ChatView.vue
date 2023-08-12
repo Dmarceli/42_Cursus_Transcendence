@@ -1,14 +1,11 @@
 <template>
   <div class="Chat">
-    <div class="channels-list" :class="{ collapsed: !showSideInfo }">
+    <div class="channels-list" :class="{ 'collapsed': !showSideInfo }">
       <div v-if="side_info === 0" class="convo-list-container">
         <div class="list-header">Conversations</div>
-        <div
-          v-for="joinedchannel in joinedchannels"
-          :key="joinedchannel.id"
-          :class="['channel', { selected: joinedchannel.channel_id.id === selected_channel }]"
-          @click="chooseChannel(joinedchannel.channel_id.id)"
-        >
+        <div v-for="joinedchannel in joinedchannels" :key="joinedchannel.id"
+          :class="['channel', { 'selected': joinedchannel.channel_id.id === selected_channel }]"
+          @click="chooseChannel(joinedchannel.channel_id.id)">
           {{ getChannelName(joinedchannel.channel_id.id) }}
           <div class="unread-messages" v-if="unreadMessages[joinedchannel.channel_id.id] > 0">
             {{ unreadMessages[joinedchannel.channel_id.id] }}
@@ -20,10 +17,10 @@
         <div v-for="user_friend in User_Friends" :key="user_friend.id" class="tooltip">
           <div class="user">
             <span class="tooltiptext">
-              Nickname: {{ user_friend.nick }}<br />
-              Intra Nick: {{ user_friend.intra_nick }}<br />
-              Games Won: {{ user_friend.won_games }}<br />
-              Games Lost: {{ user_friend.lost_games }}<br />
+              Nickname: {{ user_friend.nick }}<br>
+              Intra Nick: {{ user_friend.intra_nick }}<br>
+              Games Won: {{ user_friend.won_games }}<br>
+              Games Lost: {{ user_friend.lost_games }}<br>
             </span>
             {{ user_friend.nick }}
             <button class="friend-remove" @click="removeFriend(user_friend)"></button>
@@ -36,53 +33,44 @@
             <div class="modal-header">
               <span class="close" @click="closeModal()">&times;</span>
               <h1>New Message</h1>
-              <button
-                class="next"
-                @click="
-                  selectedUsers.length === 1
-                    ? Dmessage(selectedUsers[0])
-                    : (createChannelOptions = true)
-                "
-              >
-                Next
-              </button>
+              <button class="next"
+                @click="selectedUsers.length === 1 ? Dmessage(selectedUsers[0]) : createChannelOptions = true">Next</button>
             </div>
-            <h3 style="text-align: center">Selected Users</h3>
-
-            <select
-              class="invitedUsersList"
-              id="inviteUser"
-              name="inviteUser"
-              multiple
-              @mousedown="toggleOptionSelection($event)"
-            >
-              <option
-                v-for="user in users"
-                :key="user.id"
-                :value="user.id"
-                :selected="isSelectedUser(user.id)"
-                class="user_options"
-              >
+            <h3 style="text-align: center;">Selected Users</h3>
+            <select class="invitedUsersList" id="inviteUser" name="inviteUser" multiple
+              @mousedown="toggleOptionSelection($event)">
+              <option v-for="user in users" :key="user.id" :value="user.id" :selected="isSelectedUser(user.id)"
+                class="user_options">
                 {{ user.intra_nick }}
               </option>
             </select>
           </div>
         </div>
-        <div v-if="showModal && createChannelOptions" class="modal">
-          <div class="modal-content">
-            <span class="close" @click="closeModal()">&times;</span>
-            <label for="channelName">Channel Name:</label>
-            <input class="input-field" type="text" id="channelName" name="channelName" />
-            <label for="channelName">Password:</label>
-            <input
-              class="input-field"
-              placeholder="(optional)"
-              type="text"
-              id="channelPassword"
-              name="channelPassword"
-            />
-            <button @click="createChannel()">Create</button>
-          </div>
+        <div v-if="showModal && createChannelOptions">
+          <v-dialog v-model="createChannelOptions" persistent max-width="400px">
+            <v-card>
+              <v-card-title>
+                <span class="close" @click="closeModal">&times;</span>
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col cols="12">
+                      <v-text-field v-model="channelName" label="Channel Name"></v-text-field>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col cols="12">
+                      <v-text-field v-model="channelPassword" label="Password" placeholder="(optional)"></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn color="primary" @click="createChannel">Create</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </div>
       </div>
       <div v-if="side_info === 3" class="searchcontainer">
@@ -90,100 +78,55 @@
         <div v-for="user in users" :key="user.id" class="tooltip">
           <div class="user">
             <span class="tooltiptext">
-              Nickname: {{ user.nick }}<br />
-              Intra Nick: {{ user.intra_nick }}<br />
-              Games Won: {{ user.won_games }}<br />
-              Games Lost: {{ user.lost_games }}<br />
+              Nickname: {{ user.nick }}<br>
+              Intra Nick: {{ user.intra_nick }}<br>
+              Games Won: {{ user.won_games }}<br>
+              Games Lost: {{ user.lost_games }}<br>
             </span>
             {{ user.nick }}
-            <button
-              v-if="!isFriend(user.id)"
-              class="add-friend"
-              @click="addFriend(user.id)"
-            ></button>
+            <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
             <button v-else class="friend-remove" @click="removeFriend(user)"></button>
           </div>
         </div>
         <div class="list-header">CHANNELS LIST</div>
-        <div
-          v-for="channel in channels"
-          :key="channel.id"
-          :class="['channel', { selected: channel.id === selected_channel }]"
-          style="cursor: auto"
-        >
+        <div v-for="channel in channels" :key="channel.id"
+          :class="['channel', { 'selected': channel.id === selected_channel }]" style="cursor: auto;">
           <span class="channel-name-wrap">{{ channel.channel_name }}</span>
-          <button
-            v-if="!isChannelJoined(channel.id)"
-            @click="joinChannel(channel)"
-            class="join-button"
-          >
-            Join
-          </button>
-          <button v-else @click="chooseChannel(channel.id)">
-            <v-icon class="chat-button">mdi-send</v-icon>
-          </button>
+          <button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel)" class="join-button">Join</button>
+          <button v-else @click="chooseChannel(channel.id)"><v-icon class="chat-button">mdi-send</v-icon></button>
         </div>
         <form @submit.prevent="searchQuery">
           <div class="search-input-container">
-            <button
-              @click="
-                searchText = ''
-                side_info = 0
-              "
-            >
+            <button @click="searchText = ''; side_info = 0;">
               <v-icon>mdi-arrow-left</v-icon>
             </button>
-            <input v-model="searchText" type="text" placeholder="Search..." class="search-input" />
+            <input v-model="searchText" type="text" placeholder="Search..." class="search-input">
           </div>
         </form>
       </div>
       <div class="button-container" v-if="side_info !== 3">
         <v-row class="fill-parent">
           <v-col cols="3" class="button-column">
-            <v-btn
-              class="bar-button"
-              block
-              flat
-              style="background-color: transparent; border: none"
-              @click="
-                getChannelsJoined()
-                side_info = 0
-              "
-            >
-              <v-icon size="25" style="color: white">mdi-format-list-bulleted</v-icon>
+            <v-btn class="bar-button" block flat style="background-color: transparent; border: none;"
+              @click="getChannelsJoined(); side_info = 0">
+              <v-icon size="25" style="color: white;">mdi-format-list-bulleted</v-icon>
             </v-btn>
           </v-col>
           <v-col cols="3" class="button-column">
-            <v-btn
-              class="bar-button"
-              block
-              flat
-              style="background-color: transparent; border: none"
-              @click="getFriends()"
-            >
-              <v-icon size="25" style="color: white">mdi-account-group</v-icon>
+            <v-btn class="bar-button" block flat style="background-color: transparent; border: none;"
+              @click="getFriends()">
+              <v-icon size="25" style="color: white;">mdi-account-group</v-icon>
             </v-btn>
           </v-col>
           <v-col cols="3" class="button-column">
-            <v-btn
-              class="bar-button"
-              block
-              flat
-              style="background-color: transparent; border: none"
-              @click="enableModal()"
-            >
-              <v-icon size="25" style="color: white">mdi-plus</v-icon>
+            <v-btn class="bar-button" block flat style="background-color: transparent; border: none;"
+              @click="enableModal()">
+              <v-icon size="25" style="color: white;">mdi-plus</v-icon>
             </v-btn>
           </v-col>
           <v-col cols="3" class="button-column">
-            <v-btn
-              class="bar-button"
-              block
-              flat
-              style="background-color: transparent; border: none"
-              @click="search()"
-            >
-              <v-icon size="25" style="color: white">mdi-magnify</v-icon>
+            <v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="search()">
+              <v-icon size="25" style="color: white;">mdi-magnify</v-icon>
             </v-btn>
           </v-col>
         </v-row>
@@ -191,11 +134,7 @@
     </div>
     <div id="chat-container" ref="chatContainer">
       <div v-if="selected_channel" class="chat-container-header">
-        <v-btn
-          icon
-          :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]"
-          @click="toggleChannelList"
-        >
+        <v-btn icon :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]" @click="toggleChannelList">
           <v-icon>mdi-menu</v-icon>
         </v-btn>
         <div class="channel-name">
@@ -217,23 +156,16 @@
       </div>
       <div v-if="showChannelOptions && getChannelType(selected_channel)">
         <div id="user-list-container">
-          <h2 class="userHeader">
-            {{ getChannelUserCount(usersInChannels) }} Users in
-            {{ getChannelName(selected_channel) }}
-          </h2>
-          <div
-            class="usersInChannel"
-            v-for="usersInChannel in usersInChannels"
-            :key="usersInChannels.id"
-          >
-            <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar" />
+          <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
+            getChannelName(selected_channel)
+          }}</h2>
+          <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
+            <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
               <button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
               <button @click="banUser(usersInChannel.user_id.id)">Ban</button>
               <button @click="MuteUser(usersInChannel.user_id.id)">Mute</button>
-              <button @click="ToggleAdminUser(usersInChannel.user_id.id)">
-                Toggle Admin Access
-              </button>
+              <button @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</button>
             </div>
             {{ usersInChannel.user_id.intra_nick }}
           </div>
