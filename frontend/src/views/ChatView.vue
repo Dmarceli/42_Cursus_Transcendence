@@ -177,52 +177,33 @@
           <span v-if="usersInChannel.user_id.intra_nick !== users_Name">
             <div class="userInfo-container">
               <div class="userInfo">
-                <img
-                  :src="usersInChannel.user_id.avatar"
-                  alt="UserAvatar"
-                  class="alone-user-avatar"
-                />
+                <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="alone-user-avatar">
                 <h1>{{ usersInChannel.user_id.intra_nick }}</h1>
                 <h2>{{ usersInChannel.user_id.nick }}</h2>
-                <p>Games Won : {{ usersInChannel.user_id.won_games }}</p>
-                <p>Games Lost : {{ usersInChannel.user_id.lost_games }}</p>
-                <p>Total XP : {{ usersInChannel.user_id.xp_total }}</p>
+                <p>Games Won : {{ usersInChannel.user_id.won_games }} </p>
+                <p>Games Lost : {{ usersInChannel.user_id.lost_games }} </p>
+                <p>Total XP : {{ usersInChannel.user_id.xp_total }} </p>
               </div>
             </div>
           </span>
         </div>
       </div>
       <div v-else id="msg-container" ref="msgsContainer">
-        <div
-          v-for="message in messages"
-          :key="message.id"
-          :class="[getMessageClass(message.author.nick), 'message']"
-        >
+        <div v-for="message in messages" :key="message.id" :class="[getMessageClass(message.author.nick), 'message']">
           <strong>[{{ message.author?.nick }}]:</strong> {{ message.message }}
           <div class="message-time">{{ formatTime(message.time) }}</div>
         </div>
       </div>
-      <div
-        v-if="!showChannelOptions && !isUserMutedOnChannel(usersInChannels)"
-        class="msg-input"
-        style="margin-bottom: -10px"
-      >
+      <div v-if="!showChannelOptions && !isUserMutedOnChannel(usersInChannels)" class="msg-input"
+        style="margin-bottom: -10px;">
         <form class="d-flex flex-row" @submit.prevent="sendMessage">
-          <v-text-field
-            class="input-field"
-            v-model="messageText"
-            placeholder="Type Something"
-          ></v-text-field>
-          <v-btn icon type="submit" class="send-button input-field" style="margin-top: 10px"
-            ><v-icon>mdi-send</v-icon></v-btn
-          >
+          <v-text-field class="input-field" v-model="messageText" placeholder="Type Something"></v-text-field>
+          <v-btn icon type="submit" class="send-button input-field"
+            style="margin-top: 10px;"><v-icon>mdi-send</v-icon></v-btn>
         </form>
       </div>
-      <div
-        v-else
-        style="color: red; text-align: center"
-        v-if="isUserMutedOnChannel(usersInChannels) && !showChannelOptions"
-      >
+      <div v-else style="color: red;text-align: center;"
+        v-if="isUserMutedOnChannel(usersInChannels) && !showChannelOptions">
         YOU ARE MUTED
       </div>
     </div>
@@ -258,68 +239,66 @@ let showSideInfo = ref(true)
 let createChannelOptions = ref(null)
 let route = useRouter()
 
-let channelName = ref('')
-let channelPassword = ref('')
+
+let channelName = ref('');
+let channelPassword = ref('');
 
 const socket = inject('socket')
 
 function toggleChannelList() {
-  showSideInfo.value = !showSideInfo.value
+  showSideInfo.value = !showSideInfo.value;
 }
 function closeModal() {
-  selectedUsers.value = []
-  createChannelOptions.value = false
-  side_info.value = 0
-  showModal.value = false
-  channelName.value = ''
-  channelPassword.value = ''
+  selectedUsers.value = [];
+  createChannelOptions.value = false;
+  side_info.value = 0;
+  showModal.value = false;
+  channelName.value = '';
+  channelPassword.value = '';
 }
 
 function enableModal() {
-  getUsers()
-  side_info.value = 2
+  getUsers();
+  side_info.value = 2;
   showModal.value = true
 }
 
 function getCookieValueByName(name) {
-  const cookies = document.cookie.split(';')
+  const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i++) {
-    let cookie = cookies[i].trim()
+    let cookie = cookies[i].trim();
     if (cookie.startsWith(`${name}=`)) {
-      cookie = cookie.substring(name.length + 1)
-      return cookie
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
     }
   }
-  return null
+  return null;
 }
 
-let token = getCookieValueByName('token')
-const decodedToken = jwt_decode(token)
-let userId = decodedToken.id
-const users_Name = decodedToken.user['intra_nick']
-const users_Nick = decodedToken.user['nick']
+let token = getCookieValueByName('token');
+const decodedToken = jwt_decode(token);
+let userId = decodedToken.id;
+const users_Name = decodedToken.user['intra_nick'];
+const users_Nick = decodedToken.user['nick'];
+
 
 const getChannelType = (channelID) => {
-  const channel = joinedchannels.value.find(
-    (joinedchannel) => joinedchannel.channel_id.id === channelID
-  )
-  return channel.channel_id.type
+  const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelID)
+  return channel.channel_id.type;
 }
 
 const getChannelName = (channelId) => {
-  const channel = joinedchannels.value.find(
-    (joinedchannel) => joinedchannel.channel_id.id === channelId
-  )
+  const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelId);
   if (channel && channel['channel_id']['type'] == 0) {
-    const channelname = channel['channel_id']['channel_name']
-    const user1ID = channelname.split('-')[0]
-    const user2ID = channelname.split('-')[1]
-    const pmwith = user1ID == userId ? user2ID : user1ID
-    const user = users.value.find((user) => user.id === parseInt(pmwith))
-    return user.intra_nick
+    const channelname = channel['channel_id']['channel_name'];
+    const user1ID = channelname.split('-')[0];
+    const user2ID = channelname.split('-')[1];
+    const pmwith = user1ID == userId ? user2ID : user1ID;
+    const user = users.value.find((user) => user.id === parseInt(pmwith));
+    return user.intra_nick;
   }
-  return channel ? channel.channel_id.channel_name : ''
-}
+  return channel ? channel.channel_id.channel_name : '';
+};
 
 const getChannelUserCount = (channel) => {
   return channel.length
@@ -327,10 +306,12 @@ const getChannelUserCount = (channel) => {
 
 const isUserMutedOnChannel = (userList) => {
   for (const userId in userList) {
-    const entry = userList[userId]
+    const entry = userList[userId];
     if (entry['user_id']['nick'] === users_Name) {
-      if (entry['is_muted']) return true
-      else return false
+      if (entry['is_muted'])
+        return true
+      else
+        return false
     }
   }
   return false
@@ -339,175 +320,186 @@ const isUserMutedOnChannel = (userList) => {
 const check_user = async () => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/'
-    const response = await fetch(url)
+    const response = await fetch(url);
     if (response.ok) {
-      const data = await response.json()
+      const data = await response.json();
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
       window.alert("User Doesn't exist")
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-}
+};
+
 
 const getMessageClass = (author) => {
   if (author == users_Nick) {
-    return 'message-sent'
+    return 'message-sent';
   }
-  return 'message-received'
-}
+  return 'message-received';
+};
+
 
 const getMessages = async () => {
   if (selected_channel) {
     try {
       let url = process.env.VUE_APP_BACKEND_URL + '/chat/msg_in_channel/' + selected_channel
-      const response = await fetch(url)
+      const response = await fetch(url);
       if (response.ok) {
-        const data = await response.json()
-        messages.value = data
-        scrollToBottom()
+        const data = await response.json();
+        messages.value = data;
+        scrollToBottom();
       } else {
-        console.log('Error:', response.status)
+        console.log('Error:', response.status);
       }
     } catch (error) {
-      console.log('Error:', error)
+      console.log('Error:', error);
     }
   }
-}
+};
 
 const getUsers = async () => {
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers'
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
+    let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers';
+    const response = await fetch(url,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
     if (response.ok) {
-      const data = await response.json()
-      const filteredUsers = data.filter((user) => user.id !== userId)
-      users.value = filteredUsers
+      const data = await response.json();
+      const filteredUsers = data.filter(user => user.id !== userId);
+      users.value = filteredUsers;
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-}
+};
 
-const usersInChannels = ref([])
+const usersInChannels = ref([]);
 const getUsersInGivenChannel = async (channel_ID) => {
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/usersinchannel/' + channel_ID
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/usersinchannel/' + channel_ID;
+    const response = await fetch(url,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
     if (response.ok) {
-      const data = await response.json()
-      usersInChannels.value = data
+      const data = await response.json();
+      usersInChannels.value = data;
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-}
+};
 
 const getChannels = async () => {
+
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/channels/all'
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
+    const response = await fetch(url,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
     if (response.ok) {
-      const data = await response.json()
-      channels.value = data
+      const data = await response.json();
+      channels.value = data;
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-}
+};
+
 
 const getChannelsJoined = async () => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinedchannels'
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
+    const response = await fetch(url,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
     if (response.ok) {
-      const data = await response.json()
-      joinedchannels.value = data
+      const data = await response.json();
+      joinedchannels.value = data;
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-}
+};
 
 const leaveChannel = async (channelid) => {
-  if (confirm('Are you sure you wanto to leave this channel?')) {
+  if (confirm("Are you sure you wanto to leave this channel?")) {
     try {
       let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/leavechannel'
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ id: parseInt(channelid) })
-      })
+      const response = await fetch(url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ id: parseInt(channelid) })
+        });
       if (response.ok) {
-        await getChannelsJoined()
+        await getChannelsJoined();
       } else {
-        console.log('Error:', response.status)
+        console.log('Error:', response.status);
       }
     } catch (error) {
-      console.log('Error:', error)
+      console.log('Error:', error);
     }
-    selected_channel = null
-    showChannelOptions.value = !showChannelOptions.value
-    messages.value = null
-    showSideInfo.value = true
-    await getChannelsJoined()
+    selected_channel = null;
+    showChannelOptions.value = !showChannelOptions.value;
+    messages.value = null;
+    showSideInfo.value = true;
+    await getChannelsJoined();
   }
 }
 
 const joinChannel = async (channel, ownerPWD) => {
   let pass = ownerPWD
   if (channel.type == 2 && !ownerPWD) {
-    let input = await window.prompt('Channel Password:')
-    pass = Md5.hashStr(input)
+    let input = await window.prompt("Channel Password:");
+    pass = Md5.hashStr(input);
   }
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinchannel'
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ id: parseInt(channel.id), pass: pass })
-    })
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: parseInt(channel.id), pass: pass })
+      });
     if (response.ok) {
-      await getChannelsJoined()
+      await getChannelsJoined();
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-  await getChannelsJoined()
+  await getChannelsJoined();
+
 }
 
 // ADMIN COMMANDS \\
@@ -517,72 +509,70 @@ const isUserMorePowerful = (userList, target) => {
   let is_owner_of_channel = false
   for (const userId in userList) {
     if (userList[userId]['user_id']['nick'] == users_Nick && userList[userId]['is_owner'])
-      is_owner_of_channel = true
+      is_owner_of_channel = true;
   }
-  if (target['user_id']['nick'] === users_Name || !is_owner_of_channel) return false
-  if (target['is_owner']) return false
+  if (target['user_id']['nick'] === users_Name || !is_owner_of_channel)
+    return false;
+  if (target['is_owner'])
+    return false
   return true
 }
 
+
+
 const kickUser = async (KickedUserID) => {
   try {
-    let url =
-      process.env.VUE_APP_BACKEND_URL +
-      '/usertochannel/kick/' +
-      KickedUserID +
-      '/from/' +
-      selected_channel
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/kick/' + KickedUserID + '/from/' + selected_channel
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
     if (response.ok) {
-      await getChannelsJoined()
+      await getChannelsJoined();
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-  await getChannelsJoined()
+  await getChannelsJoined();
   await getUsersInGivenChannel(selected_channel)
 }
 
 const banUser = async (bannedUserID) => {
   try {
-    let url =
-      process.env.VUE_APP_BACKEND_URL +
-      '/usertochannel/ban/' +
-      bannedUserID +
-      '/from/' +
-      selected_channel
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/ban/' + bannedUserID + '/from/' + selected_channel
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
     if (response.ok) {
-      await getChannelsJoined()
+      await getChannelsJoined();
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-  await getChannelsJoined()
+  await getChannelsJoined();
   await getUsersInGivenChannel(selected_channel)
 }
 
 const is_already_admin = async (actionToUserID) => {
   for (const userId in usersInChannels.value) {
     if (usersInChannels.value[userId].user_id.id == actionToUserID) {
-      if (!usersInChannels.value[userId].is_admin) return 'give'
-      else return 'take'
+      if (!usersInChannels.value[userId].is_admin)
+        return "give"
+      else
+        return "take"
     }
   }
 }
@@ -591,248 +581,240 @@ const ToggleAdminUser = async (actionToUserID) => {
   let action = await is_already_admin(actionToUserID)
   console.log(await action)
   try {
-    let url =
-      (await process.env.VUE_APP_BACKEND_URL) +
-      '/usertochannel/giveadmin/' +
-      actionToUserID +
-      '/on/' +
-      selected_channel +
-      '/' +
-      action
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
+
+    let url = await process.env.VUE_APP_BACKEND_URL + '/usertochannel/giveadmin/' + actionToUserID + '/on/' + selected_channel + "/" + action
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
     if (response.ok) {
-      await getChannelsJoined()
+      await getChannelsJoined();
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-  await getChannelsJoined()
+  await getChannelsJoined();
   await getUsersInGivenChannel(selected_channel)
 }
 
 const MuteUser = async (userToMute) => {
   try {
-    let url =
-      process.env.VUE_APP_BACKEND_URL +
-      '/usertochannel/mute/' +
-      userToMute +
-      '/from/' +
-      selected_channel
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/mute/' + userToMute + '/from/' + selected_channel
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
     if (response.ok) {
-      await getChannelsJoined()
+      await getChannelsJoined();
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
 }
 
+
+
 const Dmessage = async (User_ID) => {
-  selectedUsers.value = []
-  showModal.value = false
-  side_info.value = 0
-  createChannelOptions.value = false
+  selectedUsers.value = [];
+  showModal.value = false;
+  side_info.value = 0;
+  createChannelOptions.value = false;
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/privatemessage/' + User_ID
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/privatemessage/' + User_ID;
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
     if (response.ok) {
-      const data = await response.json()
+      const data = await response.json();
       chooseChannel(data.id)
+
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-}
+};
 
 const scrollToBottom = () => {
   try {
     nextTick(() => {
-      let container = msgsContainer.value
-      container.scrollTop = container.scrollHeight
-    })
-  } catch (error) {}
-}
+      let container = msgsContainer.value;
+      container.scrollTop = container.scrollHeight;
+    });
+  } catch (error) {
+  }
+};
 
 const formatTime = (timestamp) => {
-  const currentTime = new Date()
-  const messageTime = new Date(timestamp)
-  const timeDiffMinutes = Math.floor((currentTime - messageTime) / (1000 * 60))
+  const currentTime = new Date();
+  const messageTime = new Date(timestamp);
+  const timeDiffMinutes = Math.floor((currentTime - messageTime) / (1000 * 60));
 
   if (timeDiffMinutes < 1) {
-    return 'Just now'
+    return 'Just now';
   } else if (timeDiffMinutes < 60) {
-    return `${timeDiffMinutes} mins ago`
+    return `${timeDiffMinutes} mins ago`;
   } else if (timeDiffMinutes < 1440) {
-    const hours = Math.floor(timeDiffMinutes / 60)
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
+    const hours = Math.floor(timeDiffMinutes / 60);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
   } else {
-    const days = Math.floor(timeDiffMinutes / 1440)
-    return `${days} ${days === 1 ? 'day' : 'days'} ago`
+    const days = Math.floor(timeDiffMinutes / 1440);
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
   }
-}
+};
+
 
 const searchQuery = () => {
-  const searchTerm = searchText.value.toLowerCase().trim()
-  if (searchTerm === '') search()
+  const searchTerm = searchText.value.toLowerCase().trim();
+  if (searchTerm === '')
+    search()
   else {
-    const filteredChannels = channels.value.filter((channel) =>
-      channel.channel_name.toLowerCase().includes(searchTerm)
-    )
-    const filteredUsers = users.value.filter((user) => user.nick.toLowerCase().includes(searchTerm))
-    channels.value = filteredChannels
-    users.value = filteredUsers
+    const filteredChannels = channels.value.filter(channel => channel.channel_name.toLowerCase().includes(searchTerm));
+    const filteredUsers = users.value.filter(user => user.nick.toLowerCase().includes(searchTerm));
+    channels.value = filteredChannels;
+    users.value = filteredUsers;
   }
-}
+};
 
-watch(searchText, searchQuery)
+watch(searchText, searchQuery);
 
 const sendMessage = () => {
   if (messageText.value == '' || selected_channel == null)
-    return window.alert(
-      'Error: Message cannot be empty. Please enter a valid message or join channel before sending '
-    )
-  socket.emit('sendMessage', {
-    authorId: parseInt(userId),
-    message: messageText.value,
-    channelId: selected_channel
-  })
-  messageText.value = ''
+    return window.alert("Error: Message cannot be empty. Please enter a valid message or join channel before sending ");
+  socket.emit('sendMessage', { authorId: parseInt(userId), message: messageText.value, channelId: selected_channel })
+  messageText.value = '';
 }
 
 const search = () => {
-  getUsers()
-  fetchFriends()
-  getChannels()
-  getChannelsJoined()
-  side_info.value = 3
+  getUsers();
+  fetchFriends();
+  getChannels();
+  getChannelsJoined();
+  side_info.value = 3;
 }
 
 const chooseChannel = (channel) => {
-  showChannelOptions.value = false
-  unreadMessages.value[channel] = 0
-  selected_channel = channel
-  getChannelsJoined()
-  getMessages()
+  showChannelOptions.value = false;
+  unreadMessages.value[channel] = 0;
+  selected_channel = channel;
+  getChannelsJoined();
+  getMessages();
   getUsersInGivenChannel(channel)
 }
 
-const selectedUsers = ref([])
+
+const selectedUsers = ref([]);
 
 const isSelectedUser = (intraNick) => {
-  return selectedUsers.value.includes(intraNick)
-}
+  return selectedUsers.value.includes(intraNick);
+};
 
 function toggleOptionSelection(event) {
-  event.preventDefault()
-  const option = event.target
-  const selectedValue = option.value
+  event.preventDefault();
+  const option = event.target;
+  const selectedValue = option.value;
   if (!option.selected) {
-    selectedUsers.value.push(parseInt(selectedValue))
+    selectedUsers.value.push(parseInt(selectedValue));
   } else {
-    const index = selectedUsers.value.indexOf(parseInt(selectedValue))
+    const index = selectedUsers.value.indexOf(parseInt(selectedValue));
     if (index !== -1) {
-      selectedUsers.value.splice(index, 1)
+      selectedUsers.value.splice(index, 1);
     }
   }
 }
 
 const createChannel = async () => {
-  let channel_name = channelName.value
-  let channel_password = channelPassword.value
-  let ch_type = channelPassword ? 2 : 1
-  const pass = Md5.hashStr(channel_password)
+  let channel_name = channelName.value;
+  let channel_password = channelPassword.value;
+  let ch_type = channelPassword ? 2 : 1;
+  const pass = Md5.hashStr(channel_password);
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/channels/create'
+    let url = process.env.VUE_APP_BACKEND_URL + '/channels/create';
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        type: ch_type,
-        channel_name: channel_name,
-        password: pass,
-        invitedusers: selectedUsers.value
-      })
-    })
+      body: JSON.stringify({ type: ch_type, channel_name: channel_name, password: pass, invitedusers: selectedUsers.value }),
+    });
     if (response.ok) {
-      const data = await response.json()
-      joinChannel(data, pass)
-      chooseChannel(data.id)
-      await getChannelsJoined()
+      const data = await response.json();
+      joinChannel(data, pass);
+      chooseChannel(data.id);
+      await getChannelsJoined();
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-  closeModal()
-}
+  closeModal();
+
+};
 
 const moreChannelOptions = () => {
-  showChannelOptions.value = !showChannelOptions.value
-  getUsersInGivenChannel(selected_channel)
+  showChannelOptions.value = !showChannelOptions.value;
+  getUsersInGivenChannel(selected_channel);
 }
+
 
 const isFriend = (friendId) => {
   return User_Friends.value.some((friendship) => {
     return friendship.id === friendId
-  })
-}
+  });
+};
+
 
 const isChannelJoined = (givenID) => {
   return joinedchannels.value.some((channel) => {
-    return channel['channel_id']['id'] === givenID
-  })
-}
+    return channel['channel_id']['id'] === givenID;
+  });
+};
+
 
 const fetchFriends = async () => {
   try {
-    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
+    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/friends`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
     if (response.ok) {
-      const data = await response.json()
-      User_Friends.value = data
+      const data = await response.json();
+      User_Friends.value = data;
     } else {
-      console.log('Error:', response.status)
+      console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
 }
 
 const getFriends = async () => {
-  side_info.value = 1
-  fetchFriends()
-}
+  side_info.value = 1;
+  fetchFriends();
+
+};
 
 const addFriend = async (friendId) => {
   try {
@@ -840,74 +822,74 @@ const addFriend = async (friendId) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        requester_user: parseInt(userId),
-        decider_user: parseInt(friendId),
-        message: 'You have received a friend request from ' + users_Name
-      })
-    })
+      body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(friendId), message: "You have received a friend request from " + users_Name }),
+    });
     if (response.ok) {
-      const data = await response.json()
-      fetchFriends()
+      const data = await response.json();
+      fetchFriends();
     } else {
       if (response.status == 303) {
         window.alert('friendship request already sent!')
-      } else console.log('Error:', response.status)
+      }
+      else
+        console.log('Error:', response.status);
     }
   } catch (error) {
-    console.log('Error:', error)
+    console.log('Error:', error);
   }
-}
+};
 
 const removeFriend = async (friend) => {
   if (confirm('Are you sure you want to stop being friends with ' + friend.nick + '?')) {
     try {
-      const url = `${process.env.VUE_APP_BACKEND_URL}/friends/deletefriends/${userId}/${friend.id}`
+      const url = `${process.env.VUE_APP_BACKEND_URL}/friends/deletefriends/${userId}/${friend.id}`;
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      })
+          'Authorization': `Bearer ${token}`
+        },
+      });
       if (response.ok) {
-        const data = await response.json()
-        fetchFriends()
+        const data = await response.json();
+        fetchFriends();
       } else {
-        console.log('Error:', response.status)
+        console.log('Error:', response.status);
       }
     } catch (error) {
-      console.log('Error:', error)
+      console.log('Error:', error);
     }
+
   }
-}
+};
 
 onBeforeMount(() => {
-  getUsers()
-  getChannels()
-  fetchFriends()
-  getChannelsJoined()
-})
+  getUsers();
+  getChannels();
+  fetchFriends();
+  getChannelsJoined();
+});
 
-socket.on('recMessage', (message) => {
+socket.on('recMessage', message => {
   if (message.channelId === selected_channel) {
-    scrollToBottom()
+    scrollToBottom();
   } else {
     if (typeof unreadMessages.value[message.channelId] === 'undefined') {
-      unreadMessages.value[message.channelId] = 0
+      unreadMessages.value[message.channelId] = 0;
     }
-    unreadMessages.value[message.channelId]++
+    unreadMessages.value[message.channelId]++;
   }
-  getMessages()
-})
+  getMessages();
+});
 
-socket.on('notification', (Notification) => {
-  getUsers()
-  getChannelsJoined()
-  fetchFriends()
-})
+
+socket.on('notification', Notification => {
+  getUsers();
+  getChannelsJoined();
+  fetchFriends();
+});
 
 watch(messages, () => {
   scrollToBottom()
@@ -938,6 +920,9 @@ socket.on('NewGameInvite', () => {
 })
 </script>
 
+
 <style>
 @import '../assets/Chat.css';
 </style>
+
+
