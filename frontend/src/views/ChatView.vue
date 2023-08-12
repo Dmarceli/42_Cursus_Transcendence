@@ -221,23 +221,23 @@ import { useRouter } from 'vue-router'
 
 library.add(fas)
 
-const msgsContainer = ref(null)
-let show_UserInfo = ref(false)
-const messageText = ref('')
-const searchText = ref('')
-const messages = ref([])
-const channels = ref([])
-const joinedchannels = ref([])
-const users = ref([])
-let User_Friends = ref([])
-let selected_channel = null
-let side_info = ref(0)
-let showModal = ref(false)
-const unreadMessages = ref([])
-let showChannelOptions = ref(false)
-let showSideInfo = ref(true)
-let createChannelOptions = ref(null)
-let route = useRouter()
+const msgsContainer = ref(null);
+let show_UserInfo = ref(false);
+const messageText = ref('');
+const searchText = ref('');
+const messages = ref([]);
+const channels = ref([]);
+const joinedchannels = ref([]);
+const users = ref([]);
+let User_Friends = ref([]);
+let selected_channel = null;
+let side_info = ref(0);
+let showModal = ref(false);
+const unreadMessages = ref([]);
+let showChannelOptions = ref(false);
+let showSideInfo = ref(true);
+let createChannelOptions = ref(null);
+let route = useRouter();
 
 
 let channelName = ref('');
