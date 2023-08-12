@@ -211,13 +211,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onBeforeMount, watch, nextTick } from 'vue'
-import jwt_decode from 'jwt-decode'
-import { Md5 } from 'ts-md5'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { fas } from '@fortawesome/free-solid-svg-icons'
-import { useRouter } from 'vue-router'
+import { ref, inject, onBeforeMount, watch, nextTick } from 'vue';
+import jwt_decode from 'jwt-decode';
+import { Md5 } from 'ts-md5';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from 'vue-router';
 
 library.add(fas)
 
