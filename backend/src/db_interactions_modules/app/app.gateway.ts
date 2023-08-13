@@ -14,6 +14,7 @@ import { UsePipes, ValidationPipe, UseGuards, Res } from '@nestjs/common';
 import { GameService } from '../game/game.service';
 import { UsersService } from '../users/users.service';
 import { UsersModule } from '../users/users.module';
+import { PrivateGameDto } from '../game/dtos/game.dto';
 
 
 @WebSocketGateway({
@@ -70,12 +71,15 @@ import { UsersModule } from '../users/users.module';
   @SubscribeMessage('PlayerSelectedPaddle')
   handlePlayerSelectedPaddle(client: Socket, info: any) {
     let [intra_nick, paddleSkin] = info;
-    this.gameService.CreatePlayer(client, intra_nick, paddleSkin);
+    if (this.gameService.IsInPrivateGame(intra_nick))
+      this.gameService.CreatePrivateGamePlayer(client, intra_nick, paddleSkin);
+    else
+      this.gameService.CreateLobbyPlayer(client, intra_nick, paddleSkin);
     client.emit("PlayerCreated")
   }
 
   @SubscribeMessage('AddToLobby')
-  handlAddPlayerToLobby(client: Socket, intra_nick: string) {
+  handleAddPlayerToLobby(client: Socket, intra_nick: string) {
     this.gameService.AddPlayerToLobby(client, intra_nick)
   }
   @SubscribeMessage('PlayerReady')

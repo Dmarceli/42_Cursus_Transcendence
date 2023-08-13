@@ -1,21 +1,21 @@
 <template>
   <div v-if="startmenu" class="start-menu">
-    <StartMenu @player-created="handlePlayerCreated" :intra-nick="users_Name" class="start-menu"></StartMenu>
+    <StartMenu @player-created="handlePlayerCreated" :is-private-game="isPrivateGame" :intra-nick="users_Name" class="start-menu"></StartMenu>
   </div>
   <div v-else-if="playerWon">
     <h1>You Won</h1>
-    <v-btn @click="startmenu=true">
+    <v-btn @click="ResetView">
       Start Menu
     </v-btn>
   </div>
   <div v-else-if="playerLost">
     <h1>You Lost</h1>
-    <v-btn @click="startmenu=true">
+    <v-btn @click="ResetView">
       Start Menu
     </v-btn>
 </div>
   <div v-else class="board">
-    <Pong2D :intra-nick="users_Name" @player-won="playerWon = true" @player-lost="playerLost = true"/>
+    <Pong2D :is-private-game="isPrivateGame" :intra-nick="users_Name" @player-won="playerWon = true" @player-lost="playerLost = true"/>
   </div>
 </template>
 
@@ -24,6 +24,7 @@ import Pong2D from '../components/Pong2D.vue'
 import StartMenu from '../components/StartMenu.vue'
 import { ref, onMounted } from 'vue'
 import jwt_decode from 'jwt-decode';
+import { onBeforeMount } from 'vue';
 
 let startmenu = ref(true)
 let playerWon = ref(false)
@@ -31,6 +32,7 @@ let playerLost = ref(false)
 let token: string | null = null;
 let decodedToken: TokenType;
 let users_Name = ref("");
+let isPrivateGame = ref(false)
 
 interface TokenType
 {
@@ -43,6 +45,29 @@ interface TokenType
   iat: number,
   exp: number
 }
+
+onBeforeMount(async () => {
+  const response = await fetch(process.env.VUE_APP_BACKEND_URL +'/games/private');
+  if (response.ok) {
+    let games = await response.json();
+    console.log("GAMES ARE "+games.length);
+    let existing_private_game = games.find((privateGame: any) => {
+      console.log("GAME P1 is "+privateGame.player1)
+      console.log("GAME P2 is "+privateGame.player2)
+      return (privateGame.player1 == users_Name.value || privateGame.player2 == users_Name.value)
+    });
+    console.log("EXISTING PRIVATE GAME "+existing_private_game);
+    if (!existing_private_game)
+    {
+      console.log("PRIVATE GAME IS FALSE")
+      isPrivateGame.value = false;
+      return ;
+    }
+    console.log("PRIVATE GAME IS TRUE")
+    isPrivateGame.value = true;
+    return ;
+  }
+})
 
 onMounted(() => {
   console.log('Mounted Game View');
@@ -63,6 +88,13 @@ function handlePlayerCreated()
 
 }
 
+function ResetView()
+{
+  startmenu.value=true
+  isPrivateGame.value=false
+  playerWon.value=false
+  playerLost.value=false
+}
 
 function getCookieValueByName(name: any) {
   const cookies = document.cookie.split(';');

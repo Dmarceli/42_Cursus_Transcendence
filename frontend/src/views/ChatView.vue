@@ -140,8 +140,17 @@
         <div class="channel-name">
           {{ getChannelName(selected_channel) }}
         </div>
-        <v-btn icon class="more-options ml-auto" :class="{ 'close-moreoptions': showChannelOptions }"
-          @click="moreChannelOptions()">
+        <div class="fightButton">
+          <v-btn icon @click="inviteToPrivateGame">
+            <font-awesome-icon :icon="['fas', 'table-tennis-paddle-ball']" style="color: #ffffff" />
+          </v-btn>
+        </div>
+        <v-btn
+          icon
+          class="more-options ml-auto"
+          :class="{ 'close-moreoptions': showChannelOptions }"
+          @click="moreChannelOptions()"
+        >
           <v-icon>{{ showChannelOptions ? 'mdi-close' : 'mdi-dots-vertical' }}</v-icon>
         </v-btn>
       </div>
@@ -201,11 +210,15 @@
   </div>
 </template>
 
-
-<script setup>
+<script setup lang="ts">
 import { ref, inject, onBeforeMount, watch, nextTick } from 'vue';
 import jwt_decode from 'jwt-decode';
 import { Md5 } from 'ts-md5';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+
+library.add(fas)
 
 const msgsContainer = ref(null);
 let show_UserInfo = ref(false);
@@ -222,7 +235,7 @@ let showModal = ref(false);
 const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
-let createChannelOptions = ref(null)
+let createChannelOptions = ref(null);
 
 
 let channelName = ref('');
@@ -879,7 +892,34 @@ socket.on('notification', Notification => {
 watch(messages, () => {
   scrollToBottom();
 });
-
+const inviteToPrivateGame = async () => {
+  if (usersInChannels.value.length > 2) return
+  for (const id in usersInChannels.value) {
+    if (usersInChannels.value[id].user_id.id != userId) {
+      try {
+            const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/private_game_request`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(usersInChannels.value[id].user_id.id), message: users_Name+ " just invited you to a PONG Game! " + users_Name }),
+            });
+            if (response.ok) {
+              const data = await response.json();
+            } else {
+              if (response.status == 303) {
+                window.alert('You already already invited this user to a private game!')
+              }
+              else
+                console.log('Error:', response.status);
+            }
+          } catch (error) {
+            console.log('Error:', error);
+      }
+    }
+  }
+};
 
 </script>
 

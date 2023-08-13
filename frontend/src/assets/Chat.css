@@ -616,6 +616,11 @@
   margin-left: 5%;
 }
 
+.fightButton
+{
+  padding-right: 15px;
+}
+
 .more-options {
   position: absolute;
   right: 10px; 
