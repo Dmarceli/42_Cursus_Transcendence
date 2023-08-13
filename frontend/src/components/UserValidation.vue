@@ -123,20 +123,14 @@ const handleNewAvatar = async (event: Event) => {
 }
 
 async function Submit() {	
-	if (updateNickname.value === ''){
-    emits('submitted')
+	if (updateNickname.value !== ''){
+    userData.value.nick = updateNickname.value;
   }
-  userData.value.nick = updateNickname.value;
-  if (updateAvatar.value)
+  let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
+  if (avatarUpload.value && avatarUpload.value.value && regex.test(avatarUpload.value.name))
   {
     userData.value.avatar = updateAvatar.value;
   }
-  let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
-  if (avatarUpload.value && avatarUpload.value.value) {
-    console.log("LETS POST"+avatarUpload.value.name)
-    if (!regex.test(avatarUpload.value.name))
-      return
-    // Need to make validation for image files
     try {
       const formData = new FormData();
       formData.append('file', userData.value.avatar);
@@ -153,7 +147,6 @@ async function Submit() {
     } catch(error) {
         console.log('Error:', error);
       }
-  }
   emits('submitted')
 }
 
