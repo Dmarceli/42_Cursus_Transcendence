@@ -270,20 +270,18 @@ if (socket)  {
 	  socket.on('logout', Notification => {
 			logout();
 		});
+  socket.on('StartPaddleSelection', async () => {
+    await nextTick()
+    if (router.currentRoute.value.path !== '/') {
+      router.push('/')
+    }
+    routerKey.value++
+  })
 }
 
 onBeforeMount(() => {
   fetchNotifications();
 });
-
-socket?.on('StartPaddleSelection', async () => {
-  console.log("SELECTING PADDLES")
-  await nextTick()
-  if (router.currentRoute.value.path !== '/') {
-    router.push('/')
-  }
-  routerKey.value++
-})
 
 </script>
 

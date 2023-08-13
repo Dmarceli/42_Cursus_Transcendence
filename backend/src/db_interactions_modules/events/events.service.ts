@@ -86,7 +86,7 @@ export class EventsService {
 
   createGame(event)
   {
-    this.gameService.createPrivateGame(event.decider_user.intra_nick, event.requester_user.intra_nick)
+    this.gameService.createPrivateGame(event.requester_user.intra_nick, event.decider_user.intra_nick)
   }
 
   async findAll_for_user(user_id :number) {
