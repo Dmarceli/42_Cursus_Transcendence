@@ -10,10 +10,11 @@ OnGatewayDisconnect,
 import { Socket, Server } from 'socket.io';
 import { AppService } from '../../app.service';
 import { CreateMsgDto } from '../messages/dtos/message.dto';
-import { UsePipes, ValidationPipe, UseGuards } from '@nestjs/common';
+import { UsePipes, ValidationPipe, UseGuards, Res } from '@nestjs/common';
 import { GameService } from '../game/game.service';
 import { UsersService } from '../users/users.service';
 import { UsersModule } from '../users/users.module';
+import { PrivateGameDto } from '../game/dtos/game.dto';
 
 
 @WebSocketGateway({
@@ -52,12 +53,13 @@ import { UsersModule } from '../users/users.module';
  }
  
  //1º step após conexão
- async handleConnection(client: Socket, server: Server) {
+ async handleConnection(client: Socket, server: Server, @Res() res: any) {
   console.log(`Connected ${client.id}`);
   let Channel_List:string [] = [];
   const authorization = await this.appService.add_user_to_lobby(client, server,Channel_List)
   client.join(Channel_List)
   if(!authorization){
+		client.emit('logout')
     client.disconnect();
     console.log(`Discnnected Auth missing -  ${client.id}`)
   }
@@ -69,12 +71,15 @@ import { UsersModule } from '../users/users.module';
   @SubscribeMessage('PlayerSelectedPaddle')
   handlePlayerSelectedPaddle(client: Socket, info: any) {
     let [intra_nick, paddleSkin] = info;
-    this.gameService.CreatePlayer(client, intra_nick, paddleSkin);
+    if (this.gameService.IsInPrivateGame(intra_nick))
+      this.gameService.CreatePrivateGamePlayer(client, intra_nick, paddleSkin);
+    else
+      this.gameService.CreateLobbyPlayer(client, intra_nick, paddleSkin);
     client.emit("PlayerCreated")
   }
 
   @SubscribeMessage('AddToLobby')
-  handlAddPlayerToLobby(client: Socket, intra_nick: string) {
+  handleAddPlayerToLobby(client: Socket, intra_nick: string) {
     this.gameService.AddPlayerToLobby(client, intra_nick)
   }
   @SubscribeMessage('PlayerReady')

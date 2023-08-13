@@ -8,6 +8,7 @@ import { channel } from 'diagnostics_channel';
 import { User } from '../users/user.entity';
 import { EventsService } from '../events/events.service';
 import { EventCreateDto } from '../events/dtos/events.dto';
+import { Console } from 'console';
 
 @Injectable()
 export class ChannelsService {
@@ -32,6 +33,8 @@ export class ChannelsService {
     }    
     const response = await this.ChannelsRepository.save({...createChannelDto, password: pwd})
     const userRequester = await this.UserRepository.findOne({where: {id: creator_user}})
+    await this.UserToChannelService_.joinchannel(response,userRequester,pwd)
+    console.log("USERS:",createChannelDto.invitedusers)
     createChannelDto.invitedusers.forEach( async element => {
       const user_to_join = await this.UserRepository.findOne({where: {id: element}})
       if(user_to_join){
@@ -41,7 +44,8 @@ export class ChannelsService {
           decider_user: user_to_join.id,
           message: `${userRequester.intra_nick} added you to channel ${createChannelDto.channel_name}`
         }
-        await this.eventService.create(eventDto,1)
+        console.log("aqui")
+        await this.eventService.create(eventDto,0)
       }
     })
     return response

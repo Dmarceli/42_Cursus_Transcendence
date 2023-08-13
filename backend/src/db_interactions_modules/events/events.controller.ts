@@ -1,4 +1,4 @@
-import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { EventCreateDto } from './dtos/events.dto';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
@@ -12,18 +12,33 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post('/friendship_request')
-  create_friendship_request(@Body() createEventDto: EventCreateDto) {
-    return this.eventsService.create(createEventDto, 0);
+  async create_friendship_request(@Body() createEventDto: EventCreateDto, @Res() res: any) {
+    const ret = await this.eventsService.create(createEventDto, 1);
+		if (ret == "2")
+		{
+			return res.status(303).json({ message: 'Friendship Request Already Sent' });
+		}
+    return res.status(200).json({ message: 'Friendship Requested' });
+  }
+
+  @Post('/private_game_request')
+  async create_private_game_request(@Body() createEventDto: EventCreateDto, @Res() res: any) {
+    const ret = await this.eventsService.create(createEventDto, 2);
+		if (ret == "2")
+		{
+			return res.status(303).json({ message: 'Private Game Request Already Sent' });
+		}
+    return res.status(200).json({ message: 'Private Game Requested' });
   }
 
   @Post('/channel_join_request')
   create_channel_join_request(@Body() createEventDto: EventCreateDto) {
-    return this.eventsService.create(createEventDto, 1);
+    return this.eventsService.create(createEventDto, 0);
   }
 
   @Post('/event_decision/:event_id/:decision')
-  event_decision(@Param('decision') decision: boolean, @Param('event_id') event_id: number) {
-    return this.eventsService.closedecision(decision, event_id);
+  async event_decision(@Param('decision') decision: string, @Param('event_id') event_id: number) {
+    return await this.eventsService.closedecision(decision, event_id);
   }
 
   @Get('/notifications')

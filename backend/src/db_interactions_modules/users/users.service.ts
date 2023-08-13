@@ -26,7 +26,7 @@ export class UsersService {
 
   ) {
   }
-  UsersOnline: UserSocketArray[] = []
+  //UsersOnline: UserSocketArray[] = []
 
 
   async createUser(User: CreateUserDto){
@@ -132,16 +132,18 @@ export class UsersService {
      return true;
    }
 
-   async notifyUser(user_id: number){
-    //console.log(this.UsersOnline)
+   async notifyUser(user_id: number,UsersOnline : UserSocketArray[]){
+    //console.log(UsersOnline)
      console.log('Notification sent to user:', user_id);
     //  let i=0;
     //  AppService.UsersOnline.forEach((user) => {
     //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
     // })
      const user = AppService.UsersOnline.find( User_ => User_.user.id === user_id)
-     if(!user)
-       return;
+     if(!user){
+        console.log("FALHOU Notificação", user_id) 
+      return;
+     }
      user.client.emit("notification")
    }
 

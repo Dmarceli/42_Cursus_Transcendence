@@ -1,5 +1,5 @@
 <template>
-  <div class="states" v-if="NotchoseType">
+  <div class="states" v-if="NotchoseType && !isPrivateGame">
     <v-btn @click="onJoinLobby">Join Lobby</v-btn>
   </div>
   <div class="states" v-else-if="inQueue">
@@ -30,12 +30,15 @@ const socket: Socket | undefined = inject('socket')
 let reconnecting = ref('')
 interface Props {
   intraNick?: string
+  isPrivateGame: boolean
 }
 const props = defineProps<Props>()
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
 // State control variables
 let NotchoseType = ref(true)
+let isPrivateGame = ref(false)
+
 let inQueue = ref(false)
 let ImNotReady = ref(true)
 let OtherNotReady = ref(true)
@@ -58,6 +61,7 @@ let score: Score | null = null
 let disconnectedId: number | null = null
 
 onMounted(() => {
+  isPrivateGame.value = props.isPrivateGame
   console.log('Mounted Pong')
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
