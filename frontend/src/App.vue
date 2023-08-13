@@ -46,7 +46,7 @@
     <Login @clicked42="login42" @clickedgoogle="loginGoogle" @id_to_login="executeLoginwithId" />
   </div>
   <div v-else-if="first_login_modal" class="first_login_modal">
-    <userValidation></userValidation>
+    <userValidation @submitted="first_login_modal= false"></userValidation>
   </div>
 </template>
 
@@ -54,7 +54,7 @@
 import { RouterLink, RouterView } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
-import { ref, provide, inject, onBeforeMount, computed, nextTick } from 'vue'
+import { ref, provide, onBeforeMount, computed, nextTick } from 'vue'
 import router from './router';
 import userValidation from './components/UserValidation.vue'
 
@@ -353,13 +353,16 @@ nav a {
   overflow-y: scroll;
 }
 
-.first_login_modal{
-  align-content: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
+.first_login_modal {
+  display: flex;            
+  justify-content: center;  
+  align-items: center;      
+  width: 100vw;             
+  height: 100vh;            
+  position: fixed;          
+  top: 0;
+  left: 0;
 }
-
 @media (min-width: 1024px) {
   header {
     place-items: center;

@@ -26,9 +26,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onBeforeMount } from 'vue';
-import jwt_decode from 'jwt-decode';
+
+
 
 const doneValidation = ref(false);
+const emits = defineEmits(['submitted'])
 
 const userData = ref({
 	id: 0,
@@ -147,18 +149,16 @@ async function Submit() {
       if (response.ok) {
         let data = await response.json();
         console.log("NEW URL "+data.newAvatar);
-      } else {
-        return false;
       }
-    } catch (error) {
+    } catch(error) {
         console.log('Error:', error);
-        return false;
       }
   }
   else {
     // console.error('Error reading file');
   }
   doneValidation.value = true;
+  emits('submitted')
 }
 
 </script>
