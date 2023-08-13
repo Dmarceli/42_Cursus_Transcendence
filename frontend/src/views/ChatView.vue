@@ -892,22 +892,6 @@ socket.on('notification', Notification => {
 watch(messages, () => {
   scrollToBottom();
 });
-
-
-// function inviteToPrivateGame() {
-//   if (usersInChannels.value.length > 2) return
-//   for (const id in usersInChannels.value) {
-//     if (usersInChannels.value[id].user_id.id != userId) {
-//       let toSend = {
-//         player1_intra_nick: users_Name,
-//         player2_intra_nick: usersInChannels.value[id].user_id.intra_nick,
-//       }
-//       console.log(toSend)
-//       socket.emit('PrivateGame', toSend)
-//     }
-//   }
-// }
-
 const inviteToPrivateGame = async () => {
   if (usersInChannels.value.length > 2) return
   for (const id in usersInChannels.value) {

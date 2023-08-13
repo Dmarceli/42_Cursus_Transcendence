@@ -78,11 +78,6 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
     client.emit("PlayerCreated")
   }
 
-  @SubscribeMessage('PrivateGame')
-  handlePrivateGame(client: Socket, privateGame: PrivateGameDto) {
-    this.gameService.createPrivateGame(privateGame.player1_intra_nick, privateGame.player2_intra_nick);
-  }
-
   @SubscribeMessage('AddToLobby')
   handleAddPlayerToLobby(client: Socket, intra_nick: string) {
     this.gameService.AddPlayerToLobby(client, intra_nick)

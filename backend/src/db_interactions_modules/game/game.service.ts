@@ -89,11 +89,14 @@ export class GameService {
       console.log("Already existing game for player "+player2_intra_nick)
       return ;
     }
-    this.private_games.push(new PrivateGame(player1_intra_nick, player2_intra_nick));
     const player1User = AppService.UsersOnline.find((online) => online.user.intra_nick == player1_intra_nick);
     const player2User = AppService.UsersOnline.find((online) => online.user.intra_nick == player2_intra_nick);
-    player1User.client?.emit("StartPaddleSelection");
-    player2User.client?.emit("StartPaddleSelection");
+    if (player1User && player2User)
+    {
+      this.private_games.push(new PrivateGame(player1_intra_nick, player2_intra_nick));
+      player1User.client?.emit("StartPaddleSelection");
+      player2User.client?.emit("StartPaddleSelection");
+    }
   }
 
   // TODO: This could be cheating as a way to change skin.
