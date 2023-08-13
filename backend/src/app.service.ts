@@ -8,7 +8,6 @@ import { CreateMsgDto } from './db_interactions_modules/messages/dtos/message.dt
 import { UsersService } from './db_interactions_modules/users/users.service';
 import { Socket, Server } from 'socket.io';
 import { UserSocketArray } from './db_interactions_modules/users/classes/UsersSockets';
-import { GameService } from './db_interactions_modules/game/game.service';
 @Injectable()
 export class AppService {
  constructor(
@@ -16,7 +15,6 @@ export class AppService {
    @InjectRepository(User)private userRepository: Repository<User>,
    @InjectRepository(Channel)private channelRepository: Repository<Channel>,
    private usersService: UsersService,
-   private gameService: GameService 
  ) {}
  static UsersOnline: UserSocketArray[] = []
 
@@ -49,9 +47,4 @@ export class AppService {
  async user_to_notify(userID: number){
   return this.usersService.notifyUser(userID,AppService.UsersOnline)
  }
-
- UpdateAllGamePositions()
-  {
-    this.gameService.UpdateAllPositions()
-  }
 }

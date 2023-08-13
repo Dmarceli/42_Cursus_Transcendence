@@ -14,8 +14,8 @@ import { Messages } from '../messages/messages.entity';
 import { Channel } from '../channels/channel.entity';
 import { FriendModule } from '../relations/friend/friend.module';
 import { friendService } from '../relations/friend/friend.service';
-import { GameService } from '../game/game.service';
 import { GameHistoryModule } from '../game_history/game_history.module';
+import { GameModule } from '../game/games.module';
 
 
 @Module({
@@ -23,11 +23,11 @@ import { GameHistoryModule } from '../game_history/game_history.module';
     TypeOrmModule.forFeature([Events, Channel,User, Messages]),
     UsersModule,
     MessagesModule,
-    GameHistoryModule,
+    GameModule,
     forwardRef(() => FriendModule),
   ],
   controllers: [EventsController],
-  providers: [EventsService,AppService, GameService],
+  providers: [EventsService,AppService],
   exports: [EventsService]
 })
 export class EventsModule {}

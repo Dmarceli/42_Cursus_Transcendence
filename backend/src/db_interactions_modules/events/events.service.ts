@@ -8,6 +8,7 @@ import { UsersService } from '../users/users.service';
 import { friendService } from '../relations/friend/friend.service';
 import { AppService } from 'src/app.service';
 import { CreateFriendDto } from '../relations/friend/dtos/friend.dto';
+import { GameService } from '../game/game.service';
 
 @Injectable()
 export class EventsService {
@@ -18,7 +19,7 @@ export class EventsService {
     private usersService: UsersService,
     private FriendsService: friendService,
     private appService: AppService,
- 
+    private gameService: GameService 
    ) {}
 
   async create(createEventDto: EventCreateDto, event_type: number) {
