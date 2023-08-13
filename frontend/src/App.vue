@@ -276,7 +276,7 @@ onBeforeMount(() => {
   fetchNotifications();
 });
 
-socket.on('StartPaddleSelection', async () => {
+socket?.on('StartPaddleSelection', async () => {
   console.log("SELECTING PADDLES")
   await nextTick()
   if (router.currentRoute.value.path !== '/') {
