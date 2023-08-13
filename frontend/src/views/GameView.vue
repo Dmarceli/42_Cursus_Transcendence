@@ -36,11 +36,6 @@ let users_Name = ref("");
 let isPrivateGame = ref(false)
 const socket: Socket | undefined = inject('socket')
 
-interface Props {
-  id: number
-}
-const props = defineProps<Props>()
-
 interface TokenType
 {
   user: {
@@ -57,7 +52,7 @@ onBeforeMount(async () => {
   const response = await fetch(process.env.VUE_APP_BACKEND_URL +'/games/private');
   if (response.ok) {
     let games = await response.json();
-    console.log("GAMES ARE "+games);
+    console.log("GAMES ARE "+games.length);
     let existing_private_game = games.find((privateGame: any) => {
       console.log("GAME P1 is "+privateGame.player1)
       console.log("GAME P2 is "+privateGame.player2)

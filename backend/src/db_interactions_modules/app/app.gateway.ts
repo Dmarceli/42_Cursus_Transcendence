@@ -24,7 +24,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
  export class AppGateway
  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
- constructor(private appService: AppService, private gameService: GameService ) {}
+ constructor(private appService: AppService) {}
  
  @WebSocketServer() server: Server;
  
@@ -42,7 +42,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
  }
  
  afterInit(server: Server) {
-  this.gameService.UpdateAllPositions()
+  this.appService.UpdateAllGamePositions()
  }
  
  handleDisconnect(client: Socket) {

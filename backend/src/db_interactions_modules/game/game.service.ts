@@ -94,7 +94,6 @@ export class GameService {
     const player2User = AppService.UsersOnline.find((online) => online.user.intra_nick == player2_intra_nick);
     player1User.client?.emit("StartPaddleSelection");
     player2User.client?.emit("StartPaddleSelection");
-    
   }
 
   // TODO: This could be cheating as a way to change skin.

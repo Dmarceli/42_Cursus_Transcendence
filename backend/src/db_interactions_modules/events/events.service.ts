@@ -8,7 +8,6 @@ import { UsersService } from '../users/users.service';
 import { friendService } from '../relations/friend/friend.service';
 import { AppService } from 'src/app.service';
 import { CreateFriendDto } from '../relations/friend/dtos/friend.dto';
-import { GameService } from '../game/game.service';
 
 @Injectable()
 export class EventsService {
@@ -19,7 +18,6 @@ export class EventsService {
     private usersService: UsersService,
     private FriendsService: friendService,
     private appService: AppService,
-    private gameService: GameService
  
    ) {}
 
@@ -29,6 +27,12 @@ export class EventsService {
       relations: ['requester_user', 'decider_user'],})
       const already_friends = await this.FriendsService.findFriendshipByIDS(createEventDto.decider_user, createEventDto.requester_user)
       if(already_friends || already_requested)
+        return "2"
+    }
+		if(event_type == 2){
+      const already_requested = await this.eventsRepository.findOne({where: {decider_user:{id: createEventDto.decider_user},requester_user: {id: createEventDto.requester_user}, type:2},
+      relations: ['requester_user', 'decider_user'],})
+      if(already_requested)
         return "2"
     }
     console.log(event_type)

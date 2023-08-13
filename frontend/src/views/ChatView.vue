@@ -893,23 +893,48 @@ watch(messages, () => {
   scrollToBottom();
 })
 
-function inviteToPrivateGame() {
+// function inviteToPrivateGame() {
+//   if (usersInChannels.value.length > 2) return
+//   for (const id in usersInChannels.value) {
+//     if (usersInChannels.value[id].user_id.id != userId) {
+//       let toSend = {
+//         player1_intra_nick: users_Name,
+//         player2_intra_nick: usersInChannels.value[id].user_id.intra_nick,
+//       }
+//       console.log(toSend)
+//       socket.emit('PrivateGame', toSend)
+//     }
+//   }
+// }
+
+const inviteToPrivateGame = async () => {
   if (usersInChannels.value.length > 2) return
-  console.log('Our User is ' + users_Name)
   for (const id in usersInChannels.value) {
     if (usersInChannels.value[id].user_id.id != userId) {
-      console.log('OTHER USER IS ' + usersInChannels.value[id].user_id.nick)
-      // socket.emit('InviteToGame', usersInChannels.value[id].user_id.id);
-      let toSend = {
-        player1_intra_nick: users_Name,
-        player2_intra_nick: usersInChannels.value[id].user_id.intra_nick,
+      try {
+            const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/private_game_request`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(usersInChannels.value[id].user_id.id), message: users_Name+ " just invited you to a PONG Game! " + users_Name }),
+            });
+            if (response.ok) {
+              const data = await response.json();
+            } else {
+              if (response.status == 303) {
+                window.alert('You already already invited this user to a private game!')
+              }
+              else
+                console.log('Error:', response.status);
+            }
+          } catch (error) {
+            console.log('Error:', error);
       }
-      console.log(toSend)
-      socket.emit('PrivateGame', toSend)
     }
   }
-  // if (usersInChannels.value.length())
-}
+};
 
 </script>
 
