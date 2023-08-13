@@ -14,7 +14,7 @@ export class AppService {
    @InjectRepository(Messages) private messagesRepository: Repository<Messages>,
    @InjectRepository(User)private userRepository: Repository<User>,
    @InjectRepository(Channel)private channelRepository: Repository<Channel>,
-   private usersService: UsersService,
+   private usersService: UsersService
  ) {}
  static UsersOnline: UserSocketArray[] = []
 
@@ -47,4 +47,6 @@ export class AppService {
  async user_to_notify(userID: number){
   return this.usersService.notifyUser(userID,AppService.UsersOnline)
  }
+
+
 }

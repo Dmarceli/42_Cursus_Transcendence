@@ -22,9 +22,8 @@
 <script setup lang="ts">
 import Pong2D from '../components/Pong2D.vue'
 import StartMenu from '../components/StartMenu.vue'
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted } from 'vue'
 import jwt_decode from 'jwt-decode';
-import type { Socket } from 'socket.io-client';
 import { onBeforeMount } from 'vue';
 
 let startmenu = ref(true)
@@ -34,7 +33,6 @@ let token: string | null = null;
 let decodedToken: TokenType;
 let users_Name = ref("");
 let isPrivateGame = ref(false)
-const socket: Socket | undefined = inject('socket')
 
 interface TokenType
 {

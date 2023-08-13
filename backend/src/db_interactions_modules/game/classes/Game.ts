@@ -151,7 +151,7 @@ export class Game {
     this.handleGameContinue()
   }
   isGameFinished() {
-    return (this.score.player1 > 2 || this.score.player2 > 2)
+    return (this.score.player1 > 4 || this.score.player2 > 4)
   }
   async handleFinishGame() {
     let winningPlayer = this.score.player1 > this.score.player2 ? this.playerPaddle1 : this.playerPaddle2;

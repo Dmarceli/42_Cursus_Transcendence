@@ -14,7 +14,6 @@ import { Messages } from '../messages/messages.entity';
 import { Channel } from '../channels/channel.entity';
 import { FriendModule } from '../relations/friend/friend.module';
 import { friendService } from '../relations/friend/friend.service';
-import { GameHistoryModule } from '../game_history/game_history.module';
 import { GameModule } from '../game/games.module';
 
 

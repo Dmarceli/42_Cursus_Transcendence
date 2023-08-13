@@ -16,6 +16,7 @@ import { UsersService } from '../users/users.service';
 import { UsersModule } from '../users/users.module';
 import { PrivateGameDto } from '../game/dtos/game.dto';
 
+
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -64,6 +65,8 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
   }
  }
 
+
+
 // Game Service
   @SubscribeMessage('PlayerSelectedPaddle')
   handlePlayerSelectedPaddle(client: Socket, info: any) {
@@ -75,19 +78,8 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
     client.emit("PlayerCreated")
   }
 
-  @SubscribeMessage('InviteToGame')
-  handleInviteToGame(client: Socket, opponent_id: number)
-  {
-    console.log("INVITING TO GAME "+opponent_id)
-    // const opponent = AppService.UsersOnline.find((online) => online.user.id == opponent_id);
-    // opponent.client?.emit("NewGameInvite");
-    // Find client id of opponent
-    // Notify other user
-  }
-
   @SubscribeMessage('PrivateGame')
-  handlePrivateGame(client: Socket, privateGame: PrivateGameDto)
-  {
+  handlePrivateGame(client: Socket, privateGame: PrivateGameDto) {
     this.gameService.createPrivateGame(privateGame.player1_intra_nick, privateGame.player2_intra_nick);
   }
 

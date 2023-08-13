@@ -14,6 +14,3 @@ export class PrivateGameDto {
   @IsDefined()
   opponent_id: number
 }
-  
-  
-  

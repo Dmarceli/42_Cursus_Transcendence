@@ -891,7 +891,8 @@ socket.on('notification', Notification => {
 
 watch(messages, () => {
   scrollToBottom();
-})
+});
+
 
 // function inviteToPrivateGame() {
 //   if (usersInChannels.value.length > 2) return

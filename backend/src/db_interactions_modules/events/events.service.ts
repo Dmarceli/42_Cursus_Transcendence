@@ -19,7 +19,7 @@ export class EventsService {
     private usersService: UsersService,
     private FriendsService: friendService,
     private appService: AppService,
-    private gameService: GameService 
+    private gameService: GameService,
    ) {}
 
   async create(createEventDto: EventCreateDto, event_type: number) {
@@ -78,7 +78,7 @@ export class EventsService {
   async createFriendShip(event)
   {
     const newfriend: CreateFriendDto = {
-      user1Id : event.decider_user.id , 
+      user1Id : event.decider_user.id,
       user2Id : event.requester_user.id
     }
     await this.FriendsService.createfriend(newfriend);

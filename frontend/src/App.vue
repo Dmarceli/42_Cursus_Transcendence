@@ -60,7 +60,7 @@ let routerKey = ref(0)
 async function decideNotification(NotificationID: number, Decision: boolean) {
   let token = getCookieValueByName('token');
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/events/event_decision/'+ NotificationID + '/' + Decision ;
+    let url = process.env.VUE_APP_BACKEND_URL + '/events/event_decision/' + NotificationID + '/' + Decision ;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -282,7 +282,6 @@ if (socket)  {
 onBeforeMount(() => {
   fetchNotifications();
 });
-
 </script>
 
 <style scoped>
