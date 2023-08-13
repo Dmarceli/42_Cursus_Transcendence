@@ -1,8 +1,5 @@
 <template>
-  <header v-if="islogged">
-    <div v-if="first_login_modal">
-      <userValidation></userValidation>
-    </div>
+  <header v-if="islogged && !first_login_modal">
     <nav>
       <RouterLink to="/">Pong</RouterLink>
       <RouterLink to="/chat">Chat</RouterLink>
@@ -12,9 +9,10 @@
         <v-icon color="green">mdi-bell</v-icon>
         <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
       </v-btn>
-   		<v-btn @click="logout">Logout</v-btn>
+      <v-btn @click="logout">Logout</v-btn>
     </nav>
   </header>
+ 
   <v-dialog v-model="showNotifications" max-width="400">
     <v-card>
       <v-card-title>
@@ -41,11 +39,14 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <div v-if="islogged" :class="{'game-view': isGameRoute}">
+  <div v-if="islogged && !first_login_modal" :class="{'game-view': isGameRoute}">
     <RouterView :key="routerKey"/>
   </div>
-  <div v-else>
+  <div v-else-if="!first_login_modal">
     <Login @clicked42="login42" @clickedgoogle="loginGoogle" @id_to_login="executeLoginwithId" />
+  </div>
+  <div v-else-if="first_login_modal" class="first_login_modal">
+    <userValidation></userValidation>
   </div>
 </template>
 
@@ -351,6 +352,14 @@ nav a {
 .notifications-box{
   overflow-y: scroll;
 }
+
+.first_login_modal{
+  align-content: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
 @media (min-width: 1024px) {
   header {
     place-items: center;
@@ -397,5 +406,7 @@ nav a {
   align-content: center;
   justify-content: center;
 }
+
 }
+
 </style>
