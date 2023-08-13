@@ -61,7 +61,6 @@ const fetchUserProfile = async () => {
     if (response.ok) {
       const data = await response.json();
       userData.value = data;
-      console.log(data.is_first_login)
     } else {
       // Handle the case when the request fails
       console.error('Error fetching User Profile data:', response.statusText);
@@ -72,8 +71,7 @@ const fetchUserProfile = async () => {
 }
 
 onBeforeMount(() => {
-  if(token)
-	  fetchUserProfile();
+  fetchUserProfile();
 	if (userData.value.nick === userData.value.intra_nick) {
 		doneValidation.value = false;
 	}

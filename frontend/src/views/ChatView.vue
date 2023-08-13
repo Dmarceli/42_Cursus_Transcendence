@@ -826,14 +826,15 @@ const removeFriend = async (friend) => {
 	}
 };
 
-onBeforeMount(() => {
-	getUsers();
-	getChannelsJoined();
-	getChannels();
-	getFriends();
+onBeforeMount(async() => {
+	await getUsers();
+	await getChannelsJoined();
+	await getChannels();
+	await getFriends();
 });
 
-socket.on('recMessage', message => {
+if(socket){
+socket.on('recMessage', async (message) =>  {
 	if (message.channelId === selected_channel) {
 		scrollToBottom();
 	} else {
@@ -842,8 +843,9 @@ socket.on('recMessage', message => {
 		}
 		unreadMessages.value[message.channelId]++;
 	}
-	getMessages();
+	await getMessages();
 });
+}
 
 
 watch(messages, () => {

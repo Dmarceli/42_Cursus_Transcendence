@@ -47,6 +47,7 @@ import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
 import { ref, provide, onBeforeMount, computed} from 'vue'
 import userValidation from './components/UserValidation.vue'
+import { onMounted } from 'vue';
 
 const islogged = ref(false);
 const first_login_modal = ref(false);
@@ -121,13 +122,13 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
+      socket = io(process.env.VUE_APP_BACKEND_URL,{
+          auth: {
+            token: token
+          }
+        });
+        provide('socket', socket)
       first_login_modal.value = await fetch_logged_previous()
-		socket = io(process.env.VUE_APP_BACKEND_URL,{
-        auth: {
-          token: token
-        }
-      });
-      provide('socket', socket)
 	};
     }
   }
@@ -263,6 +264,7 @@ if (socket && islogged.value === true) {
 }
 
 onBeforeMount(() => {
+ 
   let token = getCookieValueByName('token');
   if(token)
     fetchNotifications();
