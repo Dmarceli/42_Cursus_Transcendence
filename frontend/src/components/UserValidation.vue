@@ -1,5 +1,5 @@
 <template>
-	<v-card v-if="!doneValidation" width="300" class="mx-auto" elevation="1">
+	<v-card width="300" class="mx-auto" elevation="1">
     <v-form fast-fail @submit.prevent>
 			<v-card-title class="py-5 font-weight-black text-center">Welcome to Raquetas!</v-card-title>
 			<v-card-text class="font-weight-regular text-justify" >
@@ -12,7 +12,7 @@
 				<div class="avatar-container-settings">
 					<img :src="updateAvatar || userData.avatar" alt="Avatar" class="avatar-settings" />
 				</div>
-				<input type="file" @change="handleNewAvatar" id="avatar" />
+				<input type="file" @change="handleNewAvatar" id="avatar-file" ref="avatarUpload" :key="inputKey"/>
 			</div>
       <v-text-field
 			v-model="updateNickname"
@@ -27,10 +27,9 @@
 <script setup lang="ts">
 import { ref, reactive, onBeforeMount } from 'vue';
 
-
-
-const doneValidation = ref(false);
 const emits = defineEmits(['submitted'])
+
+let inputKey=ref(0)
 
 const userData = ref({
 	id: 0,
@@ -59,7 +58,7 @@ const fetchUserProfile = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-    
+
     if (response.ok) {
       const data = await response.json();
       userData.value = data;
@@ -74,12 +73,6 @@ const fetchUserProfile = async () => {
 
 onBeforeMount(() => {
   fetchUserProfile();
-	if (userData.value.nick === userData.value.intra_nick) {
-		doneValidation.value = false;
-	}
-	else {
-		doneValidation.value = true;
-	}
 });
 
 let token = getCookieValueByName('token');
@@ -94,22 +87,25 @@ let avatarUpload = ref<File|null>(null);
 const nickname = reactive({
 	rules: [
 		value => value.length < 20 || 'Nickname too long',
-		value => value.length > 0 || 'Nickname cannot be empty',
 		value => usernameRegex.test(value) || 'Invalid Characters found',
-		value => value !== userData.value.intra_nick || 'Nickname cannot be the same as your auth login',
 	],
 });
 
 const handleNewAvatar = async (event: Event) => {
   if (event.target instanceof HTMLInputElement && event.target.files) {
-    avatarUpload.value = event.target.files[0];
-		console.log(avatarUpload.value);
+		console.log("INITIAL FILE WOULD BE"+avatarUpload.value);
     if (avatarUpload.value)
     {
 			let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
 			if (!regex.test(avatarUpload.value.name)) {
 				alert("Please upload an image file");
-			return;
+        const inputFileElement = document.getElementById('avatar-file') as HTMLInputElement
+        if (inputFileElement) {
+          inputFileElement.value = '';
+        }
+        avatarUpload.value=null
+        inputKey.value++
+        return;
 			}
       const reader = new FileReader();
         reader.onload = (e) => {
@@ -127,19 +123,23 @@ const handleNewAvatar = async (event: Event) => {
 }
 
 async function Submit() {	
-	if (updateNickname.value === '' || usernameRegex.test(updateNickname.value) === false){
-		return;
+	if (updateNickname.value === ''){
+    emits('submitted')
   }
   userData.value.nick = updateNickname.value;
   if (updateAvatar.value)
   {
     userData.value.avatar = updateAvatar.value;
   }
-  if (avatarUpload.value) {
+  let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
+  if (avatarUpload.value && avatarUpload.value.value) {
+    console.log("LETS POST"+avatarUpload.value.name)
+    if (!regex.test(avatarUpload.value.name))
+      return
     // Need to make validation for image files
     try {
       const formData = new FormData();
-      formData.append('file', avatarUpload.value);
+      formData.append('file', userData.value.avatar);
       formData.append('userId', String(userData.value.id));
       formData.append('nickUpdate', userData.value.nick);
       const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
@@ -154,10 +154,6 @@ async function Submit() {
         console.log('Error:', error);
       }
   }
-  else {
-    // console.error('Error reading file');
-  }
-  doneValidation.value = true;
   emits('submitted')
 }
 
@@ -195,3 +191,5 @@ async function Submit() {
 }
 
 </style>
+
+
