@@ -139,15 +139,17 @@ const handleNewAvatar = async (event: Event) => {
 
 
 async function saveSettings() {	
+  if (!usernameRegex.test(updateNickname.value)){
+    return
+  }
 	if (updateNickname.value !== ''){
     userProfile.value.nick = updateNickname.value;
   }
   let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
   if (avatarUpload.value && avatarUpload.value.files && avatarUpload.value.files.length > 0)
   {
-    // && regex.test(avatarUpload.value.files[0].name
-    console.log("GOT HERE")
-    userProfile.value.avatar = updateAvatar.value;
+    if (regex.test(avatarUpload.value.files[0].name))
+      userProfile.value.avatar = updateAvatar.value;
   }
     try {
       const formData = new FormData();
@@ -168,7 +170,7 @@ async function saveSettings() {
   closeSettings();
 }
 
-const usernameRegex = /^[a-zA-Z0-9._-]{1,20}$/;
+const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
 
 const nickname = reactive({
 	rules: [
