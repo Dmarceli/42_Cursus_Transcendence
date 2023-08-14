@@ -22,6 +22,9 @@
               Games Won: {{ user_friend.won_games }}<br>
               Games Lost: {{ user_friend.lost_games }}<br>
             </span>
+            <v-avatar class="avatar-container">
+                <img :src="user_friend.avatar" alt="Avatar" class="avatar" />
+            </v-avatar>
             {{ user_friend.nick }}
             <button class="friend-remove" @click="removeFriend(user_friend)"></button>
           </div>
@@ -765,6 +768,31 @@ watch(messages, () => {
 
 <style>
 @import '../assets/Chat.css';
+
+/* .avatar-container {
+  display: inline-block;
+  position: relative;
+  border-radius: 50%;
+  border: 1px solid white;
+} */
+/* 
+.history-avatar {
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.history-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  overflow: hidden;
+} */
+
 </style>
 
 
