@@ -153,7 +153,7 @@ async function saveSettings() {
   }
     try {
       const formData = new FormData();
-      formData.append('file', avatarUpload.value.files[0]);
+      formData.append('file', avatarUpload.value?.files[0]);
       formData.append('userId', String(userProfile.value.id));
       formData.append('nickUpdate', userProfile.value.nick);
       const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
