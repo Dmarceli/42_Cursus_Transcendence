@@ -1,16 +1,12 @@
 <script setup lang="ts">
-<<<<<<< HEAD
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeMount } from 'vue';
 import Carousel from '../components/ActiveGameCarousel.vue'
-=======
-	import { ref, computed, onBeforeMount } from 'vue';
   	
   interface Player {
     id: number;
     name: string;
     score: number;
   }
->>>>>>> main
 
 interface Player {
   id: number;
@@ -47,26 +43,6 @@ const closeModal = () => {
   selectedPlayer.value = null;
 };
 
-<<<<<<< HEAD
-/* Code below is to fetch the leaderboard data from the API, I think... */
-
-// const fetchLeaderboard = async () => {
-//     try {
-//       const response = await fetch('API_ENDPOINT'); // Replace 'API_ENDPOINT' with the actual API URL to fetch the leaderboard data
-//       const data = await response.json();
-//       leaderboard.value = data;
-//     } catch (error) {
-//       console.error('Error fetching leaderboard data:', error);
-//     }
-//   };
-
-//   onMounted(() => {
-//     fetchLeaderboard();
-//   });
-
-sortLeaderboard();
-const top10 = computed(() => leaderboard.value.slice(0, 10));
-=======
 
 const fetchLeaderboard = async () => {
     try {
@@ -86,7 +62,6 @@ const fetchLeaderboard = async () => {
   });
   const top10 = computed(() => leaderboard.value.slice(0, 10));
 
->>>>>>> main
 </script>
 
 <template>

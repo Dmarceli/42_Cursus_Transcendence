@@ -548,13 +548,8 @@ td {
 }
 
 .stat-value {
-<<<<<<< HEAD
-	font-size: 24px;
-	color: #666666;
-=======
   font-size: 24px;
   color: black;
->>>>>>> main
 }
 
 .settings {
@@ -618,16 +613,10 @@ td {
 }
 
 .modal-buttons {
-<<<<<<< HEAD
-	display: flex;
-	justify-content: flex-end;
-	margin-top: 10px;
-=======
   display: flex;
   justify-content: flex-end;
 	align-content: space-around;
   margin-top: 10px;
->>>>>>> main
 }
 
 .save {
