@@ -87,6 +87,7 @@ let avatarUpload = ref<File|null>(null);
 const nickname = reactive({
 	rules: [
 		value => value.length < 20 || 'Nickname too long',
+    value => value.length > 0 || 'Nickname cannot be empty',
 		value => usernameRegex.test(value) || 'Invalid Characters found',
 	],
 });

@@ -10,10 +10,14 @@ import jwt_decode from 'jwt-decode';
 
 library.add(fas);
 
-const userData = reactive({
-	id: null,
-	nick: null,
+const userTokenData = ref({
+	id: 0,
+	intra_nick: '',
 });
+
+let token = getCookieValueByName('token');
+const decodedToken = jwt_decode(token);
+userTokenData.value.id = decodedToken.user["id"];
 
 const userProfile = ref({
 	id: 0,
@@ -40,15 +44,11 @@ function getCookieValueByName(name: string) {
   return null;
 }
 
-let token = getCookieValueByName('token');
-const decodedToken = jwt_decode(token);
-let useNick;
-userData.id = decodedToken.user["id"];
 
 let avatarUpload = ref<File|null>(null);
 
 const isOwnProfile = computed(() => {
-	return userProfile.value.id === userData.id;
+	return userProfile.value.id === userTokenData.value.id;
 });
 
 const route = useRoute();
@@ -101,72 +101,26 @@ const isSettingsOpen = ref(false);
 
 const updateNickname = ref(userProfile.value.nick);
 const updateAvatar = ref('');
+let inputKey=ref(0)
 
 function openSettings() {
   isSettingsOpen.value = true;
 }
 
-async function saveSettings() {	
-	if (updateNickname.value === '' || usernameRegex.test(updateNickname.value) === false){
-		return;
-  }
-  userProfile.value.nick = updateNickname.value;
-  if (updateAvatar.value)
-  {
-    userProfile.value.avatar = updateAvatar.value;
-  }
-  if (avatarUpload.value) {
-    // Need to make validation for image files
-    try {
-      const formData = new FormData();
-      formData.append('file', avatarUpload.value);
-      formData.append('userId', userData.id);
-      formData.append('nickUpdate', userProfile.value.nick);
-      const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
-        method: 'POST',
-        body: formData,
-      });
-      if (response.ok) {
-        let data = await response.json();
-        console.log("NEW URL "+data.newAvatar);
-      } else {
-        return false;
-      }
-    } catch (error) {
-        console.log('Error:', error);
-        return false;
-      }
-  }
-  else {
-    console.error('Error reading file');
-  }
-  closeSettings();
-}
-
-const usernameRegex = /^[a-zA-Z0-9._-]{1,20}$/;
-
-const nickname = reactive({
-	rules: [
-		value => value.length < 20 || 'Nickname too long',
-		value => value.length > 0 || 'Nickname cannot be empty',
-		value => usernameRegex.test(value) || 'Invalid Characters found',
-		value => value !== userProfile.value.intra_nick || 'Nickname cannot be the same as before',
-	],
-});
-
-function closeSettings() {
-  isSettingsOpen.value = false;
-}
-
 const handleNewAvatar = async (event: Event) => {
   if (event.target instanceof HTMLInputElement && event.target.files) {
-    avatarUpload.value = event.target.files[0];
     if (avatarUpload.value)
     {
 			let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
-			if (!regex.test(avatarUpload.value.name)) {
+			if (!regex.test(avatarUpload.value.files[0].name)) {
 				alert("Please upload an image file");
-			return;
+        const inputFileElement = document.getElementById('avatar-file') as HTMLInputElement
+        if (inputFileElement) {
+          inputFileElement.value = '';
+        }
+        avatarUpload.value=null
+        inputKey.value++
+        return;
 			}
       const reader = new FileReader();
         reader.onload = (e) => {
@@ -178,10 +132,55 @@ const handleNewAvatar = async (event: Event) => {
             console.error('Error reading file');
           }
         };
-        reader.readAsDataURL(avatarUpload.value);
+        reader.readAsDataURL(avatarUpload.value.files[0]);
     }
   }
 }
+
+
+async function saveSettings() {	
+	if (updateNickname.value !== ''){
+    userProfile.value.nick = updateNickname.value;
+  }
+  let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
+  if (avatarUpload.value && avatarUpload.value.files && avatarUpload.value.files.length > 0)
+  {
+    // && regex.test(avatarUpload.value.files[0].name
+    console.log("GOT HERE")
+    userProfile.value.avatar = updateAvatar.value;
+  }
+    try {
+      const formData = new FormData();
+      formData.append('file', avatarUpload.value.files[0]);
+      formData.append('userId', String(userProfile.value.id));
+      formData.append('nickUpdate', userProfile.value.nick);
+      const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
+        method: 'POST',
+        body: formData,
+      });
+      if (response.ok) {
+        let data = await response.json();
+        console.log("NEW URL "+data.newAvatar);
+      }
+    } catch(error) {
+        console.log('Error:', error);
+      }
+  closeSettings();
+}
+
+const usernameRegex = /^[a-zA-Z0-9._-]{1,20}$/;
+
+const nickname = reactive({
+	rules: [
+		value => value.length < 20 || 'Nickname too long',
+		value => usernameRegex.test(value) || 'Invalid Characters found',
+	],
+});
+
+function closeSettings() {
+  isSettingsOpen.value = false;
+}
+
 
 </script>
 
@@ -271,7 +270,7 @@ const handleNewAvatar = async (event: Event) => {
           <div class="avatar-container-settings">
             <img :src="updateAvatar || userProfile.avatar" alt="Avatar" class="avatar-settings" />
           </div>
-          <input type="file" @change="handleNewAvatar" id="avatar" />
+          <input type="file" @change="handleNewAvatar" id="avatar-file" ref="avatarUpload" :key="inputKey"/>
         </div>
         <!-- Nickname -->
         <div class="settings-section">
