@@ -6,7 +6,9 @@ import { UsersService } from 'src/db_interactions_modules/users/users.service';
 
 @Injectable()
 export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
-  constructor(private userService: UsersService) {
+  constructor(
+    private userService: UsersService
+    ) {
     super({
       authorizationURL: 'https://api.intra.42.fr/oauth/authorize',
       tokenURL: 'https://api.intra.42.fr/oauth/token',

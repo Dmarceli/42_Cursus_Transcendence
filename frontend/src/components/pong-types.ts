@@ -9,6 +9,7 @@ interface Rectangle {
   height: number
   width: number
   conv_rate: number
+  skin: string
   update(paddleref: any): void
   updateConvRate(conv_rate: number): void
   draw(context: CanvasRenderingContext2D): void
@@ -19,26 +20,49 @@ class Paddle implements Rectangle {
   y: number
   height: number
   width: number
+  nick: string
   conv_rate: number
+  skin: string
   constructor(paddleref: any, conv: number) {
     this.conv_rate = conv
     this.height = paddleref.height * this.conv_rate
     this.width = paddleref.width * this.conv_rate
     this.x = paddleref.x * this.conv_rate
     this.y = paddleref.y * this.conv_rate
+    this.nick = paddleref.nick
+    this.skin = paddleref.skin
   }
   update(paddleref: any): void {
     this.height = paddleref.height * this.conv_rate
     this.width = paddleref.width * this.conv_rate
     this.x = paddleref.x * this.conv_rate
     this.y = paddleref.y * this.conv_rate
+    this.skin = paddleref.skin
   }
   updateConvRate(conv_rate: number): void {
     this.conv_rate = conv_rate
   }
   draw(context: CanvasRenderingContext2D): void {
-    context.fillStyle = 'hsla(0, 0%, 100%, 1)'
-    context.fillRect(this.x, this.y, this.width, this.height)
+    this.drawRectangle(context)
+    this.drawNick(context)
+  }
+  drawRectangle(context: CanvasRenderingContext2D)
+  {
+    const img = new Image();
+  img.src = this.skin
+  context.drawImage(img, this.x, this.y, this.width, this.height)
+  }
+  drawNick(context: CanvasRenderingContext2D)
+  {
+    const board_height = board_dims.height * this.conv_rate
+    const board_width = board_dims.width * this.conv_rate
+    let nick_height = board_height /20
+    context.font = nick_height+"px Helvetica Neue";
+    context.fillStyle = "white";
+    const text_width = context.measureText(this.nick).width
+    const x = this.x > board_width/2 ? this.x-text_width-this.width: this.x+this.width*2
+    const y = this.x > board_width/2 ? board_width-this.x+nick_height : this.x+this.width+nick_height
+    context.fillText(this.nick, x, y);
   }
 }
 
@@ -108,6 +132,5 @@ class Score {
     context.fillText(this.text, x, this.fontSize);
   }
 }
-
 
 export { type Rectangle, Paddle, type Circle, Ball, Score }

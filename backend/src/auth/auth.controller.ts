@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller,Param, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AuthService } from './auth.service';
 import { FortyTwoAuthGuard } from './42/auth.guard';
@@ -9,7 +9,7 @@ import { TwoFactorAuthService } from './2FA/2FA-service';
 import { JwtService } from '@nestjs/jwt';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from 'src/db_interactions_modules/users/user.entity';
-
+import { GoogleAuthGuard } from './google/auth_google.guard';
 @Controller('/auth')
 export class AuthController {
   constructor(
@@ -54,11 +54,11 @@ export class AuthController {
   /*******************************************/
 
   @Get('/login_google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuth(@Req() req) { }
 
   @Get('/callback_google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     const payload = this.authService.googleLogin(req)
     if (payload.TwoFAEnabled && payload.TwoFASecret) {
@@ -115,11 +115,11 @@ export class AuthController {
   
 
   // TEMPORARY
-  @Get('/tempbypass')
-  async tempsecbypass(@Req() req: any, @Res() res: any) {
-    const user_ = await this.userService.findAll()
+  @Get('/tempbypass/:id')
+  async tempsecbypass(@Req() req: any, @Res() res: any, @Param('id') id1: number) {
+    const user_ = await this.userService.findById(id1)
     if (user_) {
-      const payload = await this.authService.login(user_[0])
+      const payload = await this.authService.login(user_)
       res.cookie('token', payload.access_token)
       res.status(200).json({ message: 'Verification successful', code: payload.access_token });
     } else {

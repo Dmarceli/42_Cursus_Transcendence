@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject,forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserToChannel } from './user_to_channel.entity';
@@ -7,20 +7,27 @@ import { User } from 'src/db_interactions_modules/users/user.entity';
 import { Channel } from 'src/db_interactions_modules/channels/channel.entity';
 import { Response } from 'express';
 import { channel } from 'diagnostics_channel';
+import { UsersService } from 'src/db_interactions_modules/users/users.service';
+import { AppService } from 'src/app.service';
 
 @Injectable()
 export class UserToChannelService {
   constructor(
     @InjectRepository(UserToChannel) private UserToChannelRepository: Repository<UserToChannel>,
     @InjectRepository(Channel) private ChannelRepository: Repository<Channel> ,
-    @InjectRepository(User) private UserRepository: Repository<User> 
+    @InjectRepository(User) private UserRepository: Repository<User>,
+    @Inject(forwardRef(() => UsersService))private usersService: UsersService,
   ) { }
 
 
 
   async joinchannel(channel: Channel, user: User, pass: string) {
     let is_user_owner = false;
-    const channels_users_count = (await this.usersonchannel(channel.id)).length
+    const channels_users_ = (await this.usersonchannel(channel.id))
+    const is_already_on_channel= channels_users_.find(element => element.user_id.id == user.id )
+    if(is_already_on_channel)      
+      return
+    const channels_users_count = (channels_users_).length
     if (!channels_users_count){
       is_user_owner = true;
     }
@@ -29,11 +36,14 @@ export class UserToChannelService {
       if (password.password != pass)
         return
     }
+
+    this.usersService.update_channels_on_list(user.id,channel.id)
+
     return await this.UserToChannelRepository.save({
       user_id: user,
       channel_id: channel,
       is_owner: is_user_owner,
-      is_admin: false,
+      is_admin: is_user_owner,
       is_muted: false,
       is_banned: false,
     });
@@ -95,6 +105,7 @@ export class UserToChannelService {
 
 
   async ban_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response){
+    console.log(caller_id)
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
     const user_to_ban = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
     if((caller_privileges.is_admin || caller_privileges.is_owner) && !user_to_ban.is_owner){

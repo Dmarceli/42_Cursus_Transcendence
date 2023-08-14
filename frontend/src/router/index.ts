@@ -30,9 +30,14 @@ const router = createRouter({
     },
     {
       path: '/profile',
-      name: 'profile',
+      name: 'myProfile',
       component: ProfileView
-    }
+    },
+		{
+			path: '/profile/:nick',
+      name: 'otherProfile',
+      component: ProfileView
+		}
   ]
 })
 

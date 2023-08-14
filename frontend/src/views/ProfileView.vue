@@ -1,21 +1,86 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref,onBeforeMount, reactive, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
+import jwt_decode from 'jwt-decode';
+
+
 
 library.add(fas);
 
+const userData = reactive({
+	id: null,
+	nick: null,
+});
+
 const userProfile = ref({
-  nickname: 'John Doe',
-  avatar: 'avatar.png',
-  gamesWon: 10,
-  gamesLost: 5,
-  winStreak: 1,
-  biggestStreak: 3,
-  rank: 5,
-  status: 'online',
+	id: 0,
+  nick: '',
+	intra_nick: '',
+  avatar: '',
+  won_games: 0,
+  lost_games: 0,
+  win_streak: 0,
+  highest_win_streak: 0,
+  rank: 0,
   // Add more user profile data here
+});
+
+function getCookieValueByName(name: string) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
+    }
+  }
+  return null;
+}
+
+let token = getCookieValueByName('token');
+const decodedToken = jwt_decode(token);
+let useNick;
+userData.id = decodedToken.user["id"];
+
+let avatarUpload = ref<File|null>(null);
+
+const isOwnProfile = computed(() => {
+	return userProfile.value.id === userData.id;
+});
+
+const route = useRoute();
+
+const fetchUserProfile = async () => {
+	try {
+		if (route.name === 'myProfile') {
+			useNick = userData.nick;
+		} else {
+			useNick = route.params.nick;
+		}
+		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
+		const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      userProfile.value = data;
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching User Profile data:', response.statusText);
+    }
+	} catch (error) {
+		console.error('Error fetching User Profile data', error);
+	}
+}
+
+onBeforeMount(() => {
+	fetchUserProfile();
 });
 
 const lastGames = ref([
@@ -32,15 +97,15 @@ const lastGames = ref([
 ]);
 
 const getPlayerAvatar = (playerNick: string) => {
-  if (playerNick === userProfile.value.nickname) {
+  if (playerNick === userProfile.value.nick) {
     return userProfile.value.avatar;
   }
-  return '../assets/avatar.png';
+  return '';
 }
 
 const isSettingsOpen = ref(false);
 
-const updateNickname = ref(userProfile.value.nickname);
+const updateNickname = ref(userProfile.value.nick);
 const updateAvatar = ref('');
 
 function updateStatus(newStatus: string) {
@@ -51,36 +116,83 @@ function openSettings() {
   isSettingsOpen.value = true;
 }
 
-function saveSettings() {
-  userProfile.value.nickname = updateNickname.value;
-  userProfile.value.avatar = updateAvatar.value;
+async function saveSettings() {	
+	if (updateNickname.value === '' || usernameRegex.test(updateNickname.value) === false){
+		return;
+  }
+  userProfile.value.nick = updateNickname.value;
+  if (updateAvatar.value)
+  {
+    userProfile.value.avatar = updateAvatar.value;
+  }
+  if (avatarUpload.value) {
+    // Need to make validation for image files
+    try {
+      const formData = new FormData();
+      formData.append('file', avatarUpload.value);
+      formData.append('userId', userData.id);
+      formData.append('nickUpdate', userProfile.value.nick);
+      const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
+        method: 'POST',
+        body: formData,
+      });
+      if (response.ok) {
+        let data = await response.json();
+        console.log("NEW URL "+data.newAvatar);
+      } else {
+        return false;
+      }
+    } catch (error) {
+        console.log('Error:', error);
+        return false;
+      }
+  }
+  else {
+    console.error('Error reading file');
+  }
   //send it to backend here
   closeSettings();
 }
+
+const usernameRegex = /^[a-zA-Z0-9._-]{1,20}$/;
+
+const nickname = reactive({
+	rules: [
+		value => value.length < 20 || 'Nickname too long',
+		value => value.length > 0 || 'Nickname cannot be empty',
+		value => usernameRegex.test(value) || 'Invalid Characters found',
+	],
+});
 
 function closeSettings() {
   isSettingsOpen.value = false;
 }
 
-function handleNewAvatar(event: Event) {
+const handleNewAvatar = async (event: Event) => {
   if (event.target instanceof HTMLInputElement && event.target.files) {
-    const file = event.target.files[0];
-    if (file) {
-      // Need to make validation for image files
+    avatarUpload.value = event.target.files[0];
+    if (avatarUpload.value)
+    {
+			let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
+			if (!regex.test(avatarUpload.value.name)) {
+				alert("Please upload an image file");
+			return;
+			}
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          updateAvatar.value = result;
-        }
-        else {
-          console.error('Error reading file');
-        }
-      };
-      reader.readAsDataURL(file);
+        reader.onload = (e) => {
+          const result = e.target?.result;
+          if (typeof result === 'string') {
+            updateAvatar.value = result;
+          }
+          else {
+            console.error('Error reading file');
+          }
+        };
+        reader.readAsDataURL(avatarUpload.value);
     }
   }
 }
+
 
 // watch(() => userProfile.value.nickname, (newNickname, oldNickname) => {
 //   lastGames.value.forEach((game) => {
@@ -97,12 +209,19 @@ function handleNewAvatar(event: Event) {
 	<div class="profile">
     <!-- Avatar and Nick -->
     <div class="profile-header">
-      <div class="avatar-container">
+      <v-avatar class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
-        <div :class="['status-indicator', userProfile.status]"></div>
-      </div>
-      <h1 class="nickname" >{{ userProfile.nickname }}</h1>
-        <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" @click="openSettings" />
+			</v-avatar>
+      <h1 class="nickname" >{{ userProfile.nick }}</h1>
+      <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
+			<div class="user-actions">
+					<v-btn class="ma-2 blockBtn" color="red-darken-4">
+						Block User<v-icon end icon="mdi-account-cancel-outline"></v-icon>
+					</v-btn>
+					<v-btn class="ma-2 chatInviteBtn" color="green">
+						Invite to chat<v-icon end icon="mdi-email"></v-icon>
+					</v-btn>
+			</div>
     </div>
     <div class="profile-body">
       <!-- Statistics -->
@@ -111,20 +230,20 @@ function handleNewAvatar(event: Event) {
 	      <div class="stat-board">
           <div class="stat-item">
             <div class="stat-label">Games Won</div>
-            <div class="stat-value">{{ userProfile.gamesWon }}</div>
+            <div class="stat-value">{{ userProfile.won_games }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">Games Lost</div>
-            <div class="stat-value">{{ userProfile.gamesLost }}</div>
+            <div class="stat-value">{{ userProfile.lost_games }}</div>
           </div>
-          <div class="stat-item">
+          <!-- <div class="stat-item">
             <div class="stat-label">Win Streak</div>
-            <div class="stat-value">{{ userProfile.winStreak }}</div>
+            <div class="stat-value">{{ userProfile.win_streak }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">Highest Streak</div>
-            <div class="stat-value">{{ userProfile.biggestStreak }}</div>
-          </div>
+            <div class="stat-value">{{ userProfile.highest_win_streak }}</div>
+          </div> -->
           <div class="stat-item stat-rank">
             <div class="stat-label">Rank</div>
             <div class="stat-value">{{ userProfile.rank }}</div>
@@ -170,20 +289,19 @@ function handleNewAvatar(event: Event) {
         <h2>Edit Profile</h2>
         <!-- Avatar -->
         <div class="settings-section">
-          <label for="avatar" class="avatar-label">Avatar</label>
+          <label for="avatar" class="avatar-label"></label>
           <div class="avatar-container-settings">
             <img :src="updateAvatar || userProfile.avatar" alt="Avatar" class="avatar-settings" />
           </div>
-          <input type="file" @change="handleNewAvatar($event)" id="avatar" />
+          <input type="file" @change="handleNewAvatar" id="avatar" />
         </div>
         <!-- Nickname -->
         <div class="settings-section">
-          <label for="nickname">Nickname</label>
-          <input v-model="updateNickname" type="text" id="nickname" />
+					<v-text-field v-model="updateNickname" label="Nickname" class="nickname-settings" :rules="nickname.rules"/>
         </div>
         <div class="modal-buttons">
-          <button @click="saveSettings">Save</button>
-          <button @click="closeSettings">Cancel</button>
+          <v-btn variant="outlined" @click="saveSettings" class="save">Save</v-btn>
+          <v-btn @click="closeSettings" class="cancel">Cancel</v-btn>
         </div>
       </div>
     </div>
@@ -212,30 +330,35 @@ function handleNewAvatar(event: Event) {
   position: relative;
 }
 
-.avatar-container {
-  width: 20vw;
+.v-avatar.v-avatar--density-default {
+	width: 20vw;
   max-width: 200px;
   height: 20vw;
   max-height: 200px;
+}
+
+.avatar-container {
+  width:100px;
+  height:100px;
   border-radius: 50%;
   overflow: hidden;
-  margin-right: 20px;
+  margin-bottom: 10px;
   border: 2px solid white;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
-.avatar-container img {
-  overflow: hidden;
+.avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 760px) {
   .avatar-container {
     width: 100px;
     height: 100px;
@@ -251,6 +374,19 @@ function handleNewAvatar(event: Event) {
     flex-direction: column;
     text-align: center;
   }
+
+	.avatar-container img {
+		position: relative;
+	}
+
+	.profile-header .stat-item {
+		margin-bottom: 10px;
+	}
+
+	.user-actions {
+		max-width: 170px;
+		margin: 0 auto;
+	}
 }
 
 .status-indicator {
@@ -283,20 +419,21 @@ function handleNewAvatar(event: Event) {
   display: flex;
   justify-content: center;
   align-items: center;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 .avatar-settings {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border: 2px solid hsla(160, 100%, 37%, 1);
 }
 
-.avatar {
+/* .avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
+} */
 
 label[for="nickname"] {
   font-weight: bold;
@@ -309,10 +446,16 @@ label[for="nickname"] {
 }
 
 .nickname {
-  text-align: center;
-  flex: 1;
-  font-size: 24px;
+  font-size: 2.5rem;
+	font-weight: bold;
   color: white; /* Customize the color if needed */
+}
+
+.user-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
 
 .profile-body {
@@ -440,7 +583,7 @@ td {
 
 .stat-value {
   font-size: 24px;
-  color: #666666;
+  color: black;
 }
 
 .settings {
@@ -503,7 +646,13 @@ td {
 .modal-buttons {
   display: flex;
   justify-content: flex-end;
+	align-content: space-around;
   margin-top: 10px;
+}
+
+.save {
+	margin-right: 10px;
+	color: #87cefa;
 }
 
 .dimmed-background {

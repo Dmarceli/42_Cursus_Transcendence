@@ -16,8 +16,15 @@ import { UserToChannelModule } from './db_interactions_modules/relations/user_to
 import { ConfigModule } from '@nestjs/config';
 import { Messages } from './db_interactions_modules/messages/messages.entity';
 import { MessagesModule } from './db_interactions_modules/messages/messages.module';
-import { GameGateway } from './db_interactions_modules/game/game.gateway';
 import { AuthModule } from './auth/auth.module';
+import { EventsModule } from './db_interactions_modules/events/events.module';
+import { Events } from './db_interactions_modules/events/events.entity';
+import { GameModule } from './db_interactions_modules/game/games.module';
+import { UsersService } from './db_interactions_modules/users/users.service';
+import { ChannelsService } from './db_interactions_modules/channels/channels.service';
+import { UserToChannelService } from './db_interactions_modules/relations/user_to_channel/user_to_channel.service';
+import { EventsService } from './db_interactions_modules/events/events.service';
+import { MessagesService } from './db_interactions_modules/messages/messages.service';
 
 @Module({
   imports: [ 
@@ -30,19 +37,22 @@ import { AuthModule } from './auth/auth.module';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User,Messages, GameHistory, Channel, friend, UserToChannel ],
+      entities: [User,Messages, GameHistory, Channel, friend, UserToChannel, Events],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Messages, GameHistory, Channel, friend, UserToChannel]),
+    TypeOrmModule.forFeature([User, Messages, GameHistory, Channel, friend, UserToChannel, Events]),
     MessagesModule,
     UsersModule,
     GameHistoryModule,
     ChannelsModule,
     FriendModule,
     UserToChannelModule,
-    AuthModule
+    AuthModule,
+    EventsModule,
+    GameModule
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway, GameGateway],
+  providers: [AppService, AppGateway, UsersService, ChannelsService, UserToChannelService,EventsService, MessagesService],
+  exports: [AppService, AppGateway,  ChannelsService, UserToChannelService,EventsService, MessagesService, UsersService]
 })
 export class AppModule {}
