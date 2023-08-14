@@ -1,6 +1,6 @@
 <template>
 	<v-card width="300" class="mx-auto" elevation="1">
-    <v-form fast-fail @submit.prevent>
+    <v-form fast-fail @submit.prevent v-model="form">
 			<v-card-title class="py-5 font-weight-black text-center">Welcome to Raquetas!</v-card-title>
 			<v-card-text class="font-weight-regular text-justify" >
 				Since this is your first time here, we've picked an avatar for you.
@@ -19,7 +19,7 @@
 			label="Nickname"
 			:rules="nickname.rules">
 		</v-text-field>
-      <v-btn type="submit" block variant="outlined" class="mt-2" @click="Submit">Submit</v-btn>
+      <v-btn block variant="outlined" class="mt-2" @click.prevent="Submit">Submit</v-btn>
     </v-form>
   </v-card>
 </template>
@@ -30,6 +30,7 @@ import { ref, reactive, onBeforeMount } from 'vue';
 const emits = defineEmits(['submitted'])
 
 let inputKey=ref(0)
+let form=ref(false)
 
 const userData = ref({
 	id: 0,
@@ -80,7 +81,7 @@ let token = getCookieValueByName('token');
 
 const usernameRegex = /^[a-zA-Z0-9._-]{1,20}$/;
 
-const updateNickname = ref(userData.value.nick);
+const updateNickname = ref('');
 const updateAvatar = ref('');
 let avatarUpload = ref<File|null>(null);
 
@@ -124,9 +125,11 @@ const handleNewAvatar = async (event: Event) => {
 }
 
 async function Submit() {	
-	if (updateNickname.value !== ''){
-    userData.value.nick = updateNickname.value;
+  if(!form.value) {
+        console.log("Again")
+        return;
   }
+  userData.value.nick = updateNickname.value;
   let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
   if (avatarUpload.value && avatarUpload.value.value && regex.test(avatarUpload.value.name))
   {
