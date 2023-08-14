@@ -10,6 +10,8 @@ import { IsString, MaxLength,MinLength, ValidateIf, IsIn, IsNumber, isNumber, ma
     channel_name: string;
   
     password: string;
+
+    invitedusers: [];
   }
   
   

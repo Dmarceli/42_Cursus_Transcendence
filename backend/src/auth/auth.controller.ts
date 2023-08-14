@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller,Param, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AuthService } from './auth.service';
 import { FortyTwoAuthGuard } from './42/auth.guard';
@@ -7,7 +7,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { query } from 'express';
 import { TwoFactorAuthService } from './2FA/2FA-service';
 import { JwtService } from '@nestjs/jwt';
-
+import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
+import { User } from 'src/db_interactions_modules/users/user.entity';
+import { GoogleAuthGuard } from './google/auth_google.guard';
 @Controller('/auth')
 export class AuthController {
   constructor(
@@ -30,24 +32,7 @@ export class AuthController {
   @Get('/callback_intra')
   async callbackIntra(@Req() req: any, @Res() res: any) {
     const payload = await this.authService.login(req.user);
-    res.cookie('token', payload.access_token,)
-    res.redirect('http://localhost:5173/')
-    // return payload;
-  }
-
-  /*******************************************/
-  /***            Login Google             ***/
-  /*******************************************/
-
-  @Get('/login_google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) { }
-
-  @Get('/callback_google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
-    const payload = this.authService.googleLogin(req)
-    if (payload.user.TwoFAEnabled && payload.user.TwoFASecret) {
+    if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
         login: payload.user.intra_nick,
         id: -1,
@@ -57,10 +42,41 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
-      res.cookie('token', payload.access_token)
+      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
+      res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
+      res.setHeader('Location', process.env.BACKEND_URL) 
     }
+    res.redirect(process.env.FRONTEND_URL)
+  }
 
-    res.redirect('http://localhost:5173/')
+  /*******************************************/
+  /***            Login Google             ***/
+  /*******************************************/
+
+  @Get('/login_google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth(@Req() req) { }
+
+  @Get('/callback_google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
+    const payload = this.authService.googleLogin(req)
+    if (payload.TwoFAEnabled && payload.TwoFASecret) {
+      const payload2FA = {
+        login: payload.user.intra_nick,
+        id: -1,
+        TwoFAEnabled: true
+      };
+      let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
+      res.cookie('token', "2FA" + access_token2FA)
+    }
+    else {
+      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
+      res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
+      res.setHeader('Location', process.env.BACKEND_URL)
+      
+    }
+    res.redirect(process.env.FRONTEND_URL)
   }
 
   @Post('/check2fa')
@@ -78,13 +94,11 @@ export class AuthController {
     }
   }
 
-
+  @UseGuards(JwtAuthGuard)
   @Get('/gen2fa')
-  async gen2FAcode(@Res() res: any) {
-    //Pesquisa por nick
-    const user_ = await this.userService.findByNick("Daniel")
+  async gen2FAcode(@Res() res: any, @getUserIDFromToken() user:User) {
+    const user_ = await this.userService.findByLogin(user['login'])
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
-
     const qrCode = require('qrcode')
     const qrCodeData = url_.otpAuthUrl;
     try {
@@ -101,11 +115,11 @@ export class AuthController {
   
 
   // TEMPORARY
-  @Get('/tempbypass')
-  async tempsecbypass(@Req() req: any, @Res() res: any) {
-    const user_ = await this.userService.findAll()
+  @Get('/tempbypass/:id')
+  async tempsecbypass(@Req() req: any, @Res() res: any, @Param('id') id1: number) {
+    const user_ = await this.userService.findById(id1)
     if (user_) {
-      const payload = await this.authService.login(user_[0])
+      const payload = await this.authService.login(user_)
       res.cookie('token', payload.access_token)
       res.status(200).json({ message: 'Verification successful', code: payload.access_token });
     } else {

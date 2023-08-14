@@ -10,5 +10,7 @@ import { Channel } from '../channels/channel.entity';
     TypeOrmModule.forFeature([Messages, Channel])
 ],
   controllers: [MessagesController],
-  providers: [MessagesService]})
+  providers: [MessagesService],
+  exports: [MessagesService]
+})
 export class MessagesModule {}

@@ -5,25 +5,94 @@
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink to="/leaderboard">Leaderboard</RouterLink>
       <RouterLink to="/profile">User profile</RouterLink>
+      <v-btn @click="toggleNotifications()" style="background-color:transparent;">
+        <v-icon color="green">mdi-bell</v-icon>
+        <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
+      </v-btn>
+   		<v-btn @click="logout">Logout</v-btn>
     </nav>
   </header>
-  <div v-if="islogged">
-    <RouterView />
+  <v-dialog v-model="showNotifications" max-width="400">
+    <v-card>
+      <v-card-title>
+        <span class="headline">Notifications</span>
+      </v-card-title>
+      <v-card-text>
+        <div v-if="notifications.length > 0" class="notifications-box">
+          <div v-for="notification in notifications" :key="notification.id" class="notification-item">
+            {{ notification.message }}
+            <div v-if="notification.type > 0">
+              <v-btn @click="decideNotification(notification.id, true)">
+                Accept
+              </v-btn>
+              <v-btn @click="decideNotification(notification.id, false)">
+                Remove
+              </v-btn>
+            </div>
+          </div>
+        </div>
+        <div v-else class="no-notifications">No new notifications</div>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="primary" @click="showNotifications = false;">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <div v-if="islogged" :class="{'game-view': isGameRoute}">
+    <RouterView :key="routerKey"/>
   </div>
   <div v-else>
-    <Login @clicked42="login42" @clickedgoogle="loginGoogle" @clickedBYPASS="loginBYPASS" />
+    <Login @clicked42="login42" @clickedgoogle="loginGoogle" @id_to_login="executeLoginwithId" />
   </div>
 </template>
 
 <script setup lang="ts">
-
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterLink, RouterView, routerKey, useRoute } from 'vue-router';
 import Login from "./components/LoginPage.vue";
-import { ref } from 'vue';
-import { verify } from 'crypto';
+import { Socket, io } from 'socket.io-client'
+import { ref, provide, inject, onBeforeMount, computed, nextTick } from 'vue'
+import router from './router';
 
 const islogged = ref(false);
+const isGameRoute = computed(() => router.currentRoute.value.path === '/')
+let routerKey = ref(0)
 
+async function decideNotification(NotificationID: number, Decision: boolean) {
+  let token = getCookieValueByName('token');
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/events/event_decision/' + NotificationID + '/' + Decision ;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+    if (response.ok) {
+      fetchNotifications();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+}
+
+function logout() {
+  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  islogged.value = false;
+  window.location.href = '/login';
+}
+
+let socket: Socket | null = null;
+async function setupSocket(token) {
+  socket = io(process.env.VUE_APP_BACKEND_URL, {
+    auth: {
+      token: token,
+    },
+  });
+  provide('socket', socket);
+}
 function getCookieValueByName(name: any) {
   const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i++) {
@@ -41,7 +110,7 @@ async function verifyCode(token: string, code: any) {
     const payloadBase64 = token.split('.')[1];
     const payloadJson = atob(payloadBase64);
     const payload = JSON.parse(payloadJson);
-    const response = await fetch("http://localhost:3000/auth/check2fa", {
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/check2fa", {
       method: 'POST',
       body: JSON.stringify({
         'id': payload,
@@ -81,30 +150,37 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
-    }
+      socket = io(process.env.VUE_APP_BACKEND_URL, {
+        auth: {
+          token: token
+        }
+      });
+      provide('socket', socket)
+    };
   }
+}
 
-})();
+)();
 
 
 function login42() {
-  window.location.href = "http://localhost:3000/auth/login";
+  window.location.href = process.env.VUE_APP_BACKEND_URL + "/auth/login";
 }
 
 
 function loginGoogle() {
-  window.location.href = "http://localhost:3000/auth/login_google";
+  window.location.href = process.env.VUE_APP_BACKEND_URL + "/auth/login_google";
 }
 
 
-async function authtempBYPASS() {
+
+async function authtempBYPASS(idvalue: number) {
   try {
-    const response = await fetch("http://localhost:3000/auth/tempbypass");
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/tempbypass/" + idvalue);
     if (response.ok) {
-      let res =  await response.json();
+      let res = await response.json();
       document.cookie = `token=${res.code}`
-      islogged.value = true;
-      return res;
+      return true;
     } else {
       return false;
     }
@@ -113,13 +189,99 @@ async function authtempBYPASS() {
     return false;
   }
 }
-async function loginBYPASS() {
-  let verify = await authtempBYPASS()
-  if (verify)
+
+
+async function executeLoginwithId(idvalue: number) {
+  console.log(idvalue)
+  let verify = await authtempBYPASS(idvalue)
+  if (verify) {
     islogged.value = true;
+    window.location.reload()
+
+  }
 }
 
+const showNotifications = ref(false);
+const notifications = ref([]);
+const unseenNotifications = computed(() => {
+  return notifications.value.filter(notification => !notification.already_seen);
+});
 
+
+const markAllNotificationsAsSeen = async () => {
+  let token = getCookieValueByName('token');
+  try {
+    const unseenNotificationIds = notifications.value
+      .filter((notification) => !notification.already_seen)
+      .map((notification) => notification.id);
+    if (!unseenNotificationIds.length)
+      return;
+    await fetch(process.env.VUE_APP_BACKEND_URL + '/events/mark_seen_all', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ unseenNotificationIds }),
+    });
+    fetchNotifications();
+  } catch (error) {
+    console.log('Error marking all notifications as seen:', error);
+  }
+}
+
+const toggleNotifications = async () => {
+  markAllNotificationsAsSeen();
+  if (!showNotifications.value) {
+    await fetchNotifications();
+  }
+  showNotifications.value = !showNotifications.value;
+};
+
+const fetchNotifications = async () => {
+  let token = getCookieValueByName('token');
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/events/notifications';
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      notifications.value = data;
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
+if (socket)  {
+	if (islogged.value === true)
+	{
+		socket.on('notification', Notification => {
+			fetchNotifications();
+		});
+	}
+	  socket.on('logout', Notification => {
+			logout();
+		});
+  socket.on('StartPaddleSelection', async () => {
+    await nextTick()
+    if (router.currentRoute.value.path !== '/') {
+      router.push('/')
+    }
+    routerKey.value++
+  })
+}
+
+onBeforeMount(() => {
+  fetchNotifications();
+});
 </script>
 
 <style scoped>
@@ -136,6 +298,7 @@ nav {
   font-size: 12px;
   text-align: center;
   line-height: 2.2rem;
+  margin-bottom: 2%;
 }
 
 nav a.router-link-exact-active {
@@ -151,7 +314,9 @@ nav a {
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
 }
-
+.notifications-box{
+  overflow-y: scroll;
+}
 @media (min-width: 1024px) {
   header {
     place-items: center;
@@ -163,7 +328,40 @@ nav a {
     text-align: left;
     margin-left: 0rem;
     font-size: 1.5rem;
+    margin: 0%;
   }
 
+  .notify-button{
+    background-color: #555;
+    width: 50px;
+    height: 50px;
+    background-image: url('src/assets/notification-bell.svg');
+    background-size: contain;
+
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: red;
+    /* Choose your desired background color */
+    color: white;
+    /* Choose your desired text color */
+    font-size: 12px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+  }
+
+.game-view
+{
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
 }
 </style>

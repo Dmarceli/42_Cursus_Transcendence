@@ -10,10 +10,20 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+<<<<<<< HEAD
+=======
+import '@mdi/font/css/materialdesignicons.css'
+>>>>>>> main
 
 const vuetify = createVuetify({
   components,
   directives,
+<<<<<<< HEAD
+=======
+  theme: {
+    defaultTheme: 'dark'
+  }
+>>>>>>> main
 })
 
 const app = createApp(App)

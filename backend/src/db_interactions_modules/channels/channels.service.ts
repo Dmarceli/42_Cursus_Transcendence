@@ -3,31 +3,65 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository,MoreThan, QueryFailedError } from 'typeorm';
 import { Channel } from './channel.entity';
 import { ChannelCreateDto } from './dtos/channelcreate.dto';
+import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
+import { channel } from 'diagnostics_channel';
+import { User } from '../users/user.entity';
+import { EventsService } from '../events/events.service';
+import { EventCreateDto } from '../events/dtos/events.dto';
+import { Console } from 'console';
 
 @Injectable()
 export class ChannelsService {
 
    constructor(
    @InjectRepository(Channel) private ChannelsRepository: Repository<Channel>,
+   private UserToChannelService_: UserToChannelService ,
+   @InjectRepository(User) private UserRepository: Repository<User>,
+   private eventService: EventsService
  ) {}
 
 
- async create(createChannelDto: ChannelCreateDto) {
-  try {
-    const response = await this.ChannelsRepository.save(createChannelDto)// Perform the database operation that may cause a duplicate key exception
-    return response
-  } catch (error) {
-    if (error instanceof QueryFailedError) {
+ async create(createChannelDto: ChannelCreateDto, creator_user: number) {
+    const all_channels = await this.ChannelsRepository.findOne({where: {type: MoreThan(0), channel_name: createChannelDto.channel_name}})
+    if(all_channels){
       throw new ConflictException('Duplicate key value found.');
+     return;
     }
-  }
-}
-
-  async all_channel(){
-    return await this.ChannelsRepository.find({
-     // 0 is private message, it's supposed to not appear
-      where: {type: MoreThan(0)}
+    let pwd = createChannelDto.password;
+    if(createChannelDto.type != 2){
+      pwd = null;
+    }    
+    const response = await this.ChannelsRepository.save({...createChannelDto, password: pwd})
+    const userRequester = await this.UserRepository.findOne({where: {id: creator_user}})
+    await this.UserToChannelService_.joinchannel(response,userRequester,pwd)
+    console.log("USERS:",createChannelDto.invitedusers)
+    createChannelDto.invitedusers.forEach( async element => {
+      const user_to_join = await this.UserRepository.findOne({where: {id: element}})
+      if(user_to_join){
+        await this.UserToChannelService_.joinchannel(response,user_to_join,pwd)
+        const eventDto = {
+          requester_user: creator_user,
+          decider_user: user_to_join.id,
+          message: `${userRequester.intra_nick} added you to channel ${createChannelDto.channel_name}`
+        }
+        console.log("aqui")
+        await this.eventService.create(eventDto,0)
+      }
     })
+    return response
+  
+  
+  }
+
+  async getChannelByID(channelID:number){
+    return this.ChannelsRepository.findOne({where: {id :channelID}})
+  }
+  
+  async all_channel(userID: number){
+    const bannedList = await this.UserToChannelService_.getBannedChannelList(userID)
+    const all_channels = await this.ChannelsRepository.find({where: {type: MoreThan(0)}})
+    const filtered = all_channels.filter(channel => !bannedList.some(bannedChannel => bannedChannel.channel_id.id === channel.id))
+    return filtered;
   }
   // findAll() {
   //   return `This action returns all channels`;

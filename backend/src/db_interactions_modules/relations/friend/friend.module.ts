@@ -10,6 +10,7 @@ import { User } from 'src/db_interactions_modules/users/user.entity';
         TypeOrmModule.forFeature([friend, User])
     ],
     controllers: [friendsController],
-    providers: [friendService]
+    providers: [friendService],
+    exports: [friendService]
 })
 export class FriendModule {}
