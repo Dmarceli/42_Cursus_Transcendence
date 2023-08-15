@@ -485,14 +485,15 @@ const joinChannel = async (channel, ownerPWD) => {
         body: JSON.stringify({ id: parseInt(channel.id), pass: pass })
       });
     if (response.ok) {
-      await getChannelsJoined();
+      //await getChannelsJoined();
+      console.log("VIMS")
     } else {
       console.log('Error:', response.status);
     }
   } catch (error) {
     console.log('Error:', error);
   }
-  await getChannelsJoined();
+  getChannelsJoined();
 
 }
 
@@ -884,11 +885,11 @@ socket.on('recMessage', message => {
 
 
 socket.on('notification', Notification => {
+  if(selected_channel)
+    getUsersInGivenChannel(selected_channel);
   getUsers();
   getChannelsJoined();
   fetchFriends();
-  if(selected_channel)
-    getUsersInGivenChannel(selected_channel);
 });
 
 watch(messages, () => {
