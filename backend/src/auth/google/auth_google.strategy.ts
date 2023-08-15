@@ -5,6 +5,7 @@ import { CreateUserDto } from 'src/db_interactions_modules/users/dtos/user.dto';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { Injectable } from '@nestjs/common';
 import { randomInt } from 'crypto';
+import { uid } from 'uid';
 
 config();
 
@@ -37,12 +38,24 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       return userFound;
     }
     
+    const files= require("fs");
+    let randomStringGenerator =  uid(21); 
+    const downloaded_img = await fetch(user.picture)
+    if(downloaded_img.ok){
+    const file_to_save= await downloaded_img.blob()
+    const blob = Buffer.from(await file_to_save.arrayBuffer())
+    await files.writeFileSync( "./uploads/" + randomStringGenerator+ ".jpg", blob);
+    }
+    else
+      randomStringGenerator = "default" //If download fails must be jpg
+    
+
     const foundUserNick = await this.userService.findByNick(user.firstName)
     const newNick = foundUserNick ? user.firstName + randomInt(999) : user.firstName;
     const newUser: CreateUserDto = {
       nick: newNick,
       intra_nick: user.email.split('@')[0],
-      avatar: user.picture,
+      avatar:  process.env.BACKEND_URL + '/users/avatar/' + randomStringGenerator + '.jpg',
       // first_name: profile._json.first_name,
       // last_name: profile._json.last_name,
       // twoFactorAuthenticationSecret: '',
