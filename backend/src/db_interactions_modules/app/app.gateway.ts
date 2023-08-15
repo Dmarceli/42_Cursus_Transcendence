@@ -26,24 +26,26 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(private appService: AppService, private gameService: GameService, private usersService: UsersService) { }
+ 
+ @WebSocketServer() server: Server;
+ 
+ @SubscribeMessage('sendMessage')
+ @UsePipes(new ValidationPipe())
+ async handleSendMessage(client: Socket, payload: CreateMsgDto): Promise<void> {
 
-@WebSocketServer() server: Server;
-
-@SubscribeMessage('sendMessage')
-@UsePipes(new ValidationPipe())
-async handleSendMessage(client: Socket, payload: CreateMsgDto): Promise<void> {
   //console.log(new Date(),payload)
   //console.log("ROOM-",payload.channelId.toString(), client.id)
   //console.log( this.server.sockets.adapter.rooms.get(payload.channelId.toString()))
   //console.log(payload)
   await this.appService.createMessage(payload);
   this.server.to(payload.channelId.toString()).emit('recMessage', payload);
- }
 
+ }
+ 
  afterInit(server: Server) {
   this.gameService.UpdateAllPositions()
  }
-
+ 
  handleDisconnect(client: Socket) {
    console.log(`Disconnected: ${client.id}`);
    this.appService.user_remove_disconect(client)
