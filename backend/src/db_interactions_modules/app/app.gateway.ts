@@ -25,7 +25,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
  export class AppGateway
  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(private appService: AppService, private gameService: GameService, private usersService: UsersService) { }
+ constructor(private appService: AppService, private gameService: GameService, private usersService: UsersService) { }
  
  @WebSocketServer() server: Server;
  
@@ -53,7 +53,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
    AppService.UsersOnline.forEach((user) => {
    user.client.emit("online-status-update");
   })
-}
+ }
 
  //1º step após conexão
  async handleConnection(client: Socket, server: Server, @Res() res: any) {

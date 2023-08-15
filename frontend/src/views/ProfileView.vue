@@ -102,15 +102,10 @@ const getPlayerAvatar = (playerNick: string) => {
   }
   return '';
 }
-
 const isSettingsOpen = ref(false);
 
 const updateNickname = ref(userProfile.value.nick);
 const updateAvatar = ref('');
-
-function updateStatus(newStatus: string) {
-  userProfile.value.status = newStatus;
-}
 
 function openSettings() {
   isSettingsOpen.value = true;
@@ -387,26 +382,6 @@ const handleNewAvatar = async (event: Event) => {
 		max-width: 170px;
 		margin: 0 auto;
 	}
-}
-
-.status-indicator {
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: green;
-  border: none;
-  z-index: 3;
-}
-
-.status-indicator.offline {
-  background-color: red;
-}
-
-.status-indicator.in-game {
-  background-color: orange;
 }
 
 .avatar-container-settings {

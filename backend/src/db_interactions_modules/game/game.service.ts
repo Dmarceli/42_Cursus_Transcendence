@@ -18,10 +18,6 @@ export class PrivateGame
     this.player2 = player2
   }
 }
-interface UserStatus {
-  id: number,
-  status: number
-}
 @Injectable()
 export class GameService {
   lobbyPlayers: PlayerPaddle[] = []
@@ -286,25 +282,4 @@ export class GameService {
     }
     this.active_games = updated_active_games;
   }
-
-  // TODO: Remove Duplicated from app.gateway
-  async emit_online_status() {
-    let current_users = await this.userRepository.find()
-    const allUserStatus: UserStatus[] = current_users.map((currentUser) => {
-      let IsOnline = AppService.UsersOnline.some((userOnline) => {
-        userOnline.user == currentUser;
-      })
-      let IsInGame = this.IsInGame(currentUser)
-      console.log("GEELOYAL IN GAME")
-      let onlineStatus = IsInGame ? 0 : IsOnline ? 1 : 2;
-      return {
-        id: currentUser.id,
-        status: onlineStatus
-      }
-    });
-    AppService.UsersOnline.forEach((user) => {
-      user.client.emit("online-status-update", allUserStatus);
-    })
-  }
-
 }
