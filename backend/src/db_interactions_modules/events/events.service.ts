@@ -94,6 +94,11 @@ export class EventsService {
     return await this.eventsRepository.find({where: {decider_user : user},relations: ['requester_user','decider_user' ]});
   }
 
+  async clearNotificationsForUser(user_id :number){
+    const user = await this.UserRepository.findOneBy({id: user_id})
+    return await this.eventsRepository.delete({decider_user : user});
+  }
+
   
   async markNotificationAsSeen(notificationId: number): Promise<void> {
     await this.eventsRepository.update(notificationId, { already_seen: true });

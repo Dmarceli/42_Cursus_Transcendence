@@ -46,6 +46,12 @@ export class EventsController {
     return this.eventsService.findAll_for_user(user.id);
   }
 
+  @Delete('/clear_notifications')
+  clearNotifications(@getUserIDFromToken() user: User) {
+    return this.eventsService.clearNotificationsForUser(user.id);
+  }
+
+
   @Post('/mark_seen/:notificationId')
   async markNotificationAsSeen(@Param('notificationId') notificationId: number){
     await this.eventsService.markNotificationAsSeen(notificationId);
