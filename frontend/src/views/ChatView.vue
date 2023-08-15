@@ -485,7 +485,7 @@ const joinChannel = async (channel, ownerPWD) => {
         body: JSON.stringify({ id: parseInt(channel.id), pass: pass })
       });
     if (response.ok) {
-      //await getChannelsJoined();
+      await getChannelsJoined();
       console.log("VIMS")
     } else {
       console.log('Error:', response.status);
@@ -493,7 +493,7 @@ const joinChannel = async (channel, ownerPWD) => {
   } catch (error) {
     console.log('Error:', error);
   }
-  getChannelsJoined();
+  await getChannelsJoined();
 
 }
 
