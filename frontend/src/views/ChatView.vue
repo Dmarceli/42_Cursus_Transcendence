@@ -145,12 +145,8 @@
             <font-awesome-icon :icon="['fas', 'table-tennis-paddle-ball']" style="color: #ffffff" />
           </v-btn>
         </div>
-        <v-btn
-          icon
-          class="more-options ml-auto"
-          :class="{ 'close-moreoptions': showChannelOptions }"
-          @click="moreChannelOptions()"
-        >
+        <v-btn icon class="more-options ml-auto" :class="{ 'close-moreoptions': showChannelOptions }"
+          @click="moreChannelOptions()">
           <v-icon>{{ showChannelOptions ? 'mdi-close' : 'mdi-dots-vertical' }}</v-icon>
         </v-btn>
       </div>
@@ -505,15 +501,18 @@ const joinChannel = async (channel, ownerPWD) => {
 // TEMP TESTS COMMENTED
 const isUserMorePowerful = (userList, target) => {
   let is_owner_of_channel = false
+  let is_admin_of_channel = false
   for (const userId in userList) {
     if (userList[userId]['user_id']['nick'] == users_Nick && userList[userId]['is_owner'])
       is_owner_of_channel = true;
+    else if (userList[userId]['user_id']['nick'] == users_Nick && userList[userId]['is_admin'])
+      is_admin_of_channel = true
   }
-  if (target['user_id']['nick'] === users_Name || !is_owner_of_channel)
+  if (target['user_id']['nick'] === users_Nick || !is_owner_of_channel && !is_admin_of_channel)
     return false;
   if (target['is_owner'])
     return false
-  return true
+  return true;
 }
 
 
@@ -897,25 +896,25 @@ const inviteToPrivateGame = async () => {
   for (const id in usersInChannels.value) {
     if (usersInChannels.value[id].user_id.id != userId) {
       try {
-            const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/private_game_request`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(usersInChannels.value[id].user_id.id), message: users_Name+ " just invited you to a PONG Game! " + users_Name }),
-            });
-            if (response.ok) {
-              const data = await response.json();
-            } else {
-              if (response.status == 303) {
-                window.alert('You already already invited this user to a private game!')
-              }
-              else
-                console.log('Error:', response.status);
-            }
-          } catch (error) {
-            console.log('Error:', error);
+        const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/private_game_request`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(usersInChannels.value[id].user_id.id), message: users_Name + " just invited you to a PONG Game! " + users_Name }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+        } else {
+          if (response.status == 303) {
+            window.alert('You already already invited this user to a private game!')
+          }
+          else
+            console.log('Error:', response.status);
+        }
+      } catch (error) {
+        console.log('Error:', error);
       }
     }
   }
