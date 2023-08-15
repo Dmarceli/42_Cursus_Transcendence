@@ -18,7 +18,10 @@ export class PrivateGame
     this.player2 = player2
   }
 }
-
+interface UserStatus {
+  id: number,
+  status: number
+}
 @Injectable()
 export class GameService {
   lobbyPlayers: PlayerPaddle[] = []
@@ -61,6 +64,13 @@ export class GameService {
       }
       this.lobbyPlayers.splice(freePlayerIndex, 1);
     }
+  }
+
+  IsInGame(user: User)
+  {
+    return (this.active_games.some((game: Game)=>{
+      game.playerPaddle1.user==user ||  game.playerPaddle2.user==user
+    }));
   }
 
   IsInPrivateGame(intra_nick: string)
@@ -229,6 +239,7 @@ export class GameService {
         console.log("ADDING PRIVATE GAME for player "+private_game.player1+" and "+private_game.player2)
         let game = new Game(this.privateGamePlayers[indexPlayer1], this.privateGamePlayers[indexPlayer2], this.gameHistoryService, this.userRepository)
         this.active_games.push(game)
+        this.emit_online_status()
         if (indexPlayer1 > indexPlayer2)
         {
           this.privateGamePlayers.splice(indexPlayer1, 1);
@@ -257,6 +268,7 @@ export class GameService {
     let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)
     this.lobby.splice(0, 2)
     this.active_games.push(game)
+    this.emit_online_status()
     game.playerPaddle1.handlePlayersNotReady();
     game.playerPaddle2.handlePlayersNotReady();
   }
@@ -265,4 +277,24 @@ export class GameService {
     let updated_active_games = this.active_games.filter(game => !game.isFinished);
     this.active_games = updated_active_games;
   }
+
+  // TODO: Remove Duplicated from app.gateway
+  async emit_online_status() {
+    let current_users = await this.userRepository.find()
+    const allUserStatus: UserStatus[] = current_users.map((currentUser) => {
+      let IsOnline = AppService.UsersOnline.some((userOnline) => {
+        userOnline.user == currentUser;
+      })
+      let IsInGame = this.IsInGame(currentUser)
+      let onlineStatus = IsInGame ? 0 : IsOnline ? 1 : 2;
+      return {
+        id: currentUser.id,
+        status: onlineStatus
+      }
+    });
+    AppService.UsersOnline.forEach((user) => {
+      user.client.emit("online-status-update", allUserStatus);
+    })
+  }
+
 }

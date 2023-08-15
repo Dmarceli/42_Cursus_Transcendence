@@ -244,6 +244,7 @@ let createChannelOptions = ref(null);
 let channelName = ref('');
 let channelPassword = ref('');
 
+
 const socket = inject('socket')
 
 const onlineStatus = computed(() => {
@@ -798,6 +799,22 @@ const isChannelJoined = (givenID) => {
   });
 };
 
+let userOnlineStatus = ref(null)
+
+const fetchOnlineStatus = async () =>
+{
+  try {
+    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/online-status`);
+    if (response.ok) {
+      const data = await response.json();
+      userOnlineStatus.value = data;
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+}
 
 const fetchFriends = async () => {
   try {
@@ -897,6 +914,10 @@ socket.on('notification', Notification => {
   getUsers();
   getChannelsJoined();
   fetchFriends();
+});
+
+socket.on('online-status-update', () => {
+  fetchOnlineStatus();
 });
 
 watch(messages, () => {

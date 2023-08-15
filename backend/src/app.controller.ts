@@ -11,4 +11,9 @@ export class AppController {
    res.json(messages);
   }
 
+  @Get('/online-status/')
+  OnlineStatus() {
+   return this.appService.emit_online_status()
+  }
+
 }
