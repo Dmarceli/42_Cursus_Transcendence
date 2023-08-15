@@ -887,8 +887,8 @@ socket.on('notification', Notification => {
   getUsers();
   getChannelsJoined();
   fetchFriends();
-  getUsersInGivenChannel(selected_channel);
-  console.log("RECEBI NOTIFIACAO")
+  if(selected_channel)
+    getUsersInGivenChannel(selected_channel);
 });
 
 watch(messages, () => {

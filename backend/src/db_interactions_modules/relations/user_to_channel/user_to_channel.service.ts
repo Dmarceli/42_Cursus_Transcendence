@@ -36,9 +36,10 @@ export class UserToChannelService {
       const password =  await this.ChannelRepository.findOne({where:{id: channel.id}, select:{password: true}});
       if (password.password != pass)
         return
-    }
-
-    this.usersService.update_channels_on_list(user.id,channel.id)
+      }
+      
+      this.usersService.update_channels_on_list(user.id,channel.id)
+      this.notifyRoom(channel.id);
 
     return await this.UserToChannelRepository.save({
       user_id: user,
@@ -59,17 +60,19 @@ export class UserToChannelService {
       ,
       relations: ['user_id', 'channel_id']
     });
-
+    this.notifyRoom(id_ch);
     return await this.UserToChannelRepository.remove(channel_to_leave)
   }
 
   async usersonchannel(ch_id: number) {
+    if(ch_id){
     const usersInChannel = await this.UserToChannelRepository.find({
       where: { channel_id: { id: ch_id }},
      relations: ['user_id', 'channel_id'],
     });
     const filteredUsersInChannel = usersInChannel.filter(userInChannel => !userInChannel.is_banned);
     return filteredUsersInChannel;
+  }
   }
   
   async findChannelsByID(us_id:number){
@@ -207,10 +210,12 @@ export class UserToChannelService {
   }
 
   async notifyRoom(ch_id: number){
+    if(ch_id){
     const Room = await this.ChannelRepository.findOne({ where : {id: ch_id}});
     const users = await this.usersonchannel(ch_id);
     users.forEach(element => {
       this.usersService.notifyUser(element.user_id.id,AppService.UsersOnline)
     });
+  }
   }
 }
