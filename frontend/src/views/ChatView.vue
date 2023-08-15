@@ -158,10 +158,10 @@
           <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
-              <button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
-              <button @click="banUser(usersInChannel.user_id.id)">Ban</button>
-              <button @click="MuteUser(usersInChannel.user_id.id)">Mute</button>
-              <button @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</button>
+              <v-btn @click="kickUser(usersInChannel.user_id.id)">Kick</v-btn>
+              <v-btn @click="banUser(usersInChannel.user_id.id)">Ban</v-btn>
+              <v-btn @click="MuteUser(usersInChannel.user_id.id)">Toggle Mute</v-btn>
+              <v-btn @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</v-btn>
             </div>
             {{ usersInChannel.user_id.intra_nick }}
           </div>
@@ -301,7 +301,7 @@ const getChannelUserCount = (channel) => {
 const isUserMutedOnChannel = (userList) => {
   for (const userId in userList) {
     const entry = userList[userId];
-    if (entry['user_id']['nick'] === users_Name) {
+    if (entry['user_id']['nick'] === users_Nick) {
       if (entry['is_muted'])
         return true
       else
@@ -741,7 +741,8 @@ function toggleOptionSelection(event) {
 const createChannel = async () => {
   let channel_name = channelName.value;
   let channel_password = channelPassword.value;
-  let ch_type = channelPassword ? 2 : 1;
+  let ch_type = channelPassword.value ? 2 : 1;
+
   const pass = Md5.hashStr(channel_password);
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/channels/create';
@@ -886,6 +887,8 @@ socket.on('notification', Notification => {
   getUsers();
   getChannelsJoined();
   fetchFriends();
+  getUsersInGivenChannel(selected_channel);
+  console.log("RECEBI NOTIFIACAO")
 });
 
 watch(messages, () => {
