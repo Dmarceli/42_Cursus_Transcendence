@@ -821,7 +821,12 @@ const isChannelJoined = (givenID) => {
 const fetchOnlineStatus = async () =>
 {
   try {
-    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/online-status`);
+    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/online-status`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
     if (response.ok) {
       const data = await response.json();
       allOnlineStatuses.value = data;
