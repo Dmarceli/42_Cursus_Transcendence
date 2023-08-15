@@ -22,7 +22,7 @@
               Games Won: {{ user_friend.won_games }}<br>
               Games Lost: {{ user_friend.lost_games }}<br>
             </span>
-            <v-avatar class="avatar-container">
+            <v-avatar class="avatar-container" :style="{ '--online-status': onlineStatus }">
                 <img :src="user_friend.avatar" alt="Avatar" class="avatar" />
             </v-avatar>
             {{ user_friend.nick }}
@@ -214,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onBeforeMount, watch, nextTick } from 'vue';
+import { ref, inject, onBeforeMount, watch, nextTick, computed } from 'vue';
 import jwt_decode from 'jwt-decode';
 import { Md5 } from 'ts-md5';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -245,6 +245,13 @@ let channelName = ref('');
 let channelPassword = ref('');
 
 const socket = inject('socket')
+
+const onlineStatus = computed(() => {
+  let online = '#319654'
+  let offline = '#da3a46'
+  let inGame = '#ffd564'
+  return inGame;
+});
 
 function toggleChannelList() {
   showSideInfo.value = !showSideInfo.value;
@@ -927,32 +934,31 @@ const inviteToPrivateGame = async () => {
 </script>
 
 
-<style>
+<style scoped>
 @import '../assets/Chat.css';
 
-/* .avatar-container {
+.avatar-container {
   display: inline-block;
   position: relative;
-  border-radius: 50%;
-  border: 1px solid white;
-} */
-/* 
-.history-avatar {
-  width: 40px;
-  height: 40px;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
+  animation: glowShadow 1.0s linear infinite alternate;
 }
 
-.history-avatar img {
+img  {
   width: 100%;
   height: 100%;
   object-fit: cover;
   overflow: hidden;
-} */
+}
+
+@keyframes glowShadow{
+  from
+   {
+    box-shadow: 0px 0px 5px 2px var(--online-status, #535FED);
+   }
+  to {
+    box-shadow: 0px 0px 10px 2.5px var(--online-status, #535FED);
+  }
+}
 
 </style>
 
