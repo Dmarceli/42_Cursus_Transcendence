@@ -45,7 +45,7 @@ function getCookieValueByName(name: string) {
 }
 
 
-let avatarUpload = ref<File|null>(null);
+let avatarUploadFile = ref<File|null>(null);
 
 const isOwnProfile = computed(() => {
 	return userProfile.value.id === userTokenData.value.id;
@@ -108,32 +108,29 @@ function openSettings() {
 }
 
 const handleNewAvatar = async (event: Event) => {
-  if (event.target instanceof HTMLInputElement && event.target.files) {
-    if (avatarUpload.value)
-    {
-			let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
-			if (!regex.test(avatarUpload.value.files[0].name)) {
-				alert("Please upload an image file");
-        const inputFileElement = document.getElementById('avatar-file') as HTMLInputElement
-        if (inputFileElement) {
-          inputFileElement.value = '';
-        }
-        avatarUpload.value=null
-        inputKey.value++
-        return;
-			}
-      const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result;
-          if (typeof result === 'string') {
-            updateAvatar.value = result;
-          }
-          else {
-            console.error('Error reading file');
-          }
-        };
-        reader.readAsDataURL(avatarUpload.value.files[0]);
+  const fileInput = event.target;
+  if (fileInput instanceof HTMLInputElement && fileInput.files && fileInput.files.length > 0) {
+  const file = fileInput.files[0];
+    let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
+    if (!regex.test(file.name)) {
+      alert("Please upload an image file");
+      if (event.target)
+        event.target.value = ''
+      inputKey.value++
+      return;
     }
+    avatarUploadFile.value = file;
+    const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          updateAvatar.value = result;
+        }
+        else {
+          console.error('Error reading file');
+        }
+      };
+      reader.readAsDataURL(file);
   }
 }
 
@@ -146,14 +143,11 @@ async function saveSettings() {
     userProfile.value.nick = updateNickname.value;
   }
   let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
-  if (avatarUpload.value && avatarUpload.value.files && avatarUpload.value.files.length > 0)
-  {
-    if (regex.test(avatarUpload.value.files[0].name))
-      userProfile.value.avatar = updateAvatar.value;
-  }
     try {
       const formData = new FormData();
-      formData.append('file', avatarUpload.value?.files[0]);
+      if (avatarUploadFile.value && regex.test(avatarUploadFile.value.name)) {
+        formData.append('file', avatarUploadFile?.value );
+      }
       formData.append('userId', String(userProfile.value.id));
       formData.append('nickUpdate', userProfile.value.nick);
       const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
@@ -272,7 +266,7 @@ function closeSettings() {
           <div class="avatar-container-settings">
             <img :src="updateAvatar || userProfile.avatar" alt="Avatar" class="avatar-settings" />
           </div>
-          <input type="file" @change="handleNewAvatar" id="avatar-file" ref="avatarUpload" :key="inputKey"/>
+          <input type="file" @change="handleNewAvatar" id="avatar-file" :key="inputKey"/>
         </div>
         <!-- Nickname -->
         <div class="settings-section">

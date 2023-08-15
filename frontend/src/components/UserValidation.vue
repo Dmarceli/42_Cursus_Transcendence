@@ -12,7 +12,7 @@
 				<div class="avatar-container-settings">
 					<img :src="updateAvatar || userData.avatar" alt="Avatar" class="avatar-settings" />
 				</div>
-				<input type="file" @change="handleNewAvatar" id="avatar-file" ref="avatarUpload" :key="inputKey"/>
+				<input type="file" @change="handleNewAvatar" id="avatar-file" :key="inputKey"/>
 			</div>
       <v-text-field
 			v-model="updateNickname"
@@ -83,7 +83,7 @@ const usernameRegex = /^[a-zA-Z0-9._-]{1,20}$/;
 
 const updateNickname = ref('');
 const updateAvatar = ref('');
-let avatarUpload = ref<File|null>(null);
+let avatarUploadFile = ref<File|null>(null);
 
 const nickname = reactive({
 	rules: [
@@ -94,50 +94,44 @@ const nickname = reactive({
 });
 
 const handleNewAvatar = async (event: Event) => {
-  if (event.target instanceof HTMLInputElement && event.target.files) {
-		console.log("INITIAL FILE WOULD BE"+avatarUpload.value);
-    if (avatarUpload.value)
-    {
-			let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
-			if (!regex.test(avatarUpload.value.name)) {
-				alert("Please upload an image file");
-        const inputFileElement = document.getElementById('avatar-file') as HTMLInputElement
-        if (inputFileElement) {
-          inputFileElement.value = '';
-        }
-        avatarUpload.value=null
-        inputKey.value++
-        return;
-			}
-      const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result;
-          if (typeof result === 'string') {
-            updateAvatar.value = result;
-          }
-          else {
-            console.error('Error reading file');
-          }
-        };
-        reader.readAsDataURL(avatarUpload.value);
+  const fileInput = event.target;
+  if (fileInput instanceof HTMLInputElement && fileInput.files && fileInput.files.length > 0) {
+  const file = fileInput.files[0];
+    let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
+    if (!regex.test(file.name)) {
+      alert("Please upload an image file");
+      if (event.target)
+        event.target.value = ''
+      inputKey.value++
+      return;
     }
+    avatarUploadFile.value = file;
+    const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          updateAvatar.value = result;
+        }
+        else {
+          console.error('Error reading file');
+        }
+      };
+      reader.readAsDataURL(file);
   }
 }
 
 async function Submit() {	
   if(!form.value) {
-        console.log("Again")
-        return;
+    console.log("Submission not possible due to validation errors")
+    return;
   }
   userData.value.nick = updateNickname.value;
   let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
-  if (avatarUpload.value && avatarUpload.value.value && regex.test(avatarUpload.value.name))
-  {
-    userData.value.avatar = updateAvatar.value;
-  }
     try {
       const formData = new FormData();
-      formData.append('file', userData.value.avatar);
+      if (avatarUploadFile.value && regex.test(avatarUploadFile.value.name)) {
+        formData.append('file', avatarUploadFile?.value );
+      }
       formData.append('userId', String(userData.value.id));
       formData.append('nickUpdate', userData.value.nick);
       const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
