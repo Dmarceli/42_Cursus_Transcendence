@@ -1,5 +1,5 @@
 import { Controller, Get, Res } from '@nestjs/common';
-import { AppService } from './app.service';
+import { AppService, UserStatus } from './app.service';
 
 @Controller()
 export class AppController {
@@ -12,8 +12,8 @@ export class AppController {
   }
 
   @Get('/online-status/')
-  OnlineStatus() {
-   return this.appService.emit_online_status()
+  OnlineStatus() : Promise<UserStatus[]>{
+   return this.appService.get_online_status_users()
   }
 
 }

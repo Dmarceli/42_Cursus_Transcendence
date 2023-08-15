@@ -48,7 +48,9 @@ export class AppGateway
     console.log(`Disconnected: ${client.id}`);
     this.appService.user_remove_disconect(client)
     this.gameService.HandlePlayerDisconnected(client)
-    await this.appService.emit_online_status()
+    AppService.UsersOnline.forEach((user) => {
+      user.client.emit("online-status-update");
+    })
   }
 
   //1º step após conexão
@@ -62,7 +64,9 @@ export class AppGateway
       client.disconnect();
       console.log(`Discnnected Auth missing -  ${client.id}`)
     }
-    await this.appService.emit_online_status()
+    AppService.UsersOnline.forEach((user) => {
+      user.client.emit("online-status-update");
+    })
   }
 
   // Game Service

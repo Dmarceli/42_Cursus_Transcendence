@@ -22,7 +22,7 @@
               Games Won: {{ user_friend.won_games }}<br>
               Games Lost: {{ user_friend.lost_games }}<br>
             </span>
-            <v-avatar class="avatar-container" :style="{ '--online-status': onlineStatus }">
+            <v-avatar class="avatar-container" :style="{ '--online-status': onlineStatus(user_friend.id) }">
                 <img :src="user_friend.avatar" alt="Avatar" class="avatar" />
             </v-avatar>
             {{ user_friend.nick }}
@@ -244,15 +244,34 @@ let createChannelOptions = ref(null);
 let channelName = ref('');
 let channelPassword = ref('');
 
+const allOnlineStatuses = ref([]);
 
 const socket = inject('socket')
 
-const onlineStatus = computed(() => {
+const getStatusForUser = (userId: number) => {
+  const userStatus = allOnlineStatuses.value.find(onlineStatus => onlineStatus.userId === userId);
+  if (userStatus) {
+    return userStatus.status;
+  }
+  return null;
+};
+
+const onlineStatus = (userId) => {
   let online = '#319654'
   let offline = '#da3a46'
   let inGame = '#ffd564'
-  return inGame;
-});
+  const status = getStatusForUser(userId);
+  switch (status) {
+    case 0:
+      return inGame;
+    case 1:
+      return online;
+    case 2:
+      return offline;
+    default:
+      return offline;
+  }
+};
 
 function toggleChannelList() {
   showSideInfo.value = !showSideInfo.value;
@@ -799,15 +818,14 @@ const isChannelJoined = (givenID) => {
   });
 };
 
-let userOnlineStatus = ref(null)
-
 const fetchOnlineStatus = async () =>
 {
   try {
     const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/online-status`);
     if (response.ok) {
       const data = await response.json();
-      userOnlineStatus.value = data;
+      allOnlineStatuses.value = data;
+      console.log(allOnlineStatuses.value)
     } else {
       console.log('Error:', response.status);
     }
@@ -894,6 +912,7 @@ onBeforeMount(() => {
   getUsers();
   getChannels();
   fetchFriends();
+  fetchOnlineStatus();
   getChannelsJoined();
 });
 
