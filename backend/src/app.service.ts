@@ -9,11 +9,7 @@ import { UsersService } from './db_interactions_modules/users/users.service';
 import { Socket, Server } from 'socket.io';
 import { UserSocketArray } from './db_interactions_modules/users/classes/UsersSockets';
 import { GameService } from './db_interactions_modules/game/game.service';
-
-export interface UserStatus {
-  userId: number,
-  status: number
-}
+import { UserStatus } from './types/UserStatus';
 
 @Injectable()
 export class AppService {
