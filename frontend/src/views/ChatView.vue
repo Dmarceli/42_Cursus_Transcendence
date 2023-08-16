@@ -1,4 +1,8 @@
 <template>
+  <transition name="fade" mode="out-in">
+    <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert" color="success"
+      icon="$success" title="Success!" text="Friendship request sent successfully!" dismissible></v-alert>
+  </transition>
   <div class="Chat">
     <div class="channels-list" :class="{ 'collapsed': !showSideInfo }">
       <div v-if="side_info === 0" class="convo-list-container">
@@ -22,7 +26,9 @@
               Games Won: {{ user_friend.won_games }}<br>
               Games Lost: {{ user_friend.lost_games }}<br>
             </span>
-            {{ user_friend.nick }}
+            <div class="nickname-container">
+              {{ user_friend.nick }}
+            </div>
             <button class="friend-remove" @click="removeFriend(user_friend)"></button>
           </div>
         </div>
@@ -77,13 +83,16 @@
         <div class="list-header">USERS</div>
         <div v-for="user in users" :key="user.id" class="tooltip">
           <div class="user">
-            <span class="tooltiptext">
+            <v-tooltip activator="parent" location="end" class="user-tooltip">
+              <img :src="user.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
               Nickname: {{ user.nick }}<br>
               Intra Nick: {{ user.intra_nick }}<br>
               Games Won: {{ user.won_games }}<br>
               Games Lost: {{ user.lost_games }}<br>
-            </span>
-            {{ user.nick }}
+            </v-tooltip>
+            <div class="nickname-container">
+              {{ user.nick }}
+            </div>
             <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
             <button v-else class="friend-remove" @click="removeFriend(user)"></button>
           </div>
@@ -217,7 +226,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 library.add(fas)
 
 const msgsContainer = ref(null);
-let show_UserInfo = ref(false);
+let showAlert = ref(false);
 const messageText = ref('');
 const searchText = ref('');
 const messages = ref([]);
@@ -815,6 +824,9 @@ const getFriends = async () => {
 
 };
 
+
+
+
 const addFriend = async (friendId) => {
   try {
     const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/friendship_request`, {
@@ -828,6 +840,10 @@ const addFriend = async (friendId) => {
     if (response.ok) {
       const data = await response.json();
       fetchFriends();
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+      }, 4000);
     } else {
       if (response.status == 303) {
         window.alert('friendship request already sent!')
@@ -885,7 +901,7 @@ socket.on('recMessage', message => {
 
 
 socket.on('notification', Notification => {
-  if(selected_channel)
+  if (selected_channel)
     getUsersInGivenChannel(selected_channel);
   getUsers();
   getChannelsJoined();
