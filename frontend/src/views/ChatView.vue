@@ -983,7 +983,7 @@ const inviteToPrivateGame = async () => {
 </script>
 
 
-<style scoped>
+<style>
 @import '../assets/Chat.css';
 
 .avatar-container {
