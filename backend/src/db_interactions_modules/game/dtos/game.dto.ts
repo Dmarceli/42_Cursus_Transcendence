@@ -10,7 +10,4 @@ export class PrivateGameDto {
   @IsDefined()
   player2_intra_nick: string;
 
-  @IsNumber()
-  @IsDefined()
-  opponent_id: number
 }

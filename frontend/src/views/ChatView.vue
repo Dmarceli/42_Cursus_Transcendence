@@ -913,25 +913,29 @@ const removeFriend = async (friend) => {
   }
 };
 
+
 onBeforeMount(() => {
   getUsers();
   getChannels();
   fetchFriends();
   fetchOnlineStatus();
   getChannelsJoined();
+
 });
 
-socket.on('recMessage', message => {
-  if (message.channelId === selected_channel) {
-    scrollToBottom();
-  } else {
-    if (typeof unreadMessages.value[message.channelId] === 'undefined') {
-      unreadMessages.value[message.channelId] = 0;
-    }
-    unreadMessages.value[message.channelId]++;
-  }
-  getMessages();
+if(socket){
+socket.on('recMessage', async (message) =>  {
+	if (message.channelId === selected_channel) {
+		scrollToBottom();
+	} else {
+		if (typeof unreadMessages.value[message.channelId] === 'undefined') {
+			unreadMessages.value[message.channelId] = 0;
+		}
+		unreadMessages.value[message.channelId]++;
+	}
+	await getMessages();
 });
+}
 
 
 socket.on('notification', Notification => {

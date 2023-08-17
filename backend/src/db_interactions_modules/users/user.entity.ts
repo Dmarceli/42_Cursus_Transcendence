@@ -43,4 +43,8 @@ export class User {
     @CreateDateColumn()
     last_joined_date: Date;
 
+
+    @Column({default: true})
+    is_first_login: boolean
+
 }
