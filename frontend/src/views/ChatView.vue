@@ -22,8 +22,8 @@
               Games Won: {{ user_friend.won_games }}<br>
               Games Lost: {{ user_friend.lost_games }}<br>
             </span>
-            <v-avatar class="avatar-container" :style="{ '--online-status': onlineStatus(user_friend.id) }">
-                <img :src="user_friend.avatar" alt="Avatar" class="avatar" />
+            <v-avatar class="avatar-circle" :style="{ '--online-status': onlineStatus(user_friend.id) }">
+                <img :src="user_friend.avatar" alt="Avatar" class="avatar-circle" />
             </v-avatar>
             {{ user_friend.nick }}
             <button class="friend-remove" @click="removeFriend(user_friend)"></button>
@@ -986,13 +986,13 @@ const inviteToPrivateGame = async () => {
 <style>
 @import '../assets/Chat.css';
 
-.avatar-container {
+.avatar-circle {
   display: inline-block;
   position: relative;
   animation: glowShadow 1.0s linear infinite alternate;
 }
 
-img  {
+img.avatar-circle  {
   width: 100%;
   height: 100%;
   object-fit: cover;
