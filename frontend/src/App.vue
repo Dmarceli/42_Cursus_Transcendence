@@ -1,5 +1,5 @@
 <template>
-  <header v-if="islogged">
+  <header v-if="islogged && !first_login_modal">
     <nav>
       <RouterLink to="/">Pong</RouterLink>
       <RouterLink to="/chat">Chat</RouterLink>
@@ -9,9 +9,10 @@
         <v-icon color="green">mdi-bell</v-icon>
         <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
       </v-btn>
-   		<v-btn @click="logout">Logout</v-btn>
+      <v-btn @click="logout">Logout</v-btn>
     </nav>
   </header>
+ 
   <v-dialog v-model="showNotifications" max-width="400">
     <v-card>
       <v-card-title>
@@ -39,21 +40,26 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <div v-if="islogged" :class="{'game-view': isGameRoute}">
+  <div v-if="islogged && !first_login_modal" :class="{'game-view': isGameRoute}">
     <RouterView :key="routerKey"/>
   </div>
-  <div v-else>
+  <div v-else-if="!first_login_modal">
     <Login @clicked42="login42" @clickedgoogle="loginGoogle" @id_to_login="executeLoginwithId" />
+  </div>
+  <div v-else-if="first_login_modal" class="first_login_modal">
+    <userValidation @submitted="first_login_modal= false"></userValidation>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RouterLink, RouterView, routerKey, useRoute } from 'vue-router';
+import { RouterLink, RouterView } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
-import { ref, provide, inject, onBeforeMount, computed, nextTick } from 'vue'
+import { ref, provide, onBeforeMount, computed, nextTick } from 'vue'
 import router from './router';
+import userValidation from './components/UserValidation.vue'
 
+const first_login_modal = ref(false);
 const islogged = ref(false);
 const isGameRoute = computed(() => router.currentRoute.value.path === '/')
 let routerKey = ref(0)
@@ -144,6 +150,7 @@ async function verifyCode(token: string, code: any) {
       if (new_code) {
         console.log('Verification successful', new_code);
         document.cookie = `token=${new_code.code}`
+        first_login_modal.value = await fetch_logged_previous()
         islogged.value = true;
       } else {
         console.log('Invalid code');
@@ -151,15 +158,17 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
-      socket = io(process.env.VUE_APP_BACKEND_URL, {
-        auth: {
-          token: token
-        }
-      });
-      provide('socket', socket)
-    };
+      socket = io(process.env.VUE_APP_BACKEND_URL,{
+          auth: {
+            token: token
+          }
+        });
+        provide('socket', socket)
+      first_login_modal.value = await fetch_logged_previous()
+	};
+    }
   }
-}
+
 
 )();
 
@@ -189,6 +198,29 @@ async function authtempBYPASS(idvalue: number) {
     console.log('Error:', error);
     return false;
   }
+}
+
+
+  async function fetch_logged_previous(){
+	try {
+    let token = getCookieValueByName('token');
+		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
+		const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.is_first_login
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching User Profile data:', response.statusText);
+    }
+	} catch (error) {
+		console.error('Error fetching User Profile data', error);
+	}
 }
 
 
@@ -302,7 +334,10 @@ if (socket)  {
 }
 
 onBeforeMount(() => {
-  fetchNotifications();
+ 
+  let token = getCookieValueByName('token');
+  if(token)
+    fetchNotifications();
 });
 </script>
 
@@ -340,6 +375,7 @@ nav a {
   overflow-y: scroll;
 }
 
+
 .notification-item {
   padding: 8px;
   border: 2px solid #444;
@@ -347,6 +383,18 @@ nav a {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+
+.first_login_modal {
+  display: flex;            
+  justify-content: center;  
+  align-items: center;      
+  width: 100vw;             
+  height: 100vh;            
+  position: fixed;          
+  top: 0;
+  left: 0;
 }
 
 @media (min-width: 1024px) {
@@ -395,5 +443,7 @@ nav a {
   align-content: center;
   justify-content: center;
 }
+
 }
+
 </style>
