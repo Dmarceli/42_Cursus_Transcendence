@@ -9,6 +9,7 @@ import { User } from '../users/user.entity';
 import { EventsService } from '../events/events.service';
 import { EventCreateDto } from '../events/dtos/events.dto';
 import { Console } from 'console';
+import { Response } from 'express';
 
 @Injectable()
 export class ChannelsService {
@@ -34,7 +35,6 @@ export class ChannelsService {
     const response = await this.ChannelsRepository.save({...createChannelDto, password: pwd})
     const userRequester = await this.UserRepository.findOne({where: {id: creator_user}})
     await this.UserToChannelService_.joinchannel(response,userRequester,pwd)
-    console.log("USERS:",createChannelDto.invitedusers)
     createChannelDto.invitedusers.forEach( async element => {
       const user_to_join = await this.UserRepository.findOne({where: {id: element}})
       if(user_to_join){
@@ -44,7 +44,6 @@ export class ChannelsService {
           decider_user: user_to_join.id,
           message: `${userRequester.intra_nick} added you to channel ${createChannelDto.channel_name}`
         }
-        console.log("aqui")
         await this.eventService.create(eventDto,0)
       }
     })
@@ -62,6 +61,24 @@ export class ChannelsService {
     const all_channels = await this.ChannelsRepository.find({where: {type: MoreThan(0)}})
     const filtered = all_channels.filter(channel => !bannedList.some(bannedChannel => bannedChannel.channel_id.id === channel.id))
     return filtered;
+  }
+
+  async protect(channelInfo: any,userID: number, res: Response){
+    if(!this.UserToChannelService_.isUserAdminOrOwnerInChannel(channelInfo.channel_id, userID))
+      return res.status(403).json({message: "User Doesnt have privileges",})
+    {
+      try {
+        const updateResult = await this.ChannelsRepository.update(channelInfo.channel_id, {
+          type: 2,
+          password: channelInfo.newPassword,
+        });
+        if (updateResult.affected > 0) {
+          return res.status(200).json({ message: "Channel protected successfully." });
+        }
+      } catch (error) {
+        return res.status(402).json({message: "Error",});
+    }
+    }
   }
   // findAll() {
   //   return `This action returns all channels`;

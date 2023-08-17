@@ -149,7 +149,7 @@
         <div class="channel-name">
           {{ getChannelName(selected_channel) }}
         </div>
-        <div class="fightButton">
+        <div v-if="!getChannelType(selected_channel)" class="fightButton">
           <v-btn icon @click="inviteToPrivateGame">
             <font-awesome-icon :icon="['fas', 'table-tennis-paddle-ball']" style="color: #ffffff" />
           </v-btn>
@@ -175,6 +175,33 @@
             {{ usersInChannel.user_id.intra_nick }}
           </div>
         </div>
+        <div style=" position: relative;bottom: 0; left: 0;">
+          <v-btn class="privateChannel"
+            v-if="isUserAdminOrOwner(usersInChannels) && (getChannelType(selected_channel) == 1)"
+            @click="openPasswordDialog" color="green" fab bottom left absolute>
+            <v-icon left>
+              mdi-lock
+            </v-icon>
+            Protect Channel
+          </v-btn>
+          <v-dialog v-model="channelPasswordModal" max-width="400">
+            <v-card>
+              <v-card-title>
+                Protect Your Channel<br>
+              </v-card-title>
+              <v-card-text>
+                <v-text-field v-model="protectChannelPass" label="New Password" type="password"
+                  :rules="[value => !!value || 'This field is required']"></v-text-field>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn @click="closePasswordDialog">Cancel</v-btn>
+                <v-btn @click="protectChannel(selected_channel)" color="primary"
+                  :disabled="protectChannelPass.length == 0">Protect</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </div>
+
         <button class="leave-button" @click="leaveChannel(selected_channel)"></button>
       </div>
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
@@ -241,6 +268,8 @@ const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
 let createChannelOptions = ref(null);
+let protectChannelPass = ref('');
+let channelPasswordModal = ref(false);
 
 
 let channelName = ref('');
@@ -526,6 +555,13 @@ const isUserMorePowerful = (userList, target) => {
 }
 
 
+const isUserAdminOrOwner = (userList) => {
+  const targetUser = userList.find(user => user.user_id.nick === users_Nick);
+  if (targetUser) {
+    return targetUser.is_owner || targetUser.is_admin;
+  }
+  return false;
+};
 
 const kickUser = async (KickedUserID) => {
   try {
@@ -632,6 +668,39 @@ const MuteUser = async (userToMute) => {
 }
 
 
+function openPasswordDialog() {
+  channelPasswordModal.value = true;
+}
+
+function closePasswordDialog() {
+  channelPasswordModal.value = false;
+  protectChannelPass.value = '';
+}
+
+
+const protectChannel = async (channelID: number) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/channels/protect';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ channel_id: channelID, newPassword: Md5.hashStr(protectChannelPass.value) }),
+    });
+
+    if (response.ok) {
+      getChannelsJoined();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  } finally {
+    closePasswordDialog();
+  }
+}
 
 const Dmessage = async (User_ID) => {
   selectedUsers.value = [];

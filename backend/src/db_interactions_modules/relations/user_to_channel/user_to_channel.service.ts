@@ -232,4 +232,11 @@ export class UserToChannelService {
     });
   }
   }
+
+  async isUserAdminOrOwnerInChannel(channel_id: number, user_id: number): Promise<boolean> {
+    const userChannel = await this.UserToChannelRepository.findOne({
+      where: { user_id: { id: user_id }, channel_id: { id: channel_id } },
+    });
+    return userChannel ? userChannel.is_admin || userChannel.is_owner : false;
+  }
 }
