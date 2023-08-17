@@ -163,14 +163,31 @@
         <div id="user-list-container">
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
             getChannelName(selected_channel)
-          }}</h2>
+            }}</h2>
           <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
-              <v-btn @click="kickUser(usersInChannel.user_id.id)">Kick</v-btn>
-              <v-btn @click="banUser(usersInChannel.user_id.id)">Ban</v-btn>
-              <v-btn @click="MuteUser(usersInChannel.user_id.id)">Toggle Mute</v-btn>
-              <v-btn @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</v-btn>
+              <v-menu transition=" slide-x-transition">
+              <template v-slot:activator="{ props }">
+                <v-btn color="grey" v-bind="props">
+                  Admin Commands
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item>
+                  <v-btn style="width: 100%;" @click="kickUser(usersInChannel.user_id.id)">Kick</v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn style="width: 100%;" @click="banUser(usersInChannel.user_id.id)">Ban</v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn style="width: 100%;" @click="MuteUser(usersInChannel.user_id.id)">Toggle Mute</v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn style="width: 100%;" @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</v-btn>
+                </v-list-item>
+              </v-list>
+              </v-menu>
             </div>
             {{ usersInChannel.user_id.intra_nick }}
           </div>
