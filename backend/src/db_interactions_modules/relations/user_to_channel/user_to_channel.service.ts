@@ -38,7 +38,7 @@ export class UserToChannelService {
         return
       }
       
-      this.usersService.update_channels_on_list(user.id,channel.id)
+      await this.usersService.update_channels_on_list(user.id,channel.id)
       await this.notifyRoom(channel.id);
     return await this.UserToChannelRepository.save({
       user_id: user,

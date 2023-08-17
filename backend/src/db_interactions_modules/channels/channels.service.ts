@@ -35,8 +35,9 @@ export class ChannelsService {
     const response = await this.ChannelsRepository.save({...createChannelDto, password: pwd})
     const userRequester = await this.UserRepository.findOne({where: {id: creator_user}})
     await this.UserToChannelService_.joinchannel(response,userRequester,pwd)
+    //console.log(createChannelDto.invitedusers)
     createChannelDto.invitedusers.forEach( async element => {
-      const user_to_join = await this.UserRepository.findOne({where: {id: element}})
+      let user_to_join = await this.UserRepository.findOne({where: {id: element}})
       if(user_to_join){
         await this.UserToChannelService_.joinchannel(response,user_to_join,pwd)
         const eventDto = {

@@ -97,7 +97,16 @@ export class UsersService {
   
 
    async update_channels_on_list(UserId: number,ChannelId: number){
+    
+      //     let i=0;
+      // AppService.UsersOnline.forEach((element) => {
+      //   console.log( AppService.UsersOnline[i].user.id, AppService.UsersOnline[i].user.intra_nick, AppService.UsersOnline[i++].client.id)
+      // })
+    
+    console.log("CHEGOU USER ID",UserId)
     const element= AppService.UsersOnline.find(element => element.user.id == UserId);
+    // if(!element)
+    //   console.log("ERROR on UPDATE CHANNELS LIST USER:",UserId)
     if(element)
       element.client.join(ChannelId.toString())
    }
@@ -134,7 +143,7 @@ export class UsersService {
 
    async notifyUser(user_id: number,UsersOnline : UserSocketArray[]){
     //console.log(UsersOnline)
-     console.log('Notification sent to user:', user_id);
+    //  console.log('Notification sent to user:', user_id);
     //  let i=0;
     //  AppService.UsersOnline.forEach((user) => {
     //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
