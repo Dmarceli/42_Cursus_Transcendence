@@ -20,6 +20,10 @@ export class friendService {
 
 
  async blockuser(user_to_block: number, user: number) {
+  if(!user_to_block || !user)
+    return
+  if(this.findFriendshipByIDS(user_to_block,user))
+    this.delete_friend(user_to_block,user)
   const to_block= await this.userRepository.findOne({where: {id: user_to_block} })
   const user1= await this.userRepository.findOne({where: {id: user} })
    return this.friendRepository.save({
@@ -28,6 +32,8 @@ export class friendService {
     is_block: true
    });
  }
+
+
  async findAll() {
   return await this.friendRepository.find({relations: ['user1Id', 'user2Id' ], where: {is_block: false}});
 }
@@ -60,23 +66,39 @@ async findByUserId(userId: number) {
 }
 
 async get_blockedusers(userId: number) {
+  let blockedList: Array<User> = [];
+
   const blocked_list = await this.friendRepository.find({
     where: [{ user1Id: { id: userId}, is_block: true}],
     relations:['user1Id', 'user2Id'],
     select:{user1Id: {id: true, intra_nick: true}, user2Id: {id: true, intra_nick: true}}
   });
+
+  for (const k in blocked_list) {
+    if(blocked_list[k].user1Id.id == userId)
+      blockedList.push(blocked_list[k].user2Id)
+    else
+      blockedList.push(blocked_list[k].user1Id)
+  }
  
-  return  blocked_list
+  return  blockedList
 }
 
 async delete_friend(id1: number,id2: number) {
+  if(!id1 || !id2 )
+    return
+  
   const friendship = await this.friendRepository.findOne({
     where: [{ user1Id: {id: id1}, user2Id: {id: id2}}, 
            { user1Id: {id: id2}, user2Id: {id: id1}}
           ], 
     relations:['user1Id', 'user2Id']
 	});
-  await this.friendRepository.remove(friendship)
-  return friendship
+  if(friendship){
+    await this.friendRepository.remove(friendship)
+    return friendship
+  }
+  else
+    return
 }
 }
