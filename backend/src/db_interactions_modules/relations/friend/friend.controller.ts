@@ -23,8 +23,13 @@ export class friendsController {
   }
 
   @Post('/block-user')
-  blockuser(@Body() user_to_block: number, @getUserIDFromToken() user:User) {
+  blockuser(@Body('user_to_block') user_to_block: number, @getUserIDFromToken() user:User) {
     return this.friendService.blockuser(user_to_block, user.id);
+  }
+
+  @Post('/unblock-user')
+  unblockuser(@Body('user_to_unblock') user_to_unblock: number, @getUserIDFromToken() user:User) {
+    return this.friendService.delete_friend(user_to_unblock, user.id);
   }
 
   @Get('/getfriends')

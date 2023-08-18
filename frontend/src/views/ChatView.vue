@@ -422,7 +422,12 @@ const getMessages = async () => {
   if (selected_channel) {
     try {
       let url = process.env.VUE_APP_BACKEND_URL + '/chat/msg_in_channel/' + selected_channel
-      const response = await fetch(url);
+      const response = await fetch(url,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         messages.value = data;
