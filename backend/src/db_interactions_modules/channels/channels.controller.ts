@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete , UseGuards} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Res, Delete , UseGuards} from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { ChannelCreateDto } from './dtos/channelcreate.dto';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
@@ -20,6 +20,10 @@ export class ChannelsController {
     return this.channelsService.all_channel(user.id);
   }
 
+  @Post('/protect')
+  protect(@Body() channelinfo: any,@getUserIDFromToken() user: User, @Res() res: any) {
+    return this.channelsService.protect(channelinfo,user.id, res);
+  }
   // @Get(':id')
   // findOne(@Param('id') id: string) {
   //   return this.channelsService.findOne(+id);

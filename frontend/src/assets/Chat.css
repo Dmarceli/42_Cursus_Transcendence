@@ -289,10 +289,18 @@
   justify-content: space-evenly;
   padding: 10px;
   border-bottom: 1px solid #ccc;
+  text-overflow: ellipsis;
 }
 
 .user:hover {
   background-color: #888;
+}
+
+.nickname-container{
+  width: 60%; 
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .add-friend {
@@ -312,6 +320,7 @@
   height: 20px;
   cursor: pointer;
 }
+
 
 .channel-button {
   background-image: url('../src/assets/channels.svg');
@@ -657,6 +666,11 @@
 	}
 }
 
+.privateChannel{
+  position:absolute;
+  bottom:0;
+  right:0;
+}
 
 .leave-button{
   width:70px;
@@ -750,4 +764,21 @@
 	.hamburguer-button{
 		filter: invert(0%);
 	}
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to, .fade-leave{
+  opacity: 0;
+}
+
+.user-tooltip{
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tooltip-user-avatar{
+  border-radius: 50%;
+  height: 150px;
 }

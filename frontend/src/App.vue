@@ -36,6 +36,7 @@
       </v-card-text>
       <v-card-actions>
         <v-btn color="primary" @click="showNotifications = false;">Close</v-btn>
+        <v-btn color="primary" v-if="notifications.length > 0" @click="clearNotifications()" >Clear Notifications</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -292,6 +293,27 @@ const fetchNotifications = async () => {
   }
 };
 
+const clearNotifications = async () => {
+  let token = getCookieValueByName('token');
+  try {
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + '/events/clear_notifications', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (response.ok) {
+      fetchNotifications(); 
+    } else {
+      console.log('Error clearing notifications:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
 if (socket)  {
 	if (islogged.value === true)
 	{
@@ -353,6 +375,17 @@ nav a {
   overflow-y: scroll;
 }
 
+
+.notification-item {
+  padding: 8px;
+  border: 2px solid #444;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
 .first_login_modal {
   display: flex;            
   justify-content: center;  
@@ -363,6 +396,7 @@ nav a {
   top: 0;
   left: 0;
 }
+
 @media (min-width: 1024px) {
   header {
     place-items: center;

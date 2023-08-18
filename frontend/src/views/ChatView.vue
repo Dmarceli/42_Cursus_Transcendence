@@ -1,4 +1,8 @@
 <template>
+  <transition name="fade" mode="out-in">
+    <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert" color="success"
+      icon="$success" title="Success!" text="Friendship request sent successfully!" dismissible></v-alert>
+  </transition>
   <div class="Chat">
     <div class="channels-list" :class="{ 'collapsed': !showSideInfo }">
       <div v-if="side_info === 0" class="convo-list-container">
@@ -80,13 +84,16 @@
         <div class="list-header">USERS</div>
         <div v-for="user in users" :key="user.id" class="tooltip">
           <div class="user">
-            <span class="tooltiptext">
+            <v-tooltip activator="parent" location="end" class="user-tooltip">
+              <img :src="user.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
               Nickname: {{ user.nick }}<br>
               Intra Nick: {{ user.intra_nick }}<br>
               Games Won: {{ user.won_games }}<br>
               Games Lost: {{ user.lost_games }}<br>
-            </span>
-            {{ user.nick }}
+            </v-tooltip>
+            <div class="nickname-container">
+              {{ user.nick }}
+            </div>
             <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
             <button v-else class="friend-remove" @click="removeFriend(user)"></button>
           </div>
@@ -143,17 +150,13 @@
         <div class="channel-name">
           {{ getChannelName(selected_channel) }}
         </div>
-        <div class="fightButton">
+        <div v-if="!getChannelType(selected_channel)" class="fightButton">
           <v-btn icon @click="inviteToPrivateGame">
             <font-awesome-icon :icon="['fas', 'table-tennis-paddle-ball']" style="color: #ffffff" />
           </v-btn>
         </div>
-        <v-btn
-          icon
-          class="more-options ml-auto"
-          :class="{ 'close-moreoptions': showChannelOptions }"
-          @click="moreChannelOptions()"
-        >
+        <v-btn icon class="more-options ml-auto" :class="{ 'close-moreoptions': showChannelOptions }"
+          @click="moreChannelOptions()">
           <v-icon>{{ showChannelOptions ? 'mdi-close' : 'mdi-dots-vertical' }}</v-icon>
         </v-btn>
       </div>
@@ -161,18 +164,62 @@
         <div id="user-list-container">
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
             getChannelName(selected_channel)
-          }}</h2>
+            }}</h2>
           <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
-              <button @click="kickUser(usersInChannel.user_id.id)">Kick</button>
-              <button @click="banUser(usersInChannel.user_id.id)">Ban</button>
-              <button @click="MuteUser(usersInChannel.user_id.id)">Mute</button>
-              <button @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</button>
+              <v-menu transition=" slide-x-transition">
+              <template v-slot:activator="{ props }">
+                <v-btn color="grey" v-bind="props">
+                  Admin Commands
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item>
+                  <v-btn style="width: 100%;" @click="kickUser(usersInChannel.user_id.id)">Kick</v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn style="width: 100%;" @click="banUser(usersInChannel.user_id.id)">Ban</v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn style="width: 100%;" @click="MuteUser(usersInChannel.user_id.id)">Toggle Mute</v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn style="width: 100%;" @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</v-btn>
+                </v-list-item>
+              </v-list>
+              </v-menu>
             </div>
             {{ usersInChannel.user_id.intra_nick }}
           </div>
         </div>
+        <div style=" position: relative;bottom: 0; left: 0;">
+          <v-btn class="privateChannel"
+            v-if="isUserAdminOrOwner(usersInChannels) && (getChannelType(selected_channel) == 1)"
+            @click="openPasswordDialog" color="green" fab bottom left absolute>
+            <v-icon left>
+              mdi-lock
+            </v-icon>
+            Protect Channel
+          </v-btn>
+          <v-dialog v-model="channelPasswordModal" max-width="400">
+            <v-card>
+              <v-card-title>
+                Protect Your Channel<br>
+              </v-card-title>
+              <v-card-text>
+                <v-text-field v-model="protectChannelPass" label="New Password" type="password"
+                  :rules="[value => !!value || 'This field is required']"></v-text-field>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn @click="closePasswordDialog">Cancel</v-btn>
+                <v-btn @click="protectChannel(selected_channel)" color="primary"
+                  :disabled="protectChannelPass.length == 0">Protect</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </div>
+
         <button class="leave-button" @click="leaveChannel(selected_channel)"></button>
       </div>
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
@@ -224,7 +271,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 library.add(fas)
 
 const msgsContainer = ref(null);
-let show_UserInfo = ref(false);
+let showAlert = ref(false);
 const messageText = ref('');
 const searchText = ref('');
 const messages = ref([]);
@@ -239,6 +286,8 @@ const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
 let createChannelOptions = ref(null);
+let protectChannelPass = ref('');
+let channelPasswordModal = ref(false);
 
 
 let channelName = ref('');
@@ -335,7 +384,7 @@ const getChannelUserCount = (channel) => {
 const isUserMutedOnChannel = (userList) => {
   for (const userId in userList) {
     const entry = userList[userId];
-    if (entry['user_id']['nick'] === users_Name) {
+    if (entry['user_id']['nick'] === users_Nick) {
       if (entry['is_muted'])
         return true
       else
@@ -520,6 +569,7 @@ const joinChannel = async (channel, ownerPWD) => {
       });
     if (response.ok) {
       await getChannelsJoined();
+      console.log("VIMS")
     } else {
       console.log('Error:', response.status);
     }
@@ -535,18 +585,28 @@ const joinChannel = async (channel, ownerPWD) => {
 // TEMP TESTS COMMENTED
 const isUserMorePowerful = (userList, target) => {
   let is_owner_of_channel = false
+  let is_admin_of_channel = false
   for (const userId in userList) {
     if (userList[userId]['user_id']['nick'] == users_Nick && userList[userId]['is_owner'])
       is_owner_of_channel = true;
+    else if (userList[userId]['user_id']['nick'] == users_Nick && userList[userId]['is_admin'])
+      is_admin_of_channel = true
   }
-  if (target['user_id']['nick'] === users_Name || !is_owner_of_channel)
+  if (target['user_id']['nick'] === users_Nick || !is_owner_of_channel && !is_admin_of_channel)
     return false;
   if (target['is_owner'])
     return false
-  return true
+  return true;
 }
 
 
+const isUserAdminOrOwner = (userList) => {
+  const targetUser = userList.find(user => user.user_id.nick === users_Nick);
+  if (targetUser) {
+    return targetUser.is_owner || targetUser.is_admin;
+  }
+  return false;
+};
 
 const kickUser = async (KickedUserID) => {
   try {
@@ -653,6 +713,39 @@ const MuteUser = async (userToMute) => {
 }
 
 
+function openPasswordDialog() {
+  channelPasswordModal.value = true;
+}
+
+function closePasswordDialog() {
+  channelPasswordModal.value = false;
+  protectChannelPass.value = '';
+}
+
+
+const protectChannel = async (channelID: number) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/channels/protect';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ channel_id: channelID, newPassword: Md5.hashStr(protectChannelPass.value) }),
+    });
+
+    if (response.ok) {
+      getChannelsJoined();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  } finally {
+    closePasswordDialog();
+  }
+}
 
 const Dmessage = async (User_ID) => {
   selectedUsers.value = [];
@@ -772,7 +865,8 @@ function toggleOptionSelection(event) {
 const createChannel = async () => {
   let channel_name = channelName.value;
   let channel_password = channelPassword.value;
-  let ch_type = channelPassword ? 2 : 1;
+  let ch_type = channelPassword.value ? 2 : 1;
+
   const pass = Md5.hashStr(channel_password);
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/channels/create';
@@ -864,6 +958,9 @@ const getFriends = async () => {
 
 };
 
+
+
+
 const addFriend = async (friendId) => {
   try {
     const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/friendship_request`, {
@@ -877,6 +974,10 @@ const addFriend = async (friendId) => {
     if (response.ok) {
       const data = await response.json();
       fetchFriends();
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+      }, 4000);
     } else {
       if (response.status == 303) {
         window.alert('friendship request already sent!')
@@ -939,6 +1040,8 @@ socket.on('recMessage', async (message) =>  {
 
 
 socket.on('notification', Notification => {
+  if (selected_channel)
+    getUsersInGivenChannel(selected_channel);
   getUsers();
   getChannelsJoined();
   fetchFriends();
@@ -956,25 +1059,25 @@ const inviteToPrivateGame = async () => {
   for (const id in usersInChannels.value) {
     if (usersInChannels.value[id].user_id.id != userId) {
       try {
-            const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/private_game_request`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(usersInChannels.value[id].user_id.id), message: users_Name+ " just invited you to a PONG Game! " + users_Name }),
-            });
-            if (response.ok) {
-              const data = await response.json();
-            } else {
-              if (response.status == 303) {
-                window.alert('You already already invited this user to a private game!')
-              }
-              else
-                console.log('Error:', response.status);
-            }
-          } catch (error) {
-            console.log('Error:', error);
+        const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/private_game_request`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(usersInChannels.value[id].user_id.id), message: users_Name + " just invited you to a PONG Game! " + users_Name }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+        } else {
+          if (response.status == 303) {
+            window.alert('You already already invited this user to a private game!')
+          }
+          else
+            console.log('Error:', response.status);
+        }
+      } catch (error) {
+        console.log('Error:', error);
       }
     }
   }

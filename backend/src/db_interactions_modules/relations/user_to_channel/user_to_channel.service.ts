@@ -17,13 +17,14 @@ export class UserToChannelService {
     @InjectRepository(Channel) private ChannelRepository: Repository<Channel> ,
     @InjectRepository(User) private UserRepository: Repository<User>,
     @Inject(forwardRef(() => UsersService))private usersService: UsersService,
+    
   ) { }
 
 
 
   async joinchannel(channel: Channel, user: User, pass: string) {
     let is_user_owner = false;
-    const channels_users_ = (await this.usersonchannel(channel.id))
+    const channels_users_ = (await this.usersonchannel(channel.id, -1))
     const is_already_on_channel= channels_users_.find(element => element.user_id.id == user.id )
     if(is_already_on_channel)      
       return
@@ -35,10 +36,10 @@ export class UserToChannelService {
       const password =  await this.ChannelRepository.findOne({where:{id: channel.id}, select:{password: true}});
       if (password.password != pass)
         return
-    }
-
-    this.usersService.update_channels_on_list(user.id,channel.id)
-
+      }
+      
+      await this.usersService.update_channels_on_list(user.id,channel.id)
+      await this.notifyRoom(channel.id);
     return await this.UserToChannelRepository.save({
       user_id: user,
       channel_id: channel,
@@ -58,17 +59,33 @@ export class UserToChannelService {
       ,
       relations: ['user_id', 'channel_id']
     });
-
-    return await this.UserToChannelRepository.remove(channel_to_leave)
+    const resp= await this.UserToChannelRepository.remove(channel_to_leave)
+    await this.notifyRoom(id_ch);
+    return resp;
   }
 
-  async usersonchannel(ch_id: number) {
+  async usersonchannel(ch_id: number,caller_id: number) {
+    if(ch_id){
     const usersInChannel = await this.UserToChannelRepository.find({
       where: { channel_id: { id: ch_id }},
      relations: ['user_id', 'channel_id'],
+     order:{
+      id: "ASC"
+     }
     });
     const filteredUsersInChannel = usersInChannel.filter(userInChannel => !userInChannel.is_banned);
+    if(caller_id == -1){
     return filteredUsersInChannel;
+    }
+    else{
+      const caller_privileges= await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:ch_id}}], relations: ['channel_id','user_id']})
+      if(caller_privileges && (caller_privileges.is_admin || caller_privileges.is_owner))
+          return usersInChannel;
+      else
+        return filteredUsersInChannel
+    }
+
+  }
   }
   
   async findChannelsByID(us_id:number){
@@ -94,6 +111,7 @@ export class UserToChannelService {
         relations: ['user_id', 'channel_id']
       });
   
+      await this.notifyRoom(id_ch);
       await this.UserToChannelRepository.remove(channel_to_leave)
       return res.status(200).json()
 
@@ -117,7 +135,8 @@ export class UserToChannelService {
         ,
         relations: ['user_id', 'channel_id']
       });
-      await this.UserToChannelRepository.update(channel_to_leave, { is_banned: true })
+      await this.UserToChannelRepository.update(channel_to_leave, { is_banned: true, is_admin: false })
+      await this.notifyRoom(id_ch);
       return res.status(200).json()
     }
     else{
@@ -138,7 +157,11 @@ export class UserToChannelService {
         ,
         relations: ['user_id', 'channel_id']
       });
-      await this.UserToChannelRepository.update(channel_to_leave, { is_muted: true })
+      if(channel_to_leave.is_muted)
+        await this.UserToChannelRepository.update(channel_to_leave, { is_muted: false })
+      else
+        await this.UserToChannelRepository.update(channel_to_leave, { is_muted: true })
+      await this.notifyRoom(id_ch);
       return res.status(200).json()
     }
     else{
@@ -149,7 +172,6 @@ export class UserToChannelService {
 
     async give_admin_to_user(id_us: number, id_ch: number, caller_id: number, res: Response, opt: string){
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
-    const user_to_ban = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
     if((caller_privileges.is_admin || caller_privileges.is_owner)){
       const channel_to_leave = await this.UserToChannelRepository.findOne({
         where: {
@@ -163,6 +185,7 @@ export class UserToChannelService {
       if(opt == "give")
         new_admin_value= true
       await this.UserToChannelRepository.update(channel_to_leave, { is_admin: new_admin_value })
+      await this.notifyRoom(id_ch);
       return res.status(200).json()
     }
     else{
@@ -197,5 +220,23 @@ export class UserToChannelService {
     const joinchannels = await this.UserToChannelRepository.save({is_owner: false, is_admin: false, is_banned: false, is_muted:false, user_id: user_lower_id, channel_id: created_channel});
     const joinchannels2 = await this.UserToChannelRepository.save({is_owner: false, is_admin: false, is_banned: false, is_muted:false, user_id: user_higher_id, channel_id: created_channel});
     return created_channel;
+  }
+
+  async notifyRoom(ch_id: number){
+    if(ch_id){
+    const Room = await this.ChannelRepository.findOne({ where : {id: ch_id}});
+    // -1 to avoid identify caller user
+    const users = await this.usersonchannel(ch_id,-1);
+    users.forEach(element => {
+      this.usersService.notifyUser(element.user_id.id,AppService.UsersOnline)
+    });
+  }
+  }
+
+  async isUserAdminOrOwnerInChannel(channel_id: number, user_id: number): Promise<boolean> {
+    const userChannel = await this.UserToChannelRepository.findOne({
+      where: { user_id: { id: user_id }, channel_id: { id: channel_id } },
+    });
+    return userChannel ? userChannel.is_admin || userChannel.is_owner : false;
   }
 }
