@@ -1,14 +1,16 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Res, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
+import { UserStatus } from './types/UserStatus';
+import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller()
 export class AppController {
  constructor(private readonly appService: AppService) {}
  
-  @Get('/api/chat')
-  async Chat(@Res() res) {
-   const messages = await this.appService.getMessages();
-   res.json(messages);
+  @Get('/online-status/')
+  OnlineStatus() : Promise<UserStatus[]>{
+   return this.appService.get_online_status_users()
   }
 
 }

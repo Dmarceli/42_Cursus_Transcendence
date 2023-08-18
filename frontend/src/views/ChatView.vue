@@ -22,6 +22,9 @@
               Games Won: {{ user_friend.won_games }}<br>
               Games Lost: {{ user_friend.lost_games }}<br>
             </span>
+            <v-avatar class="avatar-circle" :style="{ '--online-status': onlineStatus(user_friend.id) }">
+                <img :src="user_friend.avatar" alt="Avatar" class="avatar-circle" />
+            </v-avatar>
             {{ user_friend.nick }}
             <button class="friend-remove" @click="removeFriend(user_friend)"></button>
           </div>
@@ -241,7 +244,34 @@ let createChannelOptions = ref(null);
 let channelName = ref('');
 let channelPassword = ref('');
 
+const allOnlineStatuses = ref([]);
+
 const socket = inject('socket')
+
+const getStatusForUser = (userId: number) => {
+  const userStatus = allOnlineStatuses.value.find(onlineStatus => onlineStatus.userId === userId);
+  if (userStatus) {
+    return userStatus.status;
+  }
+  return null;
+};
+
+const onlineStatus = (userId) => {
+  let online = '#319654'
+  let offline = '#da3a46'
+  let inGame = '#ffd564'
+  const status = getStatusForUser(userId);
+  switch (status) {
+    case 0:
+      return inGame;
+    case 1:
+      return online;
+    case 2:
+      return offline;
+    default:
+      return offline;
+  }
+};
 
 function toggleChannelList() {
   showSideInfo.value = !showSideInfo.value;
@@ -788,6 +818,26 @@ const isChannelJoined = (givenID) => {
   });
 };
 
+const fetchOnlineStatus = async () =>
+{
+  try {
+    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/online-status`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    if (response.ok) {
+      const data = await response.json();
+      allOnlineStatuses.value = data;
+      console.log(allOnlineStatuses.value)
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+}
 
 const fetchFriends = async () => {
   try {
@@ -863,11 +913,14 @@ const removeFriend = async (friend) => {
   }
 };
 
-onBeforeMount(async() => {
-	await getUsers();
-	await getChannelsJoined();
-	await getChannels();
-	await getFriends();
+
+onBeforeMount(() => {
+  getUsers();
+  getChannels();
+  fetchFriends();
+  fetchOnlineStatus();
+  getChannelsJoined();
+
 });
 
 if(socket){
@@ -889,6 +942,10 @@ socket.on('notification', Notification => {
   getUsers();
   getChannelsJoined();
   fetchFriends();
+});
+
+socket.on('online-status-update', () => {
+  fetchOnlineStatus();
 });
 
 watch(messages, () => {
@@ -928,6 +985,30 @@ const inviteToPrivateGame = async () => {
 
 <style>
 @import '../assets/Chat.css';
+
+.avatar-circle {
+  display: inline-block;
+  position: relative;
+  animation: glowShadow 1.0s linear infinite alternate;
+}
+
+img.avatar-circle  {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+@keyframes glowShadow{
+  from
+   {
+    box-shadow: 0px 0px 5px 2px var(--online-status, #535FED);
+   }
+  to {
+    box-shadow: 0px 0px 10px 2.5px var(--online-status, #535FED);
+  }
+}
+
 </style>
 
 

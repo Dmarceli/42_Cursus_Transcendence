@@ -18,7 +18,6 @@ export class PrivateGame
     this.player2 = player2
   }
 }
-
 @Injectable()
 export class GameService {
   lobbyPlayers: PlayerPaddle[] = []
@@ -61,6 +60,13 @@ export class GameService {
       }
       this.lobbyPlayers.splice(freePlayerIndex, 1);
     }
+  }
+
+  IsInGame(user: User)
+  {
+    return (this.active_games.some((game: Game)=>{
+      return (game.playerPaddle1.user.id==user.id ||  game.playerPaddle2.user.id==user.id)
+    }));
   }
 
   IsInPrivateGame(intra_nick: string)
@@ -229,6 +235,9 @@ export class GameService {
         console.log("ADDING PRIVATE GAME for player "+private_game.player1+" and "+private_game.player2)
         let game = new Game(this.privateGamePlayers[indexPlayer1], this.privateGamePlayers[indexPlayer2], this.gameHistoryService, this.userRepository)
         this.active_games.push(game)
+        AppService.UsersOnline.forEach((user) => {
+          user.client.emit("online-status-update");
+        })
         if (indexPlayer1 > indexPlayer2)
         {
           this.privateGamePlayers.splice(indexPlayer1, 1);
@@ -257,12 +266,20 @@ export class GameService {
     let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)
     this.lobby.splice(0, 2)
     this.active_games.push(game)
+    AppService.UsersOnline.forEach((user) => {
+      user.client.emit("online-status-update");
+    })
     game.playerPaddle1.handlePlayersNotReady();
     game.playerPaddle2.handlePlayersNotReady();
   }
   removeFinishedGames()
   {
     let updated_active_games = this.active_games.filter(game => !game.isFinished);
+    if (updated_active_games.length != this.active_games.length) {
+      AppService.UsersOnline.forEach((user) => {
+        user.client.emit("online-status-update");
+      })
+    }
     this.active_games = updated_active_games;
   }
 }
