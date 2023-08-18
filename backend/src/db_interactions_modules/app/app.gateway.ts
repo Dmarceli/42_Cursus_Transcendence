@@ -25,7 +25,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
  export class AppGateway
  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
- constructor(private appService: AppService, private gameService: GameService ) {}
+ constructor(private appService: AppService, private gameService: GameService, private usersService: UsersService) { }
  
  @WebSocketServer() server: Server;
  
@@ -51,8 +51,11 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
    console.log(`Disconnected: ${client.id}`);
    this.appService.user_remove_disconect(client)
    this.gameService.HandlePlayerDisconnected(client)
+   AppService.UsersOnline.forEach((user) => {
+   user.client.emit("online-status-update");
+  })
  }
- 
+
  //1º step após conexão
  async handleConnection(client: Socket, server: Server, @Res() res: any) {
   console.log(`Connected ${client.id}`);
@@ -60,13 +63,14 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
   const authorization = await this.appService.add_user_to_lobby(client, server,Channel_List)
   client.join(Channel_List)
   if(!authorization){
-		client.emit('logout')
+    client.emit('logout')
     client.disconnect();
     console.log(`Discnnected Auth missing -  ${client.id}`)
   }
- }
-
-
+  AppService.UsersOnline.forEach((user) => {
+    user.client.emit("online-status-update");
+  })
+}
 
 // Game Service
   @SubscribeMessage('PlayerSelectedPaddle')

@@ -8,16 +8,19 @@ import { CreateMsgDto } from './db_interactions_modules/messages/dtos/message.dt
 import { UsersService } from './db_interactions_modules/users/users.service';
 import { Socket, Server } from 'socket.io';
 import { UserSocketArray } from './db_interactions_modules/users/classes/UsersSockets';
+import { GameService } from './db_interactions_modules/game/game.service';
+import { UserStatus } from './types/UserStatus';
+
 @Injectable()
 export class AppService {
  constructor(
    @InjectRepository(Messages) private messagesRepository: Repository<Messages>,
    @InjectRepository(User)private userRepository: Repository<User>,
    @InjectRepository(Channel)private channelRepository: Repository<Channel>,
-   private usersService: UsersService
+   private usersService: UsersService,
+   private gameService: GameService
  ) {}
  static UsersOnline: UserSocketArray[] = []
-
 
  async createMessage(msg_payload: CreateMsgDto){
   const user= await this.userRepository.findOne({where: {
@@ -48,5 +51,21 @@ export class AppService {
   return this.usersService.notifyUser(userID,AppService.UsersOnline)
  }
 
+  // TODO: Parameter with user affected and check if friends
+  async get_online_status_users() {
+    let current_users = await this.usersService.findAll()
+    const allUserStatus: UserStatus[] = current_users.map((currentUser) => {
+      let IsOnline = AppService.UsersOnline.some((userOnline) => {
+        return userOnline.user.id == currentUser.id;
+      })
+      let IsInGame = this.gameService.IsInGame(currentUser)
+      let onlineStatus = IsInGame ? 0 : IsOnline ? 1 : 2;
+      return {
+        userId: currentUser.id,
+        status: onlineStatus
+      }
+    });
+    return allUserStatus;
+  }
 
 }

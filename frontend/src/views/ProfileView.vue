@@ -227,32 +227,34 @@ function closeSettings() {
 	    </div>
 
       <!-- Game History -->
-	    <div class="game-history">
-	    <h2>Last 5 games:</h2>
-      <table>
-        <tbody>
-          <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
-            <td>
-              <div class="history-avatar-container">
-                <img :src="getPlayerAvatar(game.user.nick)" alt="Avatar" class="history-avatar" />
-                <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="game.userWon" />
-              </div>
-              <span class="history-player-nick">{{ game.user.nick }}</span>
-            </td>
-            <td class="user-score">{{ game.user.score }}</td>
-            <td class="vs">-</td>
-            <td class="opponent-score">{{ game.opponent.score }}</td>
-            <td>
-              <div class="history-avatar-container">
-                <img :src="getPlayerAvatar(game.opponent.nick)" alt="Avatar" class="history-avatar" />
-                <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!game.userWon" />
-              </div>
-              <span class="history-player-nick">{{ game.opponent.nick }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-	    </div>
+      <div class="game-history-container">
+	      <div class="game-history">
+	      <h2>Last 5 games:</h2>
+        <table>
+          <tbody>
+            <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
+              <td>
+                <div class="history-avatar-container">
+                  <img :src="getPlayerAvatar(game.user.nick)" alt="Avatar" class="history-avatar" />
+                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="game.userWon" />
+                </div>
+                <span class="history-player-nick">{{ game.user.nick }}</span>
+              </td>
+              <td class="user-score">{{ game.user.score }}</td>
+              <td class="vs">-</td>
+              <td class="opponent-score">{{ game.opponent.score }}</td>
+              <td>
+                <div class="history-avatar-container">
+                  <img :src="getPlayerAvatar(game.opponent.nick)" alt="Avatar" class="history-avatar" />
+                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!game.userWon" />
+                </div>
+                <span class="history-player-nick">{{ game.opponent.nick }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+	      </div>
+      </div>
     </div>
 
     <!-- Settings Modal -->
@@ -328,6 +330,7 @@ function closeSettings() {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 @media (max-width: 760px) {
@@ -338,6 +341,8 @@ function closeSettings() {
     max-height: 100px;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
+    z-index: 2;
   }
 
   .profile-header {
@@ -411,11 +416,20 @@ label[for="nickname"] {
 .profile-body {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: stretch;
 }
 
-.game-history {
+.game-history-container {
   flex: 1;
+  display: flex;
+  align-items: flex-start;
+}
+
+.game-history {
+  /* flex: 1; */
+  width: calc(100% - 10px);
+  margin-right: 20px;
 }
 
 .history-avatar-container {
