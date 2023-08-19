@@ -83,7 +83,7 @@
       </div>
       <div v-if="side_info === 3" class="searchcontainer">
         <div class="list-header">USERS</div>
-        <div v-for="user in users" :key="user.id" @click="goToProfile(user.nick)" class="tooltip">
+        <div v-for="user in users" :key="user.id" class="tooltip">
           <div class="user">
             <v-tooltip activator="parent" location="end" class="user-tooltip">
               <img :src="user.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
@@ -92,7 +92,7 @@
               Games Won: {{ user.won_games }}<br>
               Games Lost: {{ user.lost_games }}<br>
             </v-tooltip>
-            <div class="nickname-container">
+            <div @click="goToProfile(user.nick)" class="nickname-container">
               {{ user.nick }}
             </div>
             <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
@@ -166,7 +166,7 @@
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
             getChannelName(selected_channel)
             }}</h2>
-          <div class="usersInChannel" v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
+          <div class="usersInChannel" v-for="usersInChannel in usersInChannels" @click="goToProfile(usersInChannel.user_id.nick)" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
               <v-menu transition=" slide-x-transition">
