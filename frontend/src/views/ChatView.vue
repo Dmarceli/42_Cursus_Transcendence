@@ -18,9 +18,10 @@
       </div>
       <div v-if="side_info === 1">
         <div class="list-header">FRIENDS</div>
-        <div v-for="user_friend in User_Friends" :key="user_friend.id" class="tooltip">
+        <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.nick)" class="tooltip">
           <div class="user">
             <span class="tooltiptext">
+              <img :src="user_friend.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
               Nickname: {{ user_friend.nick }}<br>
               Intra Nick: {{ user_friend.intra_nick }}<br>
               Games Won: {{ user_friend.won_games }}<br>
@@ -82,7 +83,7 @@
       </div>
       <div v-if="side_info === 3" class="searchcontainer">
         <div class="list-header">USERS</div>
-        <div v-for="user in users" :key="user.id" class="tooltip">
+        <div v-for="user in users" :key="user.id" @click="goToProfile(user.nick)" class="tooltip">
           <div class="user">
             <v-tooltip activator="parent" location="end" class="user-tooltip">
               <img :src="user.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
@@ -267,6 +268,7 @@ import { Md5 } from 'ts-md5';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
+import router from '@/router';
 
 library.add(fas)
 
@@ -1019,6 +1021,10 @@ const removeFriend = async (friend) => {
   }
 };
 
+const goToProfile = (userNick: number) =>
+{
+  router.push("/profile/"+userNick)
+}
 
 onBeforeMount(() => {
   getUsers();
