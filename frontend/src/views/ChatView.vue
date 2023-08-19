@@ -226,7 +226,7 @@
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
         <div v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
           <span v-if="usersInChannel.user_id.intra_nick !== users_Name">
-            <div class="userInfo-container">
+            <div class="userInfo-container" @click="goToProfile(usersInChannel.user_id.nick)">
               <div class="userInfo">
                 <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="alone-user-avatar">
                 <h1>{{ usersInChannel.user_id.intra_nick }}</h1>
