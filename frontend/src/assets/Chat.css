@@ -734,6 +734,10 @@
   margin-top: 10%;
 }
 
+.userInfo-container:hover {
+  cursor: pointer;
+}
+
 .userInfo {
   align-items: center;
   margin-left: 10px;

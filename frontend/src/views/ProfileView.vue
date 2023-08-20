@@ -5,8 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import jwt_decode from 'jwt-decode';
-
-
+import router from '@/router';
 
 library.add(fas);
 
@@ -53,15 +52,21 @@ const isOwnProfile = computed(() => {
 
 const route = useRoute();
 
+const isUserBlocked = ref(null)
+
 const fetchUserProfile = async () => {
-	try {
-		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
-		const response = await fetch(url, {
+  let url: string
+  if (route.name === 'myProfile') {
+    url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
+  } else {
+    url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/'+route.params.nick;
+  }
+  try {
+    const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    
     if (response.ok) {
       const data = await response.json();
       userProfile.value = data;
@@ -69,13 +74,35 @@ const fetchUserProfile = async () => {
       // Handle the case when the request fails
       console.error('Error fetching User Profile data:', response.statusText);
     }
-	} catch (error) {
-		console.error('Error fetching User Profile data', error);
-	}
+  } catch (error) {
+    console.error('Error fetching User Profile data', error);
+  }
 }
 
-onBeforeMount(() => {
-	fetchUserProfile();
+const fetchBlockStatus = async () => {
+  if (route.name !== 'otherProfile')
+    return
+  let url = process.env.VUE_APP_BACKEND_URL + '/friends/blocked/';
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      isUserBlocked.value = data.some(blockedUser => blockedUser.id === userProfile.value.id);
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching User Profile data:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching User Profile data', error);
+  }
+}
+onBeforeMount( async () => {
+	await fetchUserProfile();
+  fetchBlockStatus();
 });
 
 const lastGames = ref([
@@ -177,6 +204,55 @@ function closeSettings() {
   isSettingsOpen.value = false;
 }
 
+async function BlockUser() {
+  try {
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/friends/block-user", {
+      method: 'POST',
+      body: JSON.stringify({
+        'user_to_block': userProfile.value.id,
+      }),
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data)
+      isUserBlocked.value = true
+    } else {
+      console.log('Error during BlockUser:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+    return false;
+  }
+}
+
+async function UnBlockUser() {
+  try {
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/friends/unblock-user", {
+      method: 'POST',
+      body: JSON.stringify({
+        'user_to_unblock': userProfile.value.id,
+      }),
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data)
+      isUserBlocked.value = false
+    } else {
+      console.log('Error during UnblockUser:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+    return false;
+  }
+}
 
 </script>
 
@@ -185,16 +261,16 @@ function closeSettings() {
     <!-- Avatar and Nick -->
     <div class="profile-header">
       <v-avatar class="avatar-container">
-        <img :src="userProfile.avatar" alt="Avatar" class="avatar" />
+        <img :src="userProfile.avatar" alt="Avatar" class="avatar" :class="{'grey-out' : isUserBlocked}" />
 			</v-avatar>
       <h1 class="nickname" >{{ userProfile.nick }}</h1>
       <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
-			<div class="user-actions">
-					<v-btn class="ma-2 blockBtn" color="red-darken-4">
-						Block User<v-icon end icon="mdi-account-cancel-outline"></v-icon>
+			<div class="user-actions" >
+					<v-btn class="ma-2" v-if="!isOwnProfile && isUserBlocked" @click="UnBlockUser()" color="light-blue-lighten-2">
+						{{ "Unblock" }}<v-icon end icon="mdi-account-lock-open-outline"></v-icon>
 					</v-btn>
-					<v-btn class="ma-2 chatInviteBtn" color="green">
-						Invite to chat<v-icon end icon="mdi-email"></v-icon>
+          <v-btn class="ma-2" v-if="!isOwnProfile && !isUserBlocked" @click="BlockUser()" color="red-darken-4">
+						{{ "Block" }}<v-icon end icon="mdi-account-cancel-outline"></v-icon>
 					</v-btn>
 			</div>
     </div>
@@ -618,6 +694,10 @@ td {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 99;
+}
+
+img.grey-out {
+    filter: grayscale(100%) opacity(0.5);
 }
 
 </style>
