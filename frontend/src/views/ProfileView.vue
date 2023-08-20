@@ -100,10 +100,44 @@ const fetchBlockStatus = async () => {
     console.error('Error fetching User Profile data', error);
   }
 }
-onBeforeMount( async () => {
+const fetchLeaderboard = async () => {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
+      const response = await fetch(url);
+      const data = await response.json();
+      let rank = data.findIndex((user) => user.id == userProfile.value.id)
+      userProfile.value.rank = rank;
+    } catch (error) {
+      console.error('Error fetching leaderboard data:', error);
+    }
+  };
+
+onBeforeMount(async () => {
 	await fetchUserProfile();
   fetchBlockStatus();
+  fetchLeaderboard();
+	fetchLastFiveGames();
 });
+
+const fetchLastFiveGames = async () => {
+	try {
+		let url = process.env.VUE_APP_BACKEND_URL + '/game-history/'+userProfile.value.id;
+		const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      // userProfile.value = data;
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching Game History data:', response.statusText);
+    }
+	} catch (error) {
+		console.error('Error fetching Game History data', error);
+	}
+}
 
 const lastGames = ref([
   { id: 1, user: { nick: 'JohnDoe', score: 10 }, opponent: { nick: 'JaneSmith', score: 8 }, userWon: true },

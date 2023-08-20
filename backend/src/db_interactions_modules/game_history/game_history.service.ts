@@ -25,7 +25,7 @@ export class GameHistoryService {
     return ;
   }
 
-  async all_history(){
+  async get_history(id: string){
     const game_history = await this.gameHistoryRepository.find({relations: {user_id_loser: true, user_id_winner: true}
       , select: {user_id_loser:{id:true, nick:true, intra_nick: true}, user_id_winner: {id:true, nick:true, intra_nick: true}}});
     return game_history;
