@@ -366,7 +366,7 @@ async function UnBlockUser() {
         <table>
           <tbody>
             <template v-for="i in 5">
-              <tr v-if="lastGames.slice(-5)[i-1]" :key="lastGames.slice(-5)[i-1].id" :class="{'game-won': lastGames.slice(-5)[i-1].userWon, 'game-lost': !lastGames.slice(-5)[i-1].userWon}">
+              <tr v-if="i - 1< lastGames.slice(-5).length" :key="lastGames.slice(-5)[i-1].id" :class="{'game-won': lastGames.slice(-5)[i-1].userWon, 'game-lost': !lastGames.slice(-5)[i-1].userWon}">
                 <td class="recent-game-user">
                   <div class="history-avatar-container">
                     <img :src="lastGames.slice(-5)[i-1].user.avatar" alt="Avatar" class="history-avatar" />
