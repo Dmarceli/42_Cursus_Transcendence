@@ -197,13 +197,6 @@ const fetchLeaderboard = async () => {
 	} catch (error) {
 		console.error('Error fetching Game History data', error);
 	}
-  let missing_games = 5-lastGames.value.length
-  if (missing_games > 0)
-  {
-    for (let i = 0; i < missing_games; i++) {
-    lastGames.value.push(defaultGame);
-  }
-  }
 }
 
 onBeforeMount(async () => {
@@ -372,25 +365,44 @@ async function UnBlockUser() {
 	      <div class="game-history">
         <table>
           <tbody>
-            <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
-              <td class="recent-game-user">
+            <template v-for="i in 5">
+              <tr v-if="lastGames.slice(-5)[i-1]" :key="lastGames.slice(-5)[i-1].id" :class="{'game-won': lastGames.slice(-5)[i-1].userWon, 'game-lost': !lastGames.slice(-5)[i-1].userWon}">
+                <td class="recent-game-user">
+                  <div class="history-avatar-container">
+                    <img :src="lastGames.slice(-5)[i-1].user.avatar" alt="Avatar" class="history-avatar" />
+                    <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="lastGames.slice(-5)[i-1].userWon" />
+                  </div>
+                  <span class="history-player-nick">{{ lastGames.slice(-5)[i-1].user.nick }}</span>
+                </td>
+                <td class="user-score">{{ lastGames.slice(-5)[i-1].user.score }}</td>
+                <td class="vs">-</td>
+                <td class="opponent-score">{{ lastGames.slice(-5)[i-1].opponent.score }}</td>
+                <td  class="recent-game-user">
                 <div class="history-avatar-container">
-                  <img :src="game.user.avatar" alt="Avatar" class="history-avatar" />
-                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="game.userWon" />
+                  <img :src="lastGames.slice(-5)[i-1].opponent.avatar" alt="Avatar" class="history-avatar" />
+                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!lastGames.slice(-5)[i-1].userWon" />
                 </div>
-                <span class="history-player-nick">{{ game.user.nick }}</span>
-              </td>
-              <td class="user-score">{{ game.user.score }}</td>
-              <td class="vs">-</td>
-              <td class="opponent-score">{{ game.opponent.score }}</td>
-              <td  class="recent-game-user">
+                <span class="history-player-nick">{{ lastGames.slice(-5)[i-1].opponent.nick }}</span>
+                </td>
+              </tr>
+              <tr v-else class="default-game" key="0">
+                <td class="recent-game-user">
+                  <div class="history-avatar-container">
+                    <img :src="defaultGame.user.avatar" alt="Avatar" class="history-avatar" />
+                  </div>
+                  <span class="history-player-nick">{{ defaultGame.user.nick }}</span>
+                </td>
+                <td class="user-score">{{ defaultGame.user.score }}</td>
+                <td class="vs">-</td>
+                <td class="opponent-score">{{ defaultGame.opponent.score }}</td>
+                <td  class="recent-game-user">
                 <div class="history-avatar-container">
-                  <img :src="game.opponent.avatar" alt="Avatar" class="history-avatar" />
-                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!game.userWon" />
+                  <img :src="defaultGame.opponent.avatar" alt="Avatar" class="history-avatar" />
                 </div>
-                <span class="history-player-nick">{{ game.opponent.nick }}</span>
-              </td>
-            </tr>
+                <span class="history-player-nick">{{ defaultGame.opponent.nick }}</span>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
 	      </div>
@@ -743,6 +755,11 @@ h2.profile{
 .recent-game-user
 {
   padding: 1.7%;
+}
+
+.default-game
+{
+  background-color: rgb(234, 220, 192);
 }
 
 </style>
