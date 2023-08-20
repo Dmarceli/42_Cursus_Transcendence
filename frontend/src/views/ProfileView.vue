@@ -123,7 +123,23 @@ onBeforeMount(async () => {
 	await fetchLastFiveGames();
 });
 
-const lastGames = ref([]);
+const defaultGame = {
+  id: null,
+  user: {
+    nick: "-",
+    score: 0,
+    avatar: "",
+  },
+  opponent: {
+    nick: "-",
+    score: 0,
+    avatar: "",
+  },
+  userWon: false,
+};
+
+const lastGames = ref([
+]);
 
 const fetchLastFiveGames = async () => {
 	try {
@@ -173,7 +189,6 @@ const fetchLastFiveGames = async () => {
         }
         lastGames.value.push(pastGame)
       }
-      // userProfile.value = data;
     } else {
       // Handle the case when the request fails
       console.error('Error fetching Game History data:', response.statusText);
@@ -181,6 +196,13 @@ const fetchLastFiveGames = async () => {
 	} catch (error) {
 		console.error('Error fetching Game History data', error);
 	}
+  let missing_games = 5-lastGames.value.length
+  if (missing_games > 0)
+  {
+    for (let i = 0; i < missing_games; i++) {
+    lastGames.value.push(defaultGame);
+  }
+  }
 }
 
 
@@ -552,6 +574,7 @@ label[for="nickname"] {
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
+  margin-top: 1%;
 }
 
 .game-history-container {
@@ -571,7 +594,6 @@ label[for="nickname"] {
   vertical-align: middle;
   position: relative;
   border-radius: 50%;
-  border: 1px solid white;
   width: 40px;
   height: 40px;
 }
@@ -590,6 +612,7 @@ img.history-avatar {
   display: flex;
   object-fit: cover;
   border-radius: 50%;
+  border: 1px solid white;
 }
 
 .history-player-nick {
@@ -657,7 +680,7 @@ td {
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 10px;
   background-color: #162a2d;
-  padding: 10px;
+  padding: 20px;
 }
 
 .stat-item {
@@ -671,12 +694,13 @@ td {
   align-items: center;
 }
 .stat-label {
+  font-size: 20px;
   font-weight: bold;
   color: #4b8d9c;
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 20px;
   color: rgb(203, 218, 206);
 }
 
@@ -704,7 +728,6 @@ td {
   right: 20px;
   transition: all 0.2s ease-in-out; /* Add a smooth transition on hover */
 }
-
 
 .settingsButton:hover {
   color: #c0c0c0; /* Change the color when hovering */
@@ -766,8 +789,9 @@ h2.profile{
   color: rgb(225, 225, 225);
   text-align: left;
   padding: 10px;
-  font-size: 3vh;
+  font-size: 3.5vh;
   font-weight: 600;
+  padding: 1.2vw;
 }
 
 .recent-game-user
