@@ -5,9 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import jwt_decode from 'jwt-decode';
-import router from '@/router';
-
-library.add(fas);
 
 const userTokenData = ref({
 	id: 0,
@@ -28,7 +25,47 @@ const userProfile = ref({
   win_streak: 0,
   highest_win_streak: 0,
   rank: 0,
-  // Add more user profile data here
+});
+
+const defaultGame = {
+  id: null,
+  user: {
+    nick: "-",
+    score: 0,
+    avatar: "",
+  },
+  opponent: {
+    nick: "-",
+    score: 0,
+    avatar: "",
+  },
+  userWon: false,
+};
+
+const lastGames = ref([
+]);
+
+let avatarUploadFile = ref<File|null>(null);
+const isSettingsOpen = ref(false);
+const updateNickname = ref(userProfile.value.nick);
+const updateAvatar = ref('');
+let inputKey=ref(0)
+const route = useRoute();
+const isUserBlocked = ref(false)
+
+const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
+
+const nickname = reactive({
+	rules: [
+		value => value.length < 20 || 'Nickname too long',
+		value => usernameRegex.test(value) || 'Invalid Characters found',
+	],
+});
+
+library.add(fas);
+
+const isOwnProfile = computed(() => {
+	return userProfile.value.id === userTokenData.value.id;
 });
 
 function getCookieValueByName(name: string) {
@@ -42,17 +79,6 @@ function getCookieValueByName(name: string) {
   }
   return null;
 }
-
-
-let avatarUploadFile = ref<File|null>(null);
-
-const isOwnProfile = computed(() => {
-	return userProfile.value.id === userTokenData.value.id;
-});
-
-const route = useRoute();
-
-const isUserBlocked = ref(null)
 
 const fetchUserProfile = async () => {
   let url: string
@@ -116,32 +142,7 @@ const fetchLeaderboard = async () => {
     }
   };
 
-onBeforeMount(async () => {
-	await fetchUserProfile();
-  await fetchBlockStatus();
-  await fetchLeaderboard();
-	await fetchLastFiveGames();
-});
-
-const defaultGame = {
-  id: null,
-  user: {
-    nick: "-",
-    score: 0,
-    avatar: "",
-  },
-  opponent: {
-    nick: "-",
-    score: 0,
-    avatar: "",
-  },
-  userWon: false,
-};
-
-const lastGames = ref([
-]);
-
-const fetchLastFiveGames = async () => {
+  const fetchLastFiveGames = async () => {
 	try {
 		let url = process.env.VUE_APP_BACKEND_URL + '/game-history/'+userProfile.value.id;
 		const response = await fetch(url, {
@@ -205,19 +206,12 @@ const fetchLastFiveGames = async () => {
   }
 }
 
-
-
-const getPlayerAvatar = (playerNick: string) => {
-  if (playerNick === userProfile.value.nick) {
-    return userProfile.value.avatar;
-  }
-  return '';
-}
-const isSettingsOpen = ref(false);
-
-const updateNickname = ref(userProfile.value.nick);
-const updateAvatar = ref('');
-let inputKey=ref(0)
+onBeforeMount(async () => {
+	await fetchUserProfile();
+  await fetchBlockStatus();
+  await fetchLeaderboard();
+	await fetchLastFiveGames();
+});
 
 function openSettings() {
   isSettingsOpen.value = true;
@@ -250,7 +244,6 @@ const handleNewAvatar = async (event: Event) => {
   }
 }
 
-
 async function saveSettings() {	
   if (!usernameRegex.test(updateNickname.value)){
     return
@@ -279,15 +272,6 @@ async function saveSettings() {
       }
   closeSettings();
 }
-
-const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
-
-const nickname = reactive({
-	rules: [
-		value => value.length < 20 || 'Nickname too long',
-		value => usernameRegex.test(value) || 'Invalid Characters found',
-	],
-});
 
 function closeSettings() {
   isSettingsOpen.value = false;
@@ -342,7 +326,6 @@ async function UnBlockUser() {
     return false;
   }
 }
-
 </script>
 
 <template>
@@ -540,22 +523,6 @@ async function UnBlockUser() {
   object-fit: cover;
 }
 
-/* .avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-} */
-
-label[for="nickname"] {
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-#nickname {
-  width: 100%;
-  margin-bottom: 10px;
-}
-
 .nickname {
   font-size: 2.5rem;
 	font-weight: bold;
@@ -689,10 +656,6 @@ td {
   align-items: center;
 }
 
-.stat-rank {
-  grid-column: 1 / span 2;
-  align-items: center;
-}
 .stat-label {
   font-size: 20px;
   font-weight: bold;
@@ -732,23 +695,6 @@ td {
 .settingsButton:hover {
   color: #c0c0c0; /* Change the color when hovering */
   transform: scale(1.2); /* Make the icon 20% bigger on hover */
-}
-
-.settings-open {
-  pointer-events: none;
-}
-
-.settings-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(150, 81, 81, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
 }
 
 .settings-content {
@@ -796,7 +742,7 @@ h2.profile{
 
 .recent-game-user
 {
-  padding: 1%;
+  padding: 1.7%;
 }
 
 </style>
