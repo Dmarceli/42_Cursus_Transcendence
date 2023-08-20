@@ -106,7 +106,11 @@ const fetchLeaderboard = async () => {
       const response = await fetch(url);
       const data = await response.json();
       let rank = data.findIndex((user) => user.id == userProfile.value.id)
-      userProfile.value.rank = rank;
+      if (rank == -1) {
+        console.error('Could not find current user is leaderboard');
+        return
+      }
+      userProfile.value.rank = rank+1;
     } catch (error) {
       console.error('Error fetching leaderboard data:', error);
     }
@@ -114,10 +118,12 @@ const fetchLeaderboard = async () => {
 
 onBeforeMount(async () => {
 	await fetchUserProfile();
-  fetchBlockStatus();
-  fetchLeaderboard();
-	fetchLastFiveGames();
+  await fetchBlockStatus();
+  await fetchLeaderboard();
+	await fetchLastFiveGames();
 });
+
+const lastGames = ref([]);
 
 const fetchLastFiveGames = async () => {
 	try {
@@ -129,6 +135,44 @@ const fetchLastFiveGames = async () => {
     });
     if (response.ok) {
       const data = await response.json();
+      for (let backendPastGame of data)
+      {
+        let opponentNick: string
+        let userScore: number
+        let oppponentScore: number
+        let oppponentAvatar: number
+        let isUserWinner = backendPastGame.user_id_winner.nick == userProfile.value.nick
+        console.log(backendPastGame)
+        if (isUserWinner)
+        {
+          userScore = 5
+          oppponentScore = backendPastGame.points
+          opponentNick = backendPastGame.user_id_loser.nick
+          oppponentAvatar = backendPastGame.user_id_loser.avatar
+        } else
+        {
+          userScore = backendPastGame.points
+          oppponentScore = 5
+          opponentNick = backendPastGame.user_id_winner.nick
+          oppponentAvatar = backendPastGame.user_id_winner.avatar
+        }
+        let pastGame = {
+          id: backendPastGame.match_id,
+          user: {
+            nick: userProfile.value.nick,
+            score: userScore,
+            avatar: userProfile.value.avatar,
+          },
+          opponent: 
+          {
+            nick: opponentNick,
+            score: oppponentScore,
+            avatar: oppponentAvatar,
+          },
+          userWon: isUserWinner
+        }
+        lastGames.value.push(pastGame)
+      }
       // userProfile.value = data;
     } else {
       // Handle the case when the request fails
@@ -139,18 +183,7 @@ const fetchLastFiveGames = async () => {
 	}
 }
 
-const lastGames = ref([
-  { id: 1, user: { nick: 'JohnDoe', score: 10 }, opponent: { nick: 'JaneSmith', score: 8 }, userWon: true },
-  { id: 3, user: { nick: 'JohnDoe', score: 12 }, opponent: { nick: 'SarahLee', score: 9 }, userWon: true },
-  { id: 2, user: { nick: 'JohnDoe', score: 5 }, opponent: { nick: 'MikeJohnson', score: 7 }, userWon: false },
-  { id: 4, user: { nick: 'JohnDoe', score: 9 }, opponent: { nick: 'DavidBrown', score: 10 }, userWon: false },
-  { id: 5, user: { nick: 'JohnDoe', score: 8 }, opponent: { nick: 'EmilyDavis', score: 6 }, userWon: true },
-  { id: 6, user: { nick: 'JohnDoe', score: 11 }, opponent: { nick: 'RobertMiller', score: 12 }, userWon: false },
-  { id: 7, user: { nick: 'JohnDoe', score: 10 }, opponent: { nick: 'JamesWilson', score: 8 }, userWon: true },
-  { id: 8, user: { nick: 'JohnDoe', score: 7 }, opponent: { nick: 'LisaMoore', score: 9 }, userWon: false },
-  { id: 9, user: { nick: 'JohnDoe', score: 9 }, opponent: { nick: 'MarkTaylor', score: 11 }, userWon: false },
-  // Add more game data here
-]);
+
 
 const getPlayerAvatar = (playerNick: string) => {
   if (playerNick === userProfile.value.nick) {
@@ -310,42 +343,34 @@ async function UnBlockUser() {
     </div>
     <div class="profile-body">
       <!-- Statistics -->
+      <h2 class="profile">Statistics</h2>
       <div class="statistics">
-	      <h2>Statistics</h2>
 	      <div class="stat-board">
           <div class="stat-item">
             <div class="stat-label">Games Won</div>
             <div class="stat-value">{{ userProfile.won_games }}</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Games Lost</div>
-            <div class="stat-value">{{ userProfile.lost_games }}</div>
-          </div>
-          <!-- <div class="stat-item">
-            <div class="stat-label">Win Streak</div>
-            <div class="stat-value">{{ userProfile.win_streak }}</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Highest Streak</div>
-            <div class="stat-value">{{ userProfile.highest_win_streak }}</div>
-          </div> -->
-          <div class="stat-item stat-rank">
             <div class="stat-label">Rank</div>
             <div class="stat-value">{{ userProfile.rank }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Games Lost</div>
+            <div class="stat-value">{{ userProfile.lost_games }}</div>
           </div>
         </div>
 	    </div>
 
       <!-- Game History -->
+      <h2 class="profile">Recent Games</h2>
       <div class="game-history-container">
 	      <div class="game-history">
-	      <h2>Last 5 games:</h2>
         <table>
           <tbody>
             <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
-              <td>
+              <td class="recent-game-user">
                 <div class="history-avatar-container">
-                  <img :src="getPlayerAvatar(game.user.nick)" alt="Avatar" class="history-avatar" />
+                  <img :src="game.user.avatar" alt="Avatar" class="history-avatar" />
                   <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="game.userWon" />
                 </div>
                 <span class="history-player-nick">{{ game.user.nick }}</span>
@@ -353,9 +378,9 @@ async function UnBlockUser() {
               <td class="user-score">{{ game.user.score }}</td>
               <td class="vs">-</td>
               <td class="opponent-score">{{ game.opponent.score }}</td>
-              <td>
+              <td  class="recent-game-user">
                 <div class="history-avatar-container">
-                  <img :src="getPlayerAvatar(game.opponent.nick)" alt="Avatar" class="history-avatar" />
+                  <img :src="game.opponent.avatar" alt="Avatar" class="history-avatar" />
                   <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!game.userWon" />
                 </div>
                 <span class="history-player-nick">{{ game.opponent.nick }}</span>
@@ -407,8 +432,7 @@ async function UnBlockUser() {
   display: flex;
   align-items: center;
 	justify-content: space-between;
-  margin-bottom: 20px;
-  border: 2px solid hsla(160, 100%, 37%, 1);  padding: 20px;
+  border: 2px solid hsla(160, 100%, 37%, 1);
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -544,9 +568,12 @@ label[for="nickname"] {
 
 .history-avatar-container {
   display: inline-block;
+  vertical-align: middle;
   position: relative;
   border-radius: 50%;
   border: 1px solid white;
+  width: 40px;
+  height: 40px;
 }
 
 .history-avatar {
@@ -559,16 +586,18 @@ label[for="nickname"] {
   position: relative;
 }
 
-.history-avatar img {
-  width: 100%;
-  height: 100%;
+img.history-avatar {
+  display: flex;
   object-fit: cover;
-  overflow: hidden;
+  border-radius: 50%;
 }
 
 .history-player-nick {
-  font-size: 16px;
+  font-size: 100%;
   margin-left: 10px;
+  display: inline-block;
+  width: 3vw;
+  text-align: left;
 }
 
 .crown {
@@ -592,15 +621,15 @@ table {
 
 }
 .game-won {
-  background-color: #87cefa;
+  background-color: #47a170;
 }
 
 .game-lost {
-  background-color: #ff7f7f;
+  background-color: #c04741;
 }
 
 td {
-  padding: 5px;
+  padding: 1vw;
   text-align: center;
   color: black;
 }
@@ -625,9 +654,9 @@ td {
 
 .stat-board {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   grid-gap: 10px;
-  background-color: #f1f1f1;
+  background-color: #162a2d;
   padding: 10px;
 }
 
@@ -643,12 +672,12 @@ td {
 }
 .stat-label {
   font-weight: bold;
-  color: #333333;
+  color: #4b8d9c;
 }
 
 .stat-value {
   font-size: 24px;
-  color: black;
+  color: rgb(203, 218, 206);
 }
 
 .settings {
@@ -729,9 +758,21 @@ td {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 99;
 }
-
 img.grey-out {
     filter: grayscale(100%) opacity(0.5);
+}
+
+h2.profile{
+  color: rgb(225, 225, 225);
+  text-align: left;
+  padding: 10px;
+  font-size: 3vh;
+  font-weight: 600;
+}
+
+.recent-game-user
+{
+  padding: 1%;
 }
 
 </style>
