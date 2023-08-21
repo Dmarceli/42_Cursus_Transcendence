@@ -106,7 +106,7 @@ const fetchLeaderboard = async () => {
 }
 
 .board {
-  background-color: var(--vt-c-white-soft);
+  background-color: #f8f8f8;
   border-radius: 10px;
   padding: 20px;
   margin: 20px auto;
@@ -131,11 +131,11 @@ th {
 }
 
 tr:nth-child(even) {
-  background-color: var(--vt-c-white-mute);
+  background-color: #f2f2f2;
 }
 
 tr:nth-child(odd) {
-  background-color: var(--vt-c-white);
+  background-color: #ffffff;
 }
 
 tbody tr:hover {
@@ -159,7 +159,7 @@ tbody tr:hover {
 }
 
 .modal-content {
-  background-color: var(--vt-c-white);
+  background-color: #f8f8f8;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);

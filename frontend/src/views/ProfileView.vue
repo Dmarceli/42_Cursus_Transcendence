@@ -5,9 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import jwt_decode from 'jwt-decode';
-import router from '@/router';
-
-library.add(fas);
 
 const userTokenData = ref({
 	id: 0,
@@ -28,7 +25,47 @@ const userProfile = ref({
   win_streak: 0,
   highest_win_streak: 0,
   rank: 0,
-  // Add more user profile data here
+});
+
+const defaultGame = {
+  id: null,
+  user: {
+    nick: "-",
+    score: 0,
+    avatar: "",
+  },
+  opponent: {
+    nick: "-",
+    score: 0,
+    avatar: "",
+  },
+  userWon: false,
+};
+
+const lastGames = ref([
+]);
+
+let avatarUploadFile = ref<File|null>(null);
+const isSettingsOpen = ref(false);
+const updateNickname = ref(userProfile.value.nick);
+const updateAvatar = ref('');
+let inputKey=ref(0)
+const route = useRoute();
+const isUserBlocked = ref(false)
+
+const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
+
+const nickname = reactive({
+	rules: [
+		value => value.length < 20 || 'Nickname too long',
+		value => usernameRegex.test(value) || 'Invalid Characters found',
+	],
+});
+
+library.add(fas);
+
+const isOwnProfile = computed(() => {
+	return userProfile.value.id === userTokenData.value.id;
 });
 
 function getCookieValueByName(name: string) {
@@ -42,17 +79,6 @@ function getCookieValueByName(name: string) {
   }
   return null;
 }
-
-
-let avatarUploadFile = ref<File|null>(null);
-
-const isOwnProfile = computed(() => {
-	return userProfile.value.id === userTokenData.value.id;
-});
-
-const route = useRoute();
-
-const isUserBlocked = ref(null)
 
 const fetchUserProfile = async () => {
   let url: string
@@ -100,35 +126,85 @@ const fetchBlockStatus = async () => {
     console.error('Error fetching User Profile data', error);
   }
 }
-onBeforeMount( async () => {
-	await fetchUserProfile();
-  fetchBlockStatus();
-});
+const fetchLeaderboard = async () => {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
+      const response = await fetch(url);
+      const data = await response.json();
+      let rank = data.findIndex((user) => user.id == userProfile.value.id)
+      if (rank == -1) {
+        console.error('Could not find current user is leaderboard');
+        return
+      }
+      userProfile.value.rank = rank+1;
+    } catch (error) {
+      console.error('Error fetching leaderboard data:', error);
+    }
+  };
 
-const lastGames = ref([
-  { id: 1, user: { nick: 'JohnDoe', score: 10 }, opponent: { nick: 'JaneSmith', score: 8 }, userWon: true },
-  { id: 3, user: { nick: 'JohnDoe', score: 12 }, opponent: { nick: 'SarahLee', score: 9 }, userWon: true },
-  { id: 2, user: { nick: 'JohnDoe', score: 5 }, opponent: { nick: 'MikeJohnson', score: 7 }, userWon: false },
-  { id: 4, user: { nick: 'JohnDoe', score: 9 }, opponent: { nick: 'DavidBrown', score: 10 }, userWon: false },
-  { id: 5, user: { nick: 'JohnDoe', score: 8 }, opponent: { nick: 'EmilyDavis', score: 6 }, userWon: true },
-  { id: 6, user: { nick: 'JohnDoe', score: 11 }, opponent: { nick: 'RobertMiller', score: 12 }, userWon: false },
-  { id: 7, user: { nick: 'JohnDoe', score: 10 }, opponent: { nick: 'JamesWilson', score: 8 }, userWon: true },
-  { id: 8, user: { nick: 'JohnDoe', score: 7 }, opponent: { nick: 'LisaMoore', score: 9 }, userWon: false },
-  { id: 9, user: { nick: 'JohnDoe', score: 9 }, opponent: { nick: 'MarkTaylor', score: 11 }, userWon: false },
-  // Add more game data here
-]);
-
-const getPlayerAvatar = (playerNick: string) => {
-  if (playerNick === userProfile.value.nick) {
-    return userProfile.value.avatar;
-  }
-  return '';
+  const fetchLastFiveGames = async () => {
+	try {
+		let url = process.env.VUE_APP_BACKEND_URL + '/game-history/'+userProfile.value.id;
+		const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      for (let backendPastGame of data)
+      {
+        let opponentNick: string
+        let userScore: number
+        let oppponentScore: number
+        let oppponentAvatar: number
+        let isUserWinner = backendPastGame.user_id_winner.nick == userProfile.value.nick
+        console.log(backendPastGame)
+        if (isUserWinner)
+        {
+          userScore = 5
+          oppponentScore = backendPastGame.points
+          opponentNick = backendPastGame.user_id_loser.nick
+          oppponentAvatar = backendPastGame.user_id_loser.avatar
+        } else
+        {
+          userScore = backendPastGame.points
+          oppponentScore = 5
+          opponentNick = backendPastGame.user_id_winner.nick
+          oppponentAvatar = backendPastGame.user_id_winner.avatar
+        }
+        let pastGame = {
+          id: backendPastGame.match_id,
+          user: {
+            nick: userProfile.value.nick,
+            score: userScore,
+            avatar: userProfile.value.avatar,
+          },
+          opponent: 
+          {
+            nick: opponentNick,
+            score: oppponentScore,
+            avatar: oppponentAvatar,
+          },
+          userWon: isUserWinner
+        }
+        lastGames.value.push(pastGame)
+      }
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching Game History data:', response.statusText);
+    }
+	} catch (error) {
+		console.error('Error fetching Game History data', error);
+	}
 }
-const isSettingsOpen = ref(false);
 
-const updateNickname = ref(userProfile.value.nick);
-const updateAvatar = ref('');
-let inputKey=ref(0)
+onBeforeMount(async () => {
+	await fetchUserProfile();
+  await fetchBlockStatus();
+  await fetchLeaderboard();
+	await fetchLastFiveGames();
+});
 
 function openSettings() {
   isSettingsOpen.value = true;
@@ -161,7 +237,6 @@ const handleNewAvatar = async (event: Event) => {
   }
 }
 
-
 async function saveSettings() {	
   if (!usernameRegex.test(updateNickname.value)){
     return
@@ -190,15 +265,6 @@ async function saveSettings() {
       }
   closeSettings();
 }
-
-const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
-
-const nickname = reactive({
-	rules: [
-		value => value.length < 20 || 'Nickname too long',
-		value => usernameRegex.test(value) || 'Invalid Characters found',
-	],
-});
 
 function closeSettings() {
   isSettingsOpen.value = false;
@@ -253,7 +319,6 @@ async function UnBlockUser() {
     return false;
   }
 }
-
 </script>
 
 <template>
@@ -276,57 +341,68 @@ async function UnBlockUser() {
     </div>
     <div class="profile-body">
       <!-- Statistics -->
+      <h2 class="profile">Statistics</h2>
       <div class="statistics">
-	      <h2>Statistics</h2>
 	      <div class="stat-board">
           <div class="stat-item">
             <div class="stat-label">Games Won</div>
             <div class="stat-value">{{ userProfile.won_games }}</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">Games Lost</div>
-            <div class="stat-value">{{ userProfile.lost_games }}</div>
-          </div>
-          <!-- <div class="stat-item">
-            <div class="stat-label">Win Streak</div>
-            <div class="stat-value">{{ userProfile.win_streak }}</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Highest Streak</div>
-            <div class="stat-value">{{ userProfile.highest_win_streak }}</div>
-          </div> -->
-          <div class="stat-item stat-rank">
             <div class="stat-label">Rank</div>
             <div class="stat-value">{{ userProfile.rank }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Games Lost</div>
+            <div class="stat-value">{{ userProfile.lost_games }}</div>
           </div>
         </div>
 	    </div>
 
       <!-- Game History -->
+      <h2 class="profile">Recent Games</h2>
       <div class="game-history-container">
 	      <div class="game-history">
-	      <h2>Last 5 games:</h2>
         <table>
           <tbody>
-            <tr v-for="game in lastGames.slice(-5)" :key="game.id" :class="{'game-won': game.userWon, 'game-lost': !game.userWon}">
-              <td>
+            <template v-for="i in 5">
+              <tr v-if="i - 1< lastGames.slice(-5).length" :key="lastGames.slice(-5)[i-1].id" :class="{'game-won': lastGames.slice(-5)[i-1].userWon, 'game-lost': !lastGames.slice(-5)[i-1].userWon}">
+                <td class="recent-game-user">
+                  <div class="history-avatar-container">
+                    <img :src="lastGames.slice(-5)[i-1].user.avatar" alt="Avatar" class="history-avatar" />
+                    <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="lastGames.slice(-5)[i-1].userWon" />
+                  </div>
+                  <span class="history-player-nick">{{ lastGames.slice(-5)[i-1].user.nick }}</span>
+                </td>
+                <td class="user-score">{{ lastGames.slice(-5)[i-1].user.score }}</td>
+                <td class="vs">-</td>
+                <td class="opponent-score">{{ lastGames.slice(-5)[i-1].opponent.score }}</td>
+                <td  class="recent-game-user">
                 <div class="history-avatar-container">
-                  <img :src="getPlayerAvatar(game.user.nick)" alt="Avatar" class="history-avatar" />
-                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="game.userWon" />
+                  <img :src="lastGames.slice(-5)[i-1].opponent.avatar" alt="Avatar" class="history-avatar" />
+                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!lastGames.slice(-5)[i-1].userWon" />
                 </div>
-                <span class="history-player-nick">{{ game.user.nick }}</span>
-              </td>
-              <td class="user-score">{{ game.user.score }}</td>
-              <td class="vs">-</td>
-              <td class="opponent-score">{{ game.opponent.score }}</td>
-              <td>
+                <span class="history-player-nick">{{ lastGames.slice(-5)[i-1].opponent.nick }}</span>
+                </td>
+              </tr>
+              <tr v-else class="default-game" key="0">
+                <td class="recent-game-user">
+                  <div class="history-avatar-container">
+                    <img :src="defaultGame.user.avatar" alt="Avatar" class="history-avatar" />
+                  </div>
+                  <span class="history-player-nick">{{ defaultGame.user.nick }}</span>
+                </td>
+                <td class="user-score">{{ defaultGame.user.score }}</td>
+                <td class="vs">-</td>
+                <td class="opponent-score">{{ defaultGame.opponent.score }}</td>
+                <td  class="recent-game-user">
                 <div class="history-avatar-container">
-                  <img :src="getPlayerAvatar(game.opponent.nick)" alt="Avatar" class="history-avatar" />
-                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!game.userWon" />
+                  <img :src="defaultGame.opponent.avatar" alt="Avatar" class="history-avatar" />
                 </div>
-                <span class="history-player-nick">{{ game.opponent.nick }}</span>
-              </td>
-            </tr>
+                <span class="history-player-nick">{{ defaultGame.opponent.nick }}</span>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
 	      </div>
@@ -373,8 +449,7 @@ async function UnBlockUser() {
   display: flex;
   align-items: center;
 	justify-content: space-between;
-  margin-bottom: 20px;
-  border: 2px solid hsla(160, 100%, 37%, 1);  padding: 20px;
+  border: 2px solid hsla(160, 100%, 37%, 1);
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -460,22 +535,6 @@ async function UnBlockUser() {
   object-fit: cover;
 }
 
-/* .avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-} */
-
-label[for="nickname"] {
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-#nickname {
-  width: 100%;
-  margin-bottom: 10px;
-}
-
 .nickname {
   font-size: 2.5rem;
 	font-weight: bold;
@@ -494,6 +553,7 @@ label[for="nickname"] {
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
+  margin-top: 1%;
 }
 
 .game-history-container {
@@ -510,9 +570,11 @@ label[for="nickname"] {
 
 .history-avatar-container {
   display: inline-block;
+  vertical-align: middle;
   position: relative;
   border-radius: 50%;
-  border: 1px solid white;
+  width: 40px;
+  height: 40px;
 }
 
 .history-avatar {
@@ -525,16 +587,19 @@ label[for="nickname"] {
   position: relative;
 }
 
-.history-avatar img {
-  width: 100%;
-  height: 100%;
+img.history-avatar {
+  display: flex;
   object-fit: cover;
-  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid white;
 }
 
 .history-player-nick {
-  font-size: 16px;
+  font-size: 100%;
   margin-left: 10px;
+  display: inline-block;
+  width: 3vw;
+  text-align: left;
 }
 
 .crown {
@@ -558,15 +623,15 @@ table {
 
 }
 .game-won {
-  background-color: #87cefa;
+  background-color: #47a170;
 }
 
 .game-lost {
-  background-color: #ff7f7f;
+  background-color: #c04741;
 }
 
 td {
-  padding: 5px;
+  padding: 1vw;
   text-align: center;
   color: black;
 }
@@ -591,10 +656,10 @@ td {
 
 .stat-board {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   grid-gap: 10px;
-  background-color: #f1f1f1;
-  padding: 10px;
+  background-color: #162a2d;
+  padding: 20px;
 }
 
 .stat-item {
@@ -603,18 +668,15 @@ td {
   align-items: center;
 }
 
-.stat-rank {
-  grid-column: 1 / span 2;
-  align-items: center;
-}
 .stat-label {
+  font-size: 20px;
   font-weight: bold;
-  color: #333333;
+  color: #4b8d9c;
 }
 
 .stat-value {
-  font-size: 24px;
-  color: black;
+  font-size: 20px;
+  color: rgb(203, 218, 206);
 }
 
 .settings {
@@ -642,27 +704,9 @@ td {
   transition: all 0.2s ease-in-out; /* Add a smooth transition on hover */
 }
 
-
 .settingsButton:hover {
   color: #c0c0c0; /* Change the color when hovering */
   transform: scale(1.2); /* Make the icon 20% bigger on hover */
-}
-
-.settings-open {
-  pointer-events: none;
-}
-
-.settings-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(150, 81, 81, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
 }
 
 .settings-content {
@@ -695,9 +739,27 @@ td {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 99;
 }
-
 img.grey-out {
     filter: grayscale(100%) opacity(0.5);
+}
+
+h2.profile{
+  color: rgb(225, 225, 225);
+  text-align: left;
+  padding: 10px;
+  font-size: 3.5vh;
+  font-weight: 600;
+  padding: 1.2vw;
+}
+
+.recent-game-user
+{
+  padding: 1.7%;
+}
+
+.default-game
+{
+  background-color: rgb(234, 220, 192);
 }
 
 </style>

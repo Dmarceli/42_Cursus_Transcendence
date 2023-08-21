@@ -9,25 +9,34 @@ export class GameHistoryService {
 
   constructor(
     @InjectRepository(GameHistory) private gameHistoryRepository: Repository<GameHistory>
-  ,@InjectRepository(User) private userRepository: Repository<User>){}
-  
-  
+    , @InjectRepository(User) private userRepository: Repository<User>) { }
+
+
   async create(createGameHistoryDto: CreateGameHistoryDto) {
-    const winner_user= await this.userRepository.findOne({where: {id: createGameHistoryDto.winnerId}})
-    const loser_user= await this.userRepository.findOne({where: {id: createGameHistoryDto.loserId}})
+    const winner_user = await this.userRepository.findOne({ where: { id: createGameHistoryDto.winnerId } })
+    const loser_user = await this.userRepository.findOne({ where: { id: createGameHistoryDto.loserId } })
     await this.gameHistoryRepository.save({
       time_end: new Date(),
       time_begin: createGameHistoryDto.time_begin,
       points: createGameHistoryDto.points,
       user_id_winner: winner_user,
-      user_id_loser: loser_user      
+      user_id_loser: loser_user
     })
-    return ;
+    return;
   }
 
-  async all_history(){
-    const game_history = await this.gameHistoryRepository.find({relations: {user_id_loser: true, user_id_winner: true}
-      , select: {user_id_loser:{id:true, nick:true, intra_nick: true}, user_id_winner: {id:true, nick:true, intra_nick: true}}});
+  async get_history(id: string) {
+    const gameHistoryQueryBuilder = this.gameHistoryRepository.createQueryBuilder("game_history");
+
+    const game_history = await gameHistoryQueryBuilder
+        .select(["game_history", "loser.nick", "loser.avatar", "winner.nick", "winner.avatar"])
+        .leftJoin("game_history.user_id_loser", "loser")
+        .leftJoin("game_history.user_id_winner", "winner")
+        .where("loser.id = :userId", { userId: id })
+        .orWhere("winner.id = :userId", { userId: id })
+        .orderBy("game_history.time_begin", "DESC")
+        .getMany();
     return game_history;
   }
 }
+
