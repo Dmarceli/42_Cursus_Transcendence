@@ -133,6 +133,7 @@ async function updateToken() {
       const data = await response.json();
       const newToken = data.newToken;
       document.cookie = `token=${newToken}`;
+      window.location.reload();
     } else {
       console.log('Error:', response.status);
     }
