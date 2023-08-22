@@ -428,9 +428,7 @@ nav a {
     justify-content: center;
     align-items: center;
     background-color: red;
-    /* Choose your desired background color */
     color: white;
-    /* Choose your desired text color */
     font-size: 12px;
     width: 20px;
     height: 20px;
