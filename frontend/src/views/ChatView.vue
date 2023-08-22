@@ -213,6 +213,9 @@
                 </v-list>
               </v-menu>
             </div>
+            <v-icon v-if="userPrivileges(usersInChannel.user_id.id)" style="margin-left: 10px;">
+              mdi-shield-account
+            </v-icon>
             {{ usersInChannel.user_id.intra_nick }}
           </div>
           <div v-if="bannedUsersInChannel.length > 0 && isUserAdminOrOwner(usersInChannels)">
@@ -738,6 +741,18 @@ const banUser = async (bannedUserID, flag) => {
   await getUsersInGivenChannel(selected_channel)
 }
 
+const userPrivileges = (actionToUserID: number) => {
+  for (const userId in usersInChannels.value) {
+    if (usersInChannels.value[userId].user_id.id == actionToUserID) {
+      if (usersInChannels.value[userId].is_admin)
+        return 1
+      else if (usersInChannels.value[userId].is_owner)
+        return 2
+      else
+        return 0;
+    }
+  }
+}
 const is_already_admin = async (actionToUserID) => {
   for (const userId in usersInChannels.value) {
     if (usersInChannels.value[userId].user_id.id == actionToUserID) {
@@ -753,7 +768,6 @@ const ToggleAdminUser = async (actionToUserID) => {
   let action = await is_already_admin(actionToUserID)
   console.log(await action)
   try {
-
     let url = await process.env.VUE_APP_BACKEND_URL + '/usertochannel/giveadmin/' + actionToUserID + '/on/' + selected_channel + "/" + action
     const response = await fetch(url,
       {
