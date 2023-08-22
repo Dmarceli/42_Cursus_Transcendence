@@ -614,15 +614,15 @@
 
 
 .channel-name{
-  text-align: left;
   font-family: 'Roboto', sans-serif;
   font-size: xx-large;
   width: 100%;
-  justify-content: space-between;
   display: flex;
   text-align: center;
   align-items: center;
   margin-left: 5%;
+  overflow: hidden;
+  margin: 10px;
 }
 
 .fightButton
