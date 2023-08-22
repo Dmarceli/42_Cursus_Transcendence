@@ -232,6 +232,8 @@ async function executeLoginwithId(idvalue: number) {
     window.location.reload()
 
   }
+  let token = getCookieValueByName('token');
+  setupSocket(token);
 }
 
 const showNotifications = ref(false);

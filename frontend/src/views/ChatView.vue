@@ -397,8 +397,10 @@ const users_Nick = decodedToken.user['nick'];
 
 
 const getChannelType = (channelID) => {
+  
   const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelID)
-  return channel.channel_id.type;
+  if(channel)
+    return channel.channel_id.type;
 }
 
 const getChannelName = (channelId) => {
@@ -764,7 +766,7 @@ const is_already_admin = async (actionToUserID) => {
   }
 }
 
-const ToggleAdminUser = async (actionToUserID) => {
+const toggleAdminUser = async (actionToUserID) => {
   let action = await is_already_admin(actionToUserID)
   console.log(await action)
   try {
@@ -789,7 +791,7 @@ const ToggleAdminUser = async (actionToUserID) => {
   await getUsersInGivenChannel(selected_channel)
 }
 
-const MuteUser = async (userToMute) => {
+const muteUser = async (userToMute) => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/mute/' + userToMute + '/from/' + selected_channel
     const response = await fetch(url,
