@@ -197,7 +197,7 @@
             <h2 class="userHeader" >Banned Users</h2>
             <div class="usersInChannel" v-for="bannedUserInChannel in bannedUsersInChannel" :key="bannedUsersInChannel.id">
               <img :src="bannedUserInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
-              <v-btn @click="banUser(bannedUserInChannel.user_id.id, 0)">unban</v-btn>
+              <v-btn @click="banUser(bannedUserInChannel.user_id.id, 0)">unban<v-icon left>mdi-account-check</v-icon></v-btn>
               {{ bannedUserInChannel.user_id.intra_nick }}
             </div>
           </div>
