@@ -180,7 +180,7 @@
                   <v-btn style="width: 100%;" @click="kickUser(usersInChannel.user_id.id)">Kick</v-btn>
                 </v-list-item>
                 <v-list-item>
-                  <v-btn style="width: 100%;" @click="banUser(usersInChannel.user_id.id)">Ban</v-btn>
+                  <v-btn style="width: 100%;" @click="banUser(usersInChannel.user_id.id, 1)">Ban</v-btn>
                 </v-list-item>
                 <v-list-item>
                   <v-btn style="width: 100%;" @click="MuteUser(usersInChannel.user_id.id)">Toggle Mute</v-btn>
@@ -192,6 +192,14 @@
               </v-menu>
             </div>
             {{ usersInChannel.user_id.intra_nick }}
+          </div>
+          <div v-if="bannedUsersInChannel.length > 0 && isUserAdminOrOwner(usersInChannels)">
+            <h2 class="userHeader" >Banned Users</h2>
+            <div class="usersInChannel" v-for="bannedUserInChannel in bannedUsersInChannel" :key="bannedUsersInChannel.id">
+              <img :src="bannedUserInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
+              <v-btn @click="banUser(bannedUserInChannel.user_id.id, 0)">unban</v-btn>
+              {{ bannedUserInChannel.user_id.intra_nick }}
+            </div>
           </div>
         </div>
         <div style=" position: relative;bottom: 0; left: 0;">
@@ -287,7 +295,7 @@ let showModal = ref(false);
 const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
-let createChannelOptions = ref(null);
+let createChannelOptions = ref(false);
 let protectChannelPass = ref('');
 let channelPasswordModal = ref(false);
 
@@ -478,6 +486,29 @@ const getUsersInGivenChannel = async (channel_ID) => {
     if (response.ok) {
       const data = await response.json();
       usersInChannels.value = data;
+      getBannedUsersInGivenChannel(channel_ID)
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
+const bannedUsersInChannel = ref([]);
+const getBannedUsersInGivenChannel = async (channel_ID) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/bannedusersinchannel/' + channel_ID;
+    const response = await fetch(url,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    if (response.ok) {
+      const data = await response.json();
+      bannedUsersInChannel.value = data;
     } else {
       console.log('Error:', response.status);
     }
@@ -638,24 +669,46 @@ const kickUser = async (KickedUserID) => {
   await getUsersInGivenChannel(selected_channel)
 }
 
-const banUser = async (bannedUserID) => {
-  try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/ban/' + bannedUserID + '/from/' + selected_channel
-    const response = await fetch(url,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-      });
-    if (response.ok) {
-      await getChannelsJoined();
-    } else {
-      console.log('Error:', response.status);
+const banUser = async (bannedUserID, flag) => {
+  if (flag){
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/ban/' + bannedUserID + '/from/' + selected_channel
+      const response = await fetch(url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+      if (response.ok) {
+        await getChannelsJoined();
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
     }
-  } catch (error) {
-    console.log('Error:', error);
+  }
+  else {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/unban/' + bannedUserID + '/from/' + selected_channel
+      const response = await fetch(url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+      if (response.ok) {
+        await getChannelsJoined();
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
   }
   await getChannelsJoined();
   await getUsersInGivenChannel(selected_channel)
@@ -931,7 +984,6 @@ const fetchOnlineStatus = async () =>
     if (response.ok) {
       const data = await response.json();
       allOnlineStatuses.value = data;
-      console.log(allOnlineStatuses.value)
     } else {
       console.log('Error:', response.status);
     }
