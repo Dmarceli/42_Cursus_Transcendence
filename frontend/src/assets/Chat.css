@@ -184,7 +184,7 @@
 	padding: 10px;
 	position: relative;
 	transition: max-width 0.7s ease-in-out, opacity 0.7s ease-in-out;
-	max-width: 100%; 
+	max-width: 200px; 
 	padding-right: 0;
   border-radius: 14px;
 }
