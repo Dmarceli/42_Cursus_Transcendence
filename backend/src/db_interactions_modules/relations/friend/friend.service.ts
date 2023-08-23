@@ -26,7 +26,7 @@ export class friendService {
     this.delete_friend(user_to_block,user)
   const to_block= await this.userRepository.findOne({where: {id: user_to_block} })
   const user1= await this.userRepository.findOne({where: {id: user} })
-   return this.friendRepository.save({
+   await this.friendRepository.save({
     user1Id: user1,
     user2Id: to_block,
     is_block: true
