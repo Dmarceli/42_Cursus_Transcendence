@@ -1152,6 +1152,16 @@ socket.on('online-status-update', () => {
   fetchOnlineStatus();
 });
 
+function logout() {
+  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  window.location.href = '/login';
+  window.location.reload()
+}
+
+socket.on('DisconnectSocketToken', () => {
+  logout();
+})
+
 watch(messages, () => {
   scrollToBottom();
 });
