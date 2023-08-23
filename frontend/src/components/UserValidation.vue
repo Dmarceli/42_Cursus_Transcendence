@@ -165,18 +165,20 @@ async function Submit() {
     if (response.ok) {
       let data = await response.json();
       console.log("NEW URL " + data.newAvatar);
+      emits('submitted')
+      updateToken();
     }
     else if(response){
         //Retornar ao nome original em caso de erro
     userData.value.nick= oldNick;
+    alert("User already in Use")
     }
   } catch (error) {
     console.log('Error:', error);
     //Retornar ao nome original em caso de erro
     userData.value.nick= oldNick;
   }
-  emits('submitted')
-  updateToken();
+
 }
 
 </script>
