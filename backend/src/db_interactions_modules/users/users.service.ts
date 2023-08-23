@@ -195,12 +195,14 @@ export class UsersService {
     }
 
     updateAvatar(user: User, file: Express.Multer.File) {
+      if(user.avatar){
       let prevUrl = user.avatar.split('/').pop();
       let prevAvatar = './uploads/' + prevUrl
-      if (existsSync(prevAvatar)) {
+      if (existsSync(prevAvatar) && prevUrl) {
         console.log("Deleting PREVIOUS AVATAR "+prevAvatar)
         unlinkSync(prevAvatar);
       }
+    }
       let extension = "."+file.originalname.split(".").pop()
       let newPathName = file.path+extension;
       if (existsSync(file.path)) {
