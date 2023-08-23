@@ -148,6 +148,7 @@ async function Submit() {
     console.log("Submission not possible due to validation errors")
     return;
   }
+  let oldNick = userData.value.nick;
   userData.value.nick = updateNickname.value;
   let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
   try {
@@ -165,8 +166,14 @@ async function Submit() {
       let data = await response.json();
       console.log("NEW URL " + data.newAvatar);
     }
+    else if(response){
+        //Retornar ao nome original em caso de erro
+    userData.value.nick= oldNick;
+    }
   } catch (error) {
     console.log('Error:', error);
+    //Retornar ao nome original em caso de erro
+    userData.value.nick= oldNick;
   }
   emits('submitted')
   updateToken();

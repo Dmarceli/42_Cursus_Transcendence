@@ -175,17 +175,23 @@ export class UsersService {
 
 	 async updateProfile(file: Express.Multer.File, userId: number, nickUpdate: string) {
     console.log(file);
+    let error_ :Boolean = false; 
 		 const user = await this.findById(userId);
      if (file)
       this.updateAvatar(user, file);
     this.updateNick(user, nickUpdate);
      user.is_first_login= false
-     await this.userRepository.save(user);
+     try{await this.userRepository.save(user);
       return {
         status: 'success',
         message: 'File has been uploaded successfully',
         newAvatar: user.avatar
       };
+      }
+      catch(error){error_ = true}
+    if(error_){
+      throw new ConflictException('Duplicate key value found.');
+    }
     }
 
     updateAvatar(user: User, file: Express.Multer.File) {

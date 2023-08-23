@@ -241,6 +241,7 @@ async function saveSettings() {
   if (!usernameRegex.test(updateNickname.value)){
     return
   }
+  let oldNick = userProfile.value.nick;
 	if (updateNickname.value !== ''){
     userProfile.value.nick = updateNickname.value;
   }
@@ -258,10 +259,15 @@ async function saveSettings() {
       });
       if (response.ok) {
         let data = await response.json();
-        console.log("NEW URL "+data.newAvatar);
+        console.log("NEW URL "+data.newAvatar);        
+      }
+      //Caso o Nick já esteja em Uso
+      else if(response){
+        userProfile.value.nick = oldNick;
       }
     } catch(error) {
         console.log('Error:', error);
+        userProfile.value.nick = oldNick;
       }
   closeSettings();
 }
