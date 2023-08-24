@@ -366,12 +366,14 @@ async function UnBlockUser() {
 	    </div>
 
       <!-- Game History -->
-      <h2 class="profile">Recent Games</h2>
+      <template v-if=lastGames.length>
+      <h2 class="profile">Recent Games</h2></template>
       <div class="game-history-container">
 	      <div class="game-history">
         <table>
           <tbody>
-            <template v-for="i in 5">
+          
+            <template v-if="lastGames.length" v-for="i in 5">
               <tr v-if="i - 1< lastGames.slice(-5).length" :key="lastGames.slice(-5)[i-1].id" :class="{'game-won': lastGames.slice(-5)[i-1].userWon, 'game-lost': !lastGames.slice(-5)[i-1].userWon}">
                 <td class="recent-game-user">
                   <div class="history-avatar-container">
@@ -391,7 +393,7 @@ async function UnBlockUser() {
                 <span class="history-player-nick">{{ lastGames.slice(-5)[i-1].opponent.nick }}</span>
                 </td>
               </tr>
-              <tr v-else class="default-game" key="0">
+              <!-- <tr v-else class="default-game" key="0">
                 <td class="recent-game-user">
                   <div class="history-avatar-container">
                     <img :src="defaultGame.user.avatar" alt="Avatar" class="history-avatar" />
@@ -407,13 +409,14 @@ async function UnBlockUser() {
                 </div>
                 <span class="history-player-nick">{{ defaultGame.opponent.nick }}</span>
                 </td>
-              </tr>
+              </tr> -->
             </template>
           </tbody>
         </table>
 	      </div>
       </div>
     </div>
+  
 
     <!-- Settings Modal -->
     <div v-if="isSettingsOpen" class="dimmed-background"></div>
