@@ -54,7 +54,8 @@ export class UsersService {
    	  return res.status(404).json()
 		 }
    	 else {
-			if (!existsSync(resp.avatar)) {
+      let fileName = './uploads/' + resp.avatar.split('/').pop();
+			if (!existsSync(fileName)) {
 				resp.avatar = 'http://localhost:3000/users/avatar/default.jpg';
 			}
    	   return res.status(200).json(resp);
@@ -103,7 +104,8 @@ export class UsersService {
 		 if(!resp) {
 			return null
 		}
-		if (!existsSync(resp.avatar)) {
+    let fileName = './uploads/' + resp.avatar.split('/').pop();
+		if (!existsSync(fileName)) {
 		 resp.avatar = 'http://localhost:3000/users/avatar/default.jpg';
 		}
 		return resp;
@@ -198,11 +200,11 @@ export class UsersService {
     }
 
     updateAvatar(user: User, file: Express.Multer.File) {
-      let prevUrl = user.avatar.split('/').pop();
-      let prevAvatar = './uploads/' + prevUrl
-      if (existsSync(prevAvatar) && prevUrl != "default.jpg") {
-        console.log("Deleting PREVIOUS AVATAR "+prevAvatar)
-        unlinkSync(prevAvatar);
+      let prevFileName = user.avatar.split('/').pop();
+      let prevAvatarPath = './uploads/' + prevFileName
+      if (existsSync(prevAvatarPath) && prevFileName != "default.jpg") {
+        console.log("Deleting PREVIOUS AVATAR "+prevAvatarPath)
+        unlinkSync(prevAvatarPath);
       }
       let extension = "."+file.originalname.split(".").pop()
       let newPathName = file.path+extension;
