@@ -264,6 +264,7 @@ async function saveSettings() {
       //Caso o Nick já esteja em Uso
       else if(response){
         userProfile.value.nick = oldNick;
+        alert("User already in Use")
       }
     } catch(error) {
         console.log('Error:', error);
