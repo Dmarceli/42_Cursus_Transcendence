@@ -34,7 +34,7 @@ const router = createRouter({
       component: ProfileView
     },
 		{
-			path: '/profile/:nick',
+			path: '/profile/:intra_nick',
       name: 'otherProfile',
       component: ProfileView
 		}
