@@ -55,8 +55,9 @@ export class UsersService {
 		 }
    	 else {
       let fileName = './uploads/' + resp.avatar.split('/').pop();
-			if (!existsSync(fileName)) {
+			if (!resp.avatar || !existsSync(fileName)) {
 				resp.avatar = 'http://localhost:3000/users/avatar/default.jpg';
+        await this.userRepository.save(resp);
 			}
    	   return res.status(200).json(resp);
 		}
@@ -105,8 +106,9 @@ export class UsersService {
 			return null
 		}
     let fileName = './uploads/' + resp.avatar.split('/').pop();
-		if (!existsSync(fileName)) {
+		if (!resp.avatar || !existsSync(fileName)) {
 		 resp.avatar = 'http://localhost:3000/users/avatar/default.jpg';
+     await this.userRepository.save(resp);
 		}
 		return resp;
    }
