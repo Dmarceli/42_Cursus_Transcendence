@@ -47,9 +47,9 @@ export class friendsController {
     return this.friendService.get_blockedusers(user.id);
   }
   
-    @Delete('/deletefriends/:id1/:id2')
-    remove(@Param('id1') id1: number,@Param('id2') id2: number ) {
-      return this.friendService.delete_friend(id1,id2);
-    }
+  @Delete('/deletefriends/:id1/:id2')
+  remove(@Param('id1') id1: number,@Param('id2') id2: number ) {
+    return this.friendService.delete_friend(id1,id2);
+  }
 
 }

@@ -186,7 +186,7 @@ export class UsersService {
       let prevUrl = user.avatar.split('/').pop();
       let prevAvatar = './uploads/' + prevUrl
       if (existsSync(prevAvatar)) {
-        console.log("Deleting PREVIOUS AVATAR "+prevAvatar)
+        console.log("Deleting previous avatar "+prevAvatar)
         unlinkSync(prevAvatar);
       }
       let extension = "."+file.originalname.split(".").pop()
