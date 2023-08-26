@@ -33,6 +33,11 @@ export class GameService {
     return this.private_games;
   }
 
+  getGameStateValue(user)
+  {
+
+  }
+
   async CreateLobbyPlayer(playerClient: Socket, nick: string, skin: string="")
   {
     console.log("Creating new Lobby Player " + playerClient + " with intra " + nick + " and skin " + skin)
