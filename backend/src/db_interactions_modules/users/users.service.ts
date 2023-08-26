@@ -45,15 +45,24 @@ export class UsersService {
   }
 
    async findbyusername_(nick_:string, res: Response) {
-   const resp= await this.userRepository.findOne({where: {
-      nick: nick_
-    }});
-    // console.log(resp)
-    if(!resp)
-      return res.status(404).json()
-    else
-      return res.status(200).json(resp);
+		try {
+   	const resp= await this.userRepository.findOne({where: {
+   	   nick: nick_
+   	 }});
+   	 // console.log(resp)
+   	 if(!resp) {
+   	  return res.status(404).json()
+		 }
+   	 else {
+			if (!existsSync(resp.avatar)) {
+				resp.avatar = 'http://localhost:3000/users/avatar/default.jpg';
+			}
+   	   return res.status(200).json(resp);
+		}
+		} catch (error) {
+			console.log(error);
     }
+	}
     
     async findByNick(nick_ :string) {
       if(!nick_)
@@ -91,7 +100,13 @@ export class UsersService {
     const resp= await this.userRepository.findOne(
       {where: {id: id_to_search}}
      );
-     return resp;
+		 if(!resp) {
+			return null
+		}
+		if (!existsSync(resp.avatar)) {
+		 resp.avatar = 'http://localhost:3000/users/avatar/default.jpg';
+		}
+		return resp;
    }
 
   
@@ -185,7 +200,7 @@ export class UsersService {
     updateAvatar(user: User, file: Express.Multer.File) {
       let prevUrl = user.avatar.split('/').pop();
       let prevAvatar = './uploads/' + prevUrl
-      if (existsSync(prevAvatar)) {
+      if (existsSync(prevAvatar) && prevUrl != "default.jpg") {
         console.log("Deleting PREVIOUS AVATAR "+prevAvatar)
         unlinkSync(prevAvatar);
       }
