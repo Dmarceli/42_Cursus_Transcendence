@@ -1021,7 +1021,7 @@ const removeFriend = async (friend) => {
   }
 };
 
-const goToProfile = (userNick: number) =>
+const goToProfile = (userNick: string) =>
 {
   router.push("/profile/"+userNick)
 }

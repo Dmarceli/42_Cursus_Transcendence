@@ -78,7 +78,7 @@ export class UsersService {
       const userWins = await this.userRepository
       .createQueryBuilder('user')
       .select('user.id', 'id')
-      .addSelect('user.intra_nick', 'name')
+      .addSelect('user.nick', 'name')
       .addSelect('user.xp_total', 'score')
       .groupBy('user.id')
       .orderBy("user.xp_total", "DESC")

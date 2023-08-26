@@ -1,5 +1,7 @@
 <script setup lang="ts">
 	import { ref, computed, onBeforeMount } from 'vue';
+	import router from '@/router';
+
   	
   interface Player {
     id: number;
@@ -57,6 +59,12 @@ const fetchLeaderboard = async () => {
   });
   const top10 = computed(() => leaderboard.value.slice(0, 10));
 
+const goToProfile = (userNick: string) =>
+{
+  router.push("/profile/"+userNick)
+}
+
+
 </script>
 
 <template>
@@ -91,9 +99,9 @@ const fetchLeaderboard = async () => {
         <h2>{{ selectedPlayer.name }}</h2>
         <p>Score: {{ selectedPlayer.score }}</p>
         <!-- Add more profile information here -->
-        <button @click="closeModal">Close</button>
+				<v-btn @click="goToProfile(selectedPlayer.name)" class="viewProfile">View Profile</v-btn>
+				<v-icon icon="mdi-close" @click="closeModal" class="closeModal"></v-icon>
       </div>
-      <div class="modal-overlay" @click="closeModal"></div>
     </div>
   </div>
 </template>
@@ -160,7 +168,6 @@ tbody tr:hover {
 
 .modal-content {
   background-color: #f8f8f8;
-  padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -172,6 +179,13 @@ tbody tr:hover {
   width: 100%;
   height: 100%;
   background-color: transparent;
+}
+
+.closeModal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
 }
 
 </style>

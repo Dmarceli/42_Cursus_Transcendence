@@ -133,7 +133,7 @@ const fetchLeaderboard = async () => {
       const data = await response.json();
       let rank = data.findIndex((user) => user.id == userProfile.value.id)
       if (rank == -1) {
-        console.error('Could not find current user is leaderboard');
+        console.error('Could not find current user in leaderboard');
         return
       }
       userProfile.value.rank = rank+1;
