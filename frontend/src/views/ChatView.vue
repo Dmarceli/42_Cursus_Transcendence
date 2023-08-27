@@ -1,4 +1,22 @@
 <template>
+  <!-- Password hidden to Join Channel -->
+  <v-dialog v-model="pass_to_join_ch">
+          <v-card class="password_overlay">
+          <v-card-title>
+            Protect Your Channel<br>
+          </v-card-title>
+          <v-card-text>
+            <v-text-field v-model="InputChannelPass" label="New Password" type="password"
+              :rules="[value => !!value || 'This field is required']"></v-text-field>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn @click="pass_to_join_ch = false">Cancel</v-btn>
+            <v-btn @click="pwd_hash_and_join()" color="primary"
+              :disabled="InputChannelPass.length == 0">Join</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+<!-- End of Password hidden to Join Channel -->
   <transition name="fade" mode="out-in">
     <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert" color="success"
       icon="$success" title="Success!" text="Friendship request sent successfully!" dismissible></v-alert>
@@ -103,7 +121,7 @@
         <div v-for="channel in channels" :key="channel.id"
           :class="['channel', { 'selected': channel.id === selected_channel }]" style="cursor: auto;">
           <span class="channel-name-wrap">{{ channel.channel_name }}</span>
-          <button v-if="!isChannelJoined(channel.id)" @click="joinChannel(channel)" class="join-button">Join</button>
+          <button v-if="!isChannelJoined(channel.id)" @click="is_channel_with_pwd(channel)" class="join-button">Join</button>
           <button v-else @click="chooseChannel(channel.id)"><v-icon class="chat-button">mdi-send</v-icon></button>
         </div>
         <form @submit.prevent="searchQuery">
@@ -323,6 +341,9 @@ let showSideInfo = ref(true);
 let createChannelOptions = ref(false);
 let protectChannelPass = ref('');
 let channelPasswordModal = ref(false);
+let pass_to_join_ch = ref(false)
+let InputChannelPass = ref("")
+let channel_to_join = ref("")
 
 
 let channelName = ref('');
@@ -468,7 +489,8 @@ const getMessages = async () => {
       if (response.ok) {
         const data = await response.json();
         messages.value = data;
-        scrollToBottom();
+        if(!showChannelOptions.value)
+          scrollToBottom();
       } else {
         console.log('Error:', response.status);
       }
@@ -615,12 +637,30 @@ const leaveChannel = async (channelid) => {
   }
 }
 
+
+const pwd_hash_and_join = async() => {
+  joinChannel(channel_to_join.value,"")
+  channel_to_join.value =""
+}
+
+const is_channel_with_pwd = async (channel) => {
+  if (channel.type == 2){
+    channel_to_join.value = channel
+    pass_to_join_ch.value = true;
+  }
+  else
+    joinChannel(channel, null)
+}
+
 const joinChannel = async (channel, ownerPWD) => {
   let pass = ownerPWD
   if (channel.type == 2 && !ownerPWD) {
-    let input = await window.prompt("Channel Password:");
-    pass = Md5.hashStr(input);
+    pass=  Md5.hashStr(InputChannelPass.value);
+    InputChannelPass.value =""
+    pass_to_join_ch.value = false;
   }
+    console.log("entrei aqui")
+  
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinchannel'
     const response = await fetch(url,
@@ -1128,7 +1168,8 @@ onBeforeMount(() => {
 if (socket) {
   socket.on('recMessage', async (message) => {
     if (message.channelId === selected_channel) {
-      scrollToBottom();
+      if(!showChannelOptions.value)
+        scrollToBottom();
     } else {
       if (typeof unreadMessages.value[message.channelId] === 'undefined') {
         unreadMessages.value[message.channelId] = 0;
@@ -1143,15 +1184,15 @@ if (socket) {
 socket.on('notification',  async() => {
   await getChannelsJoined();
   if (selected_channel)
-    getUsersInGivenChannel(selected_channel);
+   await getUsersInGivenChannel(selected_channel);
   if(!isChannelJoined(selected_channel))
-  { 
+  {
     selected_channel=null
     messages.value=[]
     showChannelOptions.value=false;
   }
-  getUsers();
-  fetchFriends();
+  await getUsers();
+  await fetchFriends();
 });
 
 socket.on('online-status-update', () => {
@@ -1169,7 +1210,8 @@ socket.on('DisconnectSocketToken', () => {
 })
 
 watch(messages, () => {
-  scrollToBottom();
+  if(!showChannelOptions.value)
+    scrollToBottom();
 });
 const inviteToPrivateGame = async () => {
   if (usersInChannels.value.length > 2) return

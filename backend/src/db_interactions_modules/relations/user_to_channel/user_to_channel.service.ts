@@ -77,6 +77,9 @@ export class UserToChannelService {
     if(caller_id == -1){
     return filteredUsersInChannel;
     }
+    else if(caller_id == -2){
+      return usersInChannel;
+    }
     else{
       const caller_privileges= await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:ch_id}}], relations: ['channel_id','user_id']})
       if(caller_privileges && (caller_privileges.is_admin || caller_privileges.is_owner))
@@ -148,8 +151,8 @@ export class UserToChannelService {
         ,
         relations: ['user_id', 'channel_id']
       });
-      await this.UserToChannelRepository.update(channel_to_leave, { is_banned: true, is_admin: false })
       await this.notifyRoom(id_ch);
+      await this.UserToChannelRepository.update(channel_to_leave, { is_banned: true, is_admin: false })
       return res.status(200).json()
     }
     else{
@@ -258,7 +261,7 @@ export class UserToChannelService {
     if(ch_id){
     const Room = await this.ChannelRepository.findOne({ where : {id: ch_id}});
     // -1 to avoid identify caller user
-    const users = await this.usersonchannel(ch_id,-1);
+    const users = await this.usersonchannel(ch_id,-2);
     users.forEach(element => {
       this.usersService.notifyUser(element.user_id.id,AppService.UsersOnline)
     });
