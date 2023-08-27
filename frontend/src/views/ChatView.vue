@@ -18,8 +18,7 @@
       </div>
       <div v-if="side_info === 1">
         <div class="list-header">FRIENDS</div>
-        <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.nick)"
-          class="tooltip">
+        <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.intra_nick)" class="tooltip">
           <div class="user">
             <span class="tooltiptext">
               <img :src="user_friend.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
@@ -93,7 +92,7 @@
               Games Won: {{ user.won_games }}<br>
               Games Lost: {{ user.lost_games }}<br>
             </v-tooltip>
-            <div @click="goToProfile(user.nick)" class="nickname-container">
+            <div @click="goToProfile(user.intra_nick)" class="nickname-container">
               {{ user.nick }}
             </div>
             <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
@@ -166,9 +165,8 @@
         <div id="user-list-container">
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
             getChannelName(selected_channel)
-          }}</h2>
-          <div class="usersInChannel" v-for="usersInChannel in usersInChannels"
-            @click="goToProfile(usersInChannel.user_id.nick)" :key="usersInChannels.id">
+            }}</h2>
+          <div class="usersInChannel" v-for="usersInChannel in usersInChannels" @click="goToProfile(usersInChannel.user_id.intra_nick)" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
               <v-menu transition=" slide-x-transition">
@@ -261,7 +259,7 @@
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
         <div v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
           <span v-if="usersInChannel.user_id.intra_nick !== users_Name">
-            <div class="userInfo-container" @click="goToProfile(usersInChannel.user_id.nick)">
+            <div class="userInfo-container" @click="goToProfile(usersInChannel.user_id.intra_nick)">
               <div class="userInfo">
                 <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="alone-user-avatar">
                 <h1>{{ usersInChannel.user_id.intra_nick }}</h1>
@@ -1112,8 +1110,9 @@ const removeFriend = async (friend) => {
   }
 };
 
-const goToProfile = (userNick: number) => {
-  router.push("/profile/" + userNick)
+const goToProfile = (userIntraNick: number) =>
+{
+  router.push("/profile/"+userIntraNick)
 }
 
 onBeforeMount(() => {
