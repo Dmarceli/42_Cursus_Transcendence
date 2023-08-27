@@ -241,6 +241,7 @@ async function saveSettings() {
   if (!usernameRegex.test(updateNickname.value)){
     return
   }
+  let oldNick = userProfile.value.nick;
 	if (updateNickname.value !== ''){
     userProfile.value.nick = updateNickname.value;
   }
@@ -259,11 +260,43 @@ async function saveSettings() {
       if (response.ok) {
         let data = await response.json();
         console.log("NEW URL "+data.newAvatar);
+        updateToken();        
+      }
+      //Caso o Nick já esteja em Uso
+      else if(response){
+        userProfile.value.nick = oldNick;
+        alert("User already in Use")
       }
     } catch(error) {
         console.log('Error:', error);
+        userProfile.value.nick = oldNick;
       }
   closeSettings();
+}
+
+async function updateToken() {
+  let token = getCookieValueByName('token');
+  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/auth/updateToken';
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const newToken = data.newToken;
+      document.cookie = `token=${newToken}`;
+      window.location.reload();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
 }
 
 function closeSettings() {
