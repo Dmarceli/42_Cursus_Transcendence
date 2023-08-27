@@ -1110,6 +1110,7 @@ const removeFriend = async (friend) => {
   }
 };
 
+
 const goToProfile = (userIntraNick: number) =>
 {
   router.push("/profile/"+userIntraNick)
