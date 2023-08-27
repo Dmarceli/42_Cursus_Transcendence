@@ -3,7 +3,7 @@
   <v-dialog v-model="pass_to_join_ch">
           <v-card class="password_overlay">
           <v-card-title>
-            Protect Your Channel<br>
+           Add Channel Password<br>
           </v-card-title>
           <v-card-text>
             <v-text-field v-model="InputChannelPass" label="New Password" type="password"
