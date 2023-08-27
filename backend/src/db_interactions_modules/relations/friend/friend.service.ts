@@ -26,11 +26,13 @@ export class friendService {
     this.delete_friend(user_to_block,user)
   const to_block= await this.userRepository.findOne({where: {id: user_to_block} })
   const user1= await this.userRepository.findOne({where: {id: user} })
-   return this.friendRepository.save({
+  const resp=await this.friendRepository.save({
     user1Id: user1,
     user2Id: to_block,
     is_block: true
    });
+   return ([resp.user1Id.id, resp.user2Id.id, resp.is_block])
+  
  }
 
 
@@ -95,8 +97,8 @@ async delete_friend(id1: number,id2: number) {
     relations:['user1Id', 'user2Id']
 	});
   if(friendship){
-    await this.friendRepository.remove(friendship)
-    return friendship
+    const resp = await this.friendRepository.remove(friendship)
+     return ([resp.user1Id.id, resp.user2Id.id, resp.is_block])
   }
   else
     return

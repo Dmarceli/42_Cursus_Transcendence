@@ -46,12 +46,21 @@ export class UserToChannelController {
   @Get('/usersinchannel/:channelId')
   async getUsersInChannel(@Param('channelId') channelId: string , @getUserIDFromToken() user:User, @Res() res: any) {
     if(channelId){
-    const users = await this.userToChannelService.usersonchannel(+channelId,user.id);
+    const users = await this.userToChannelService.usersonchannel(+channelId,-1);
     return res.status(200).json(users);
     }
     return res.status(200);
   }
   
+  @Get('/bannedusersinchannel/:channelId')
+  async getbannedUsersInChannel(@Param('channelId') channelId: string , @getUserIDFromToken() user:User, @Res() res: any) {
+    if(channelId){
+    const users = await this.userToChannelService.bannedusersonchannel(+channelId,user.id);
+    return res.status(200).json(users);
+    }
+    return res.status(200);
+  }
+
   @Get('/getusersonchannel/:id')
   findAll(@Param('id') ch_id: string,  @getUserIDFromToken() user:User) {
     if(ch_id)
@@ -74,7 +83,12 @@ export class UserToChannelController {
   ban_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.ban_from_channel(us_id,ch_id,user.id,res );
   }
-  
+
+  @Post('/unban/:userid/from/:channelid')
+  unban_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+    return this.userToChannelService.unban_from_channel(us_id,ch_id,user.id,res );
+  }
+
   @Post('/mute/:userid/from/:channelid')
   mute_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.mute_from_channel(us_id,ch_id,user.id,res );

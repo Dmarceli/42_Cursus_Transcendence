@@ -184,7 +184,7 @@
 	padding: 10px;
 	position: relative;
 	transition: max-width 0.7s ease-in-out, opacity 0.7s ease-in-out;
-	max-width: 100%; 
+	max-width: 200px; 
 	padding-right: 0;
   border-radius: 14px;
 }
@@ -614,15 +614,15 @@
 
 
 .channel-name{
-  text-align: left;
   font-family: 'Roboto', sans-serif;
   font-size: xx-large;
   width: 100%;
-  justify-content: space-between;
   display: flex;
   text-align: center;
   align-items: center;
   margin-left: 5%;
+  overflow: hidden;
+  margin: 10px;
 }
 
 .fightButton

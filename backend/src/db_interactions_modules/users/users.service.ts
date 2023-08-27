@@ -126,17 +126,23 @@ export class UsersService {
       console.log("User Unhautorized")
       return null
     } 
+    const user_logged = AppService.UsersOnline.find( User_ => User_.user.id === payload.id)
+    if(user_logged)
+    {
+      user_logged.client.emit("DisconnectSocketToken")
+      this.remove_disconnect_User(user_logged.client)
+    }
     const resp = await this.userRepository.findOne({where: {id: payload.id}});
-     if(!resp)
+    if(!resp)
         return null
-        const userChannels = await this.userToChannelService.findChannelsByID(resp.id);   
+    const userChannels = await this.userToChannelService.findChannelsByID(resp.id);   
     userChannels.forEach((element) => {
      ChannelList.push(element.channel_id.id.toString())
     })
       AppService.UsersOnline.push(new UserSocketArray(resp,client))
       // let i=0;
       // AppService.UsersOnline.forEach((element) => {
-      //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+      //   console.log(AppService.UsersOnline[i].user.id,AppService.UsersOnline[i].user.intra_nick,AppService.UsersOnline[i++].client.id)
       // })
      return true;
    }
@@ -169,26 +175,34 @@ export class UsersService {
 
 	 async updateProfile(file: Express.Multer.File, userId: number, nickUpdate: string) {
     console.log(file);
+    let error_ :Boolean = false; 
 		 const user = await this.findById(userId);
      if (file)
       this.updateAvatar(user, file);
     this.updateNick(user, nickUpdate);
      user.is_first_login= false
-     await this.userRepository.save(user);
+     try{await this.userRepository.save(user);
       return {
         status: 'success',
         message: 'File has been uploaded successfully',
         newAvatar: user.avatar
       };
+      }
+      catch(error){error_ = true}
+    if(error_){
+      throw new ConflictException('Duplicate key value found.');
+    }
     }
 
     updateAvatar(user: User, file: Express.Multer.File) {
+      if(user.avatar){
       let prevUrl = user.avatar.split('/').pop();
       let prevAvatar = './uploads/' + prevUrl
-      if (existsSync(prevAvatar)) {
+      if (existsSync(prevAvatar && prevUrl)) {
         console.log("Deleting previous avatar "+prevAvatar)
         unlinkSync(prevAvatar);
       }
+    }
       let extension = "."+file.originalname.split(".").pop()
       let newPathName = file.path+extension;
       if (existsSync(file.path)) {
