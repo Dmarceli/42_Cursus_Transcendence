@@ -13,7 +13,6 @@ export class friendService {
  ) {}
  async createfriend(createfriendDto: CreateFriendDto) {
   //TODO: Validate if friendship already exist and if users id sent exist
-  await this.delete_friend(createfriendDto.user1Id,createfriendDto.user2Id);
   const user1= await this.userRepository.findOne({where: {id: createfriendDto.user1Id} })
   const user2= await this.userRepository.findOne({where: {id: createfriendDto.user2Id} })
    return this.friendRepository.save({...createfriendDto as any, is_block: false});
