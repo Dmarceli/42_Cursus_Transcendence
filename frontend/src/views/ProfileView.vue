@@ -517,23 +517,6 @@ const removeFriend = async () => {
                 <span class="history-player-nick">{{ lastGames.slice(-5)[i-1].opponent.nick }}</span>
                 </td>
               </tr>
-              <!-- <tr v-else class="default-game" key="0">
-                <td class="recent-game-user">
-                  <div class="history-avatar-container">
-                    <img :src="defaultGame.user.avatar" alt="Avatar" class="history-avatar" />
-                  </div>
-                  <span class="history-player-nick">{{ defaultGame.user.nick }}</span>
-                </td>
-                <td class="user-score">{{ defaultGame.user.score }}</td>
-                <td class="vs">-</td>
-                <td class="opponent-score">{{ defaultGame.opponent.score }}</td>
-                <td  class="recent-game-user">
-                <div class="history-avatar-container">
-                  <img :src="defaultGame.opponent.avatar" alt="Avatar" class="history-avatar" />
-                </div>
-                <span class="history-player-nick">{{ defaultGame.opponent.nick }}</span>
-                </td>
-              </tr> -->
             </template>
           </tbody>
         </table>

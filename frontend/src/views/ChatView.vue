@@ -658,9 +658,7 @@ const joinChannel = async (channel, ownerPWD) => {
     pass=  Md5.hashStr(InputChannelPass.value);
     InputChannelPass.value =""
     pass_to_join_ch.value = false;
-  }
-    console.log("entrei aqui")
-  
+  }  
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinchannel'
     const response = await fetch(url,

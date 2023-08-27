@@ -24,7 +24,7 @@ export class UserToChannelService {
 
   async joinchannel(channel: Channel, user: User, pass: string) {
     let is_user_owner = false;
-    const channels_users_ = (await this.usersonchannel(channel.id, -1))
+    const channels_users_ = (await this.usersonchannel(channel.id, -2))
     const is_already_on_channel= channels_users_.find(element => element.user_id.id == user.id )
     if(is_already_on_channel)      
       return
@@ -74,6 +74,7 @@ export class UserToChannelService {
      }
     });
     const filteredUsersInChannel = usersInChannel.filter(userInChannel => !userInChannel.is_banned);
+    console.log(caller_id)
     if(caller_id == -1){
     return filteredUsersInChannel;
     }
@@ -128,8 +129,9 @@ export class UserToChannelService {
         relations: ['user_id', 'channel_id']
       });
   
-      await this.notifyRoom(id_ch);
       await this.UserToChannelRepository.remove(channel_to_leave)
+      await this.notifyRoom(id_ch);
+      await this.usersService.notifyUser(id_us,AppService.UsersOnline)
       return res.status(200).json()
 
   }
@@ -151,8 +153,9 @@ export class UserToChannelService {
         ,
         relations: ['user_id', 'channel_id']
       });
-      await this.notifyRoom(id_ch);
       await this.UserToChannelRepository.update(channel_to_leave, { is_banned: true, is_admin: false })
+      await this.notifyRoom(id_ch);
+      this.usersService.notifyUser(id_us,AppService.UsersOnline)
       return res.status(200).json()
     }
     else{

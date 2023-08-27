@@ -126,7 +126,7 @@ export class UsersService {
       console.log("User Unhautorized")
       return null
     } 
-    const user_logged = AppService.UsersOnline.find( User_ => User_.user.id === payload.id)
+    const user_logged = AppService.UsersOnline.find( User_ => User_.user.id == payload.id)
     if(user_logged)
     {
       user_logged.client.emit("DisconnectSocketToken")
@@ -148,13 +148,15 @@ export class UsersService {
    }
 
    async notifyUser(user_id: number,UsersOnline : UserSocketArray[]){
-    //console.log(UsersOnline)
-    //  console.log('Notification sent to user:', user_id);
-    //  let i=0;
+    
+     console.log('Notification sent to user:', user_id);
+
+     
     //  AppService.UsersOnline.forEach((user) => {
-    //   console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
+    //   console.log(user.user.id,user.user.intra_nick,user.client.id)
     // })
-     const user = AppService.UsersOnline.find( User_ => User_.user.id === user_id)
+
+     const user = AppService.UsersOnline.find( User_ => User_.user.id == user_id)
      if(!user){
         console.log("FALHOU Notificação", user_id) 
       return;
@@ -163,7 +165,7 @@ export class UsersService {
    }
 
    async remove_disconnect_User(client_: Socket){
-    const Index = AppService.UsersOnline.findIndex( User_ => User_.client === client_)
+    const Index = AppService.UsersOnline.findIndex( User_ => User_.client == client_)
     if(Index != -1)
       AppService.UsersOnline.splice(Index,1)
     
