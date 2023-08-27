@@ -1,6 +1,6 @@
 <template>
-  <div v-if="startmenu" class="start-menu">
-    <StartMenu @player-created="handlePlayerCreated" :is-private-game="isPrivateGame" :intra-nick="users_Name" class="start-menu"></StartMenu>
+  <div v-if="gameState < 2" class="start-menu">
+    <StartMenu :game-state="gameState" :intra-nick="users_Name" class="start-menu"></StartMenu>
   </div>
   <div v-else-if="playerWon">
     <h1>You Won</h1>
@@ -15,7 +15,7 @@
     </v-btn>
 </div>
   <div v-else class="board">
-    <Pong2D :is-private-game="isPrivateGame" :intra-nick="users_Name" @player-won="playerWon = true" @player-lost="playerLost = true"/>
+    <Pong2D :game-state="gameState" :intra-nick="users_Name" @player-won="playerWon = true" @player-lost="playerLost = true"/>
   </div>
 </template>
 
@@ -26,6 +26,7 @@ import { ref, onMounted, inject } from 'vue'
 import jwt_decode from 'jwt-decode';
 import { onBeforeMount } from 'vue';
 import type { Socket } from 'socket.io-client';
+import { StateMessage, type State } from '@/helpers/state';
 
 let startmenu = ref(true)
 let playerWon = ref(false)
@@ -33,7 +34,6 @@ let playerLost = ref(false)
 let token: string | null = null;
 let decodedToken: TokenType;
 let users_Name = ref("");
-let isPrivateGame = ref(false)
 let gameState = ref(0)
 
 interface TokenType
@@ -51,51 +51,23 @@ interface TokenType
 const socket: Socket | undefined = inject('socket')
 
 onBeforeMount(async () => {
-  socket?.emit('GetUpdatedState')
-  const response = await fetch(process.env.VUE_APP_BACKEND_URL +'/games/private');
-  if (response.ok) {
-    let games = await response.json();
-    console.log("GAMES ARE "+games.length);
-    let existing_private_game = games.find((privateGame: any) => {
-      console.log("GAME P1 is "+privateGame.player1)
-      console.log("GAME P2 is "+privateGame.player2)
-      return (privateGame.player1 == users_Name.value || privateGame.player2 == users_Name.value)
-    });
-    console.log("EXISTING PRIVATE GAME "+existing_private_game);
-    if (!existing_private_game)
-    {
-      console.log("PRIVATE GAME IS FALSE")
-      isPrivateGame.value = false;
-      return ;
-    }
-    console.log("PRIVATE GAME IS TRUE")
-    isPrivateGame.value = true;
-    return ;
-  }
-})
-
-onMounted(() => {
-  console.log('Mounted Game View');
   token = getCookieValueByName('token');
   if (token)
     decodedToken = jwt_decode(token);
   users_Name.value = decodedToken.user.intra_nick;
+  socket?.emit('GetUpdatedState', users_Name.value)
+})
+
+onMounted(() => {
+  console.log('Mounted Game View');
   playerWon.value=false
   playerLost.value=false
   console.log("users_name "+users_Name)
 })
 
-function handlePlayerCreated()
-{
-  startmenu.value=false
-  playerWon.value=false
-  playerLost.value=false
-}
-
 function ResetView()
 {
   startmenu.value=true
-  isPrivateGame.value=false
   playerWon.value=false
   playerLost.value=false
 }
@@ -112,8 +84,9 @@ function getCookieValueByName(name: any) {
   return null;
 }
 
-socket?.on('UpdatedState', (value: number) => {
-  console.log("GOT UPDATED STATE"+value)
+socket?.on('UpdatedState', (value: State) => {
+  console.log("GOT UPDATED STATE "+value)
+  console.log(StateMessage[value])
   gameState.value=value
 })
 

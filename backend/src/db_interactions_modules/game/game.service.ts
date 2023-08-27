@@ -33,16 +33,21 @@ export class GameService {
     return this.private_games;
   }
 
-  GetUpdatedState(client: Socket, nick: string)
+  EmitUpdatedState(client: Socket, nick: string)
   {
     console.log(this.player_states)
-    console.log(this.lobbyPlayers)
     if (!this.player_states.has(nick))
     {
       client.emit("UpdatedState", 0)
       return
     }
     client.emit("UpdatedState", this.player_states.get(nick))
+  }
+
+  SetPlayerStateEmit(client: Socket, nick: string, state: State)
+  {
+    this.player_states.set(nick, state)
+    this.EmitUpdatedState(client, nick)
   }
 
   UpdatePlayerState(nick: string)
@@ -99,8 +104,8 @@ export class GameService {
       const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
       let newPlayer = new PlayerPaddle(playerClient, user, skin);
       this.lobbyPlayers.push(newPlayer);
-      console.log("Setting state for "+nick)
-      this.player_states.set(nick, State.IN_LOBBY_QUEUE)
+      this.SetPlayerStateEmit(playerClient, nick, State.LOBBY_PLAYER)
+      console.log("LOBBY PLAYERS ARE "+this.lobbyPlayers.length)
     }
 
     AddPlayerToLobby(playerClient: Socket, nick: string)
@@ -108,6 +113,7 @@ export class GameService {
       if (!this.player_states.has(nick) || this.player_states.get(nick) != State.LOBBY_PLAYER)
       {
         this.UpdatePlayerState(nick)
+        this.EmitUpdatedState(playerClient, nick)
         return; 
       }
       const freePlayerIndex = this.lobbyPlayers.findIndex(player => player.user.intra_nick === nick)
@@ -121,7 +127,7 @@ export class GameService {
         else {
           console.log("Joined lobby " + nick)
           this.lobby.push(this.lobbyPlayers[freePlayerIndex])
-          this.player_states.set(nick, State.IN_LOBBY_QUEUE)
+          this.SetPlayerStateEmit(playerClient, nick, State.IN_LOBBY_QUEUE)
         }
         this.lobbyPlayers.splice(freePlayerIndex, 1);
       }
@@ -150,7 +156,7 @@ export class GameService {
       const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
       let newPlayer = new PlayerPaddle(playerClient, user, skin);
       this.privateGamePlayers.push(newPlayer);
-      this.player_states.set(nick, State.CHOSE_PRIVATE_PLAYER)
+      this.SetPlayerStateEmit(playerClient, nick, State.CHOSE_PRIVATE_PLAYER)
     }
 
   async createPrivateGame(player1_intra_nick: string, player2_intra_nick: string)
@@ -175,8 +181,8 @@ export class GameService {
       const player2User = AppService.UsersOnline.find((online) => online.user.intra_nick == player2_intra_nick);
       if (player1User && player2User) {
         this.private_games.push(new PrivateGame(player1_intra_nick, player2_intra_nick));
-        this.player_states.set(player1_intra_nick, State.SETTING_PRIVATE_GAME)
-        this.player_states.set(player1_intra_nick, State.SETTING_PRIVATE_GAME)
+        this.SetPlayerStateEmit(player1User.client, player1_intra_nick, State.SETTING_PRIVATE_GAME)
+        this.SetPlayerStateEmit(player2User.client, player2_intra_nick, State.SETTING_PRIVATE_GAME)
         player1User.client?.emit("StartPaddleSelection");
         player2User.client?.emit("StartPaddleSelection");
       }
@@ -232,30 +238,26 @@ export class GameService {
           game.playerPaddle1.ready = true
           if (game.playerPaddle2.ready)
           {
-            this.player_states.set(game.playerPaddle1.user.intra_nick, State.STARTING)
-            this.player_states.set(game.playerPaddle2.user.intra_nick, State.STARTING)
+            this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.STARTING)
+            this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.STARTING)
           }
           else
           {
-            this.player_states.set(intra_nick, State.WAITING_OTHER_READY)
+            this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.WAITING_OTHER_READY)
           }
-          game.playerPaddle1.handlePlayersNotReady();
-          game.playerPaddle2.handlePlayersNotReady();
         }
         else if (game.playerPaddle2.user.intra_nick === intra_nick)
         {
           game.playerPaddle2.ready = true
           if (game.playerPaddle1.ready)
           {
-            this.player_states.set(game.playerPaddle1.user.intra_nick, State.STARTING)
-            this.player_states.set(game.playerPaddle2.user.intra_nick, State.STARTING)
+            this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.STARTING)
+            this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.STARTING)
           }
           else
           {
-            this.player_states.set(intra_nick, State.WAITING_OTHER_READY)
+            this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.WAITING_OTHER_READY)
           }
-          game.playerPaddle1.handlePlayersNotReady();
-          game.playerPaddle2.handlePlayersNotReady();
         }
       }
     }
@@ -264,14 +266,13 @@ export class GameService {
       for (let game of this.active_games) {
         if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
           game.playerPaddle1.ready = false
-          this.player_states.set(game.playerPaddle1.user.intra_nick, State.DISCONNECTED)
-          this.player_states.set(game.playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
-          game.playerPaddle2.client?.emit("PlayerDisconnected")
+          this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.DISCONNECTED)
+          this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
           console.log("PlayerExited " + game.playerPaddle1.user.intra_nick)
         } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
           game.playerPaddle2.ready = false
-          this.player_states.set(game.playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
-          this.player_states.set(game.playerPaddle2.user.intra_nick, State.DISCONNECTED)
+          this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
+          this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.DISCONNECTED)
           game.playerPaddle1.client?.emit("PlayerDisconnected")
           console.log("PlayerExited " + game.playerPaddle2.user.intra_nick)
         }
@@ -384,8 +385,8 @@ export class GameService {
       AppService.UsersOnline.forEach((user) => {
         user.client.emit("online-status-update");
       })
-      game.playerPaddle1.handlePlayersNotReady();
-      game.playerPaddle2.handlePlayersNotReady();
+      this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.NOT_READY)
+      this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.NOT_READY)
     }
     removeFinishedGames()
     {

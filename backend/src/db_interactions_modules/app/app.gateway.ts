@@ -76,7 +76,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
   @SubscribeMessage('GetUpdatedState')
   handleGetUpdatedState(client: Socket, intra_nick: string)
   {
-    this.gameService.GetUpdatedState(client, intra_nick)
+    this.gameService.EmitUpdatedState(client, intra_nick)
   }
   @SubscribeMessage('PlayerSelectedPaddle')
   handlePlayerSelectedPaddle(client: Socket, info: any) {
@@ -85,7 +85,6 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
       this.gameService.CreatePrivateGamePlayer(client, intra_nick, paddleSkin);
     else
       this.gameService.CreateLobbyPlayer(client, intra_nick, paddleSkin);
-    client.emit("PlayerCreated")
   }
 
   @SubscribeMessage('AddToLobby')

@@ -1,4 +1,5 @@
 export enum State {
+  NO_STATE = 0,
   SETTING_PRIVATE_GAME = 1,
   LOBBY_PLAYER = 2,
   IN_LOBBY_QUEUE = 3,
@@ -12,6 +13,7 @@ export enum State {
 }
 
 export const StateMessage: { [key in State]: string } = {
+  [State.NO_STATE]: 'Still has not state',
   [State.LOBBY_PLAYER]: 'Player chose racket to join lobby',
   [State.IN_LOBBY_QUEUE]: 'Player waiting in Lobby',
   [State.SETTING_PRIVATE_GAME]: 'Player is preparing Private Game',
