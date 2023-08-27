@@ -1181,14 +1181,14 @@ if (socket) {
 
 socket.on('notification',  async() => {
   await getChannelsJoined();
-  if (selected_channel)
-   await getUsersInGivenChannel(selected_channel);
-  if(!isChannelJoined(selected_channel))
+  if(selected_channel && !isChannelJoined(selected_channel))
   {
     selected_channel=null
     messages.value=[]
     showChannelOptions.value=false;
   }
+  if (selected_channel)
+   await getUsersInGivenChannel(selected_channel);
   await getUsers();
   await fetchFriends();
 });
