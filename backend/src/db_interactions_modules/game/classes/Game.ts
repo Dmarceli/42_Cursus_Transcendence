@@ -180,7 +180,7 @@ export class Game {
     this.reset()
     await this.gameHistoryService.create(gameHistoryEntry)
     const loserUser = await this.handleLoser(loser.frontEndData.nick)
-    await this.handleWinner(winner.frontEndData.nick, loserUser)
+    await this.handleWinner(winner.frontEndData.nick, loserUser, loserScore)
     this.timeStart = null
   }
   handleGameContinue() {
@@ -193,14 +193,10 @@ export class Game {
     this.playerPaddle1.client?.emit('updateGame', gamevisual)
     this.playerPaddle2.client?.emit('updateGame', gamevisual)
   }
-  async calculateXP(winner: User, loser: User) {
-    let winnerPoints = winner.xp_total
+  async calculateXP(winner: User, loser: User, loserScore: number) {
     let loserPoints = loser.xp_total
     let gameSeconds = this.getSeconds()
-    if (winnerPoints == 0) {
-      return gameSeconds * 5
-    }
-    return Math.round(((loserPoints / winnerPoints) + 1) * gameSeconds)
+    return Math.round(gameSeconds + loserPoints*0.01*(5-loserScore))
   }
   getSeconds(): number {
     const currentTime = new Date();
@@ -212,10 +208,10 @@ export class Game {
     loserUser.lost_games++
     return await this.userRepository.save(loserUser);
   }
-  async handleWinner(winnerNick: string, loserUser: User) {
+  async handleWinner(winnerNick: string, loserUser: User, loserScore: number) {
     const winnerUser = await this.userRepository.findOne({ where: { intra_nick: winnerNick } })
     winnerUser.won_games++
-    winnerUser.xp_total += await this.calculateXP(winnerUser, loserUser)
+    winnerUser.xp_total += await this.calculateXP(winnerUser, loserUser, loserScore)
     return await this.userRepository.save(winnerUser);
   }
 };
