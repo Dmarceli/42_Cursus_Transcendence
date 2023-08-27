@@ -59,9 +59,9 @@ const fetchLeaderboard = async () => {
   });
   const top10 = computed(() => leaderboard.value.slice(0, 10));
 
-const goToProfile = (userNick: string) =>
+const goToProfile = (intraNick: string) =>
 {
-  router.push("/profile/"+userNick)
+  router.push("/profile/"+intraNick)
 }
 
 
