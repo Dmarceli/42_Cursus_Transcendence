@@ -22,9 +22,10 @@
 <script setup lang="ts">
 import Pong2D from '../components/Pong2D.vue'
 import StartMenu from '../components/StartMenu.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import jwt_decode from 'jwt-decode';
 import { onBeforeMount } from 'vue';
+import type { Socket } from 'socket.io-client';
 
 let startmenu = ref(true)
 let playerWon = ref(false)
@@ -33,6 +34,7 @@ let token: string | null = null;
 let decodedToken: TokenType;
 let users_Name = ref("");
 let isPrivateGame = ref(false)
+let gameState = ref(0)
 
 interface TokenType
 {
@@ -46,7 +48,10 @@ interface TokenType
   exp: number
 }
 
+const socket: Socket | undefined = inject('socket')
+
 onBeforeMount(async () => {
+  socket?.emit('GetUpdatedState')
   const response = await fetch(process.env.VUE_APP_BACKEND_URL +'/games/private');
   if (response.ok) {
     let games = await response.json();
@@ -85,7 +90,6 @@ function handlePlayerCreated()
   startmenu.value=false
   playerWon.value=false
   playerLost.value=false
-
 }
 
 function ResetView()
@@ -107,6 +111,11 @@ function getCookieValueByName(name: any) {
   }
   return null;
 }
+
+socket?.on('UpdatedState', (value: number) => {
+  console.log("GOT UPDATED STATE"+value)
+  gameState.value=value
+})
 
 </script>
 

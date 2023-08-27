@@ -4,6 +4,7 @@ import { Score } from './Score'
 import { GameHistoryService } from 'src/db_interactions_modules/game_history/game_history.service'
 import { User } from 'src/db_interactions_modules/users/user.entity'
 import { Repository } from 'typeorm'
+import { State } from './game-state-enum'
 
 const board_dims = {
   width: 1400,
@@ -55,13 +56,19 @@ export class Game {
     this.userRepository = userRepository
     this.isFinished = false
   }
-  start(): void {
+  start(player_states): void {
     let interval = setInterval(() => {
       if (this.startCounter < 1) {
         clearInterval(interval);
         this.timeStart = new Date()
         this.starting = false
+        player_states.set(this.playerPaddle1.user.intra_nick, State.PLAYING)
+        player_states.set(this.playerPaddle2.user.intra_nick, State.PLAYING)
       }
+      if (player_states.has(this.playerPaddle1.user.intra_nick) && player_states.get(this.playerPaddle1.user.intra_nick) != State.STARTING)
+        player_states.set(this.playerPaddle1.user.intra_nick, State.STARTING)
+      if (player_states.has(this.playerPaddle2.user.intra_nick) && player_states.get(this.playerPaddle2.user.intra_nick) != State.STARTING)
+        player_states.set(this.playerPaddle2.user.intra_nick, State.STARTING)
       this.playerPaddle1.client.emit("Starting", this.startCounter)
       this.playerPaddle2.client.emit("Starting", this.startCounter)
       this.startCounter--;
@@ -143,10 +150,12 @@ export class Game {
     }
     this.ball.updatePosition()
   }
-  async checkStatus() {
+  async checkStatus(player_states) {
     if (this.isGameFinished()) {
       await this.handleFinishGame()
       this.isFinished = true
+      player_states.delete(this.playerPaddle1.user.intra_nick)
+      player_states.delete(this.playerPaddle2.user.intra_nick)
     }
     this.handleGameContinue()
   }

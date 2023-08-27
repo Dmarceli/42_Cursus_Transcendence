@@ -73,6 +73,11 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
 }
 
 // Game Service
+  @SubscribeMessage('GetUpdatedState')
+  handleGetUpdatedState(client: Socket, intra_nick: string)
+  {
+    this.gameService.GetUpdatedState(client, intra_nick)
+  }
   @SubscribeMessage('PlayerSelectedPaddle')
   handlePlayerSelectedPaddle(client: Socket, info: any) {
     let [intra_nick, paddleSkin] = info;

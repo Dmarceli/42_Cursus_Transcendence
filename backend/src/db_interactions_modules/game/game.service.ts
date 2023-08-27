@@ -33,19 +33,32 @@ export class GameService {
     return this.private_games;
   }
 
-  // Check if client is updated where user is stored
-  // First check player_states
-  // If it does not match update that too
-  UpdatePlayerState(playerClient: Socket, nick: string) {
-    console.log("Player at the moment is " + this.player_states[nick])
+  GetUpdatedState(client: Socket, nick: string)
+  {
+    console.log(this.player_states)
+    console.log(this.lobbyPlayers)
+    if (!this.player_states.has(nick))
+    {
+      client.emit("UpdatedState", 0)
+      return
+    }
+    client.emit("UpdatedState", this.player_states.get(nick))
+  }
+
+  UpdatePlayerState(nick: string)
+  {
+    console.warn("Found mismatch on player state " + this.player_states[nick])
     let playerInActiveGame = this.active_games.find(active_games => active_games.playerPaddle1.user.intra_nick == nick || active_games.playerPaddle2.user.intra_nick == nick)
     if (playerInActiveGame)
     {
-      let gameState = null;
       if (playerInActiveGame.timeStart)
-        gameState = State.PLAYING
+      {
+        return this.player_states.set(nick, State.PLAYING)
+      }
       else if (playerInActiveGame.starting)
-        gameState = State.
+      {
+        return this.player_states.set(nick, State.STARTING)
+      }
       let player = null;
       if (playerInActiveGame.playerPaddle1.user.intra_nick == nick)
         player = playerInActiveGame.playerPaddle1
@@ -53,39 +66,50 @@ export class GameService {
         player = playerInActiveGame.playerPaddle2
       if (player.ready)
       {
-        this.player_states.set(nick, State.WAITING_OTHER_READY)
-        return;
+        return this.player_states.set(nick, State.WAITING_OTHER_READY)
       }
       else
       {
-        this.player_states.set(nick, State.NOT_READY)
-        return;
+        return this.player_states.set(nick, State.NOT_READY)
       }
     }
-      updatedState = State.
-      if (this.lobbyPlayers.find(playerPaddle => playerPaddle.user.intra_nick == nick)) {
-
-      }
-      this.privateGamePlayers
-      this.lobby
-      this.private_games
+    if (this.privateGamePlayers.find(playerPaddle => playerPaddle.user.intra_nick == nick)) {
+      return this.player_states.set(nick, State.CHOSE_PRIVATE_PLAYER)
     }
+    if (this.private_games.find(privateGame => privateGame.player1 == nick || privateGame.player2 == nick)) {
+      return this.player_states.set(nick, State.SETTING_PRIVATE_GAME)
+    }
+    if (this.lobby.find(playerPaddle => playerPaddle.user.intra_nick == nick)) {
+      return this.player_states.set(nick, State.IN_LOBBY_QUEUE)
+    }
+    if (this.lobbyPlayers.find(playerPaddle => playerPaddle.user.intra_nick == nick)) {
+      return this.player_states.set(nick, State.LOBBY_PLAYER)
+    }
+    if (this.player_states.has(nick))
+      return this.player_states.delete(nick)
+  }
 
   async CreateLobbyPlayer(playerClient: Socket, nick: string, skin: string = "")
     {
       if (this.player_states.has(nick)) {
-        // UpdatePlayerState(nick, playerClient)
+        this.UpdatePlayerState(nick)
         return;
       }
       console.log("Creating new Lobby Player " + playerClient + " with intra " + nick + " and skin " + skin)
       const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
       let newPlayer = new PlayerPaddle(playerClient, user, skin);
       this.lobbyPlayers.push(newPlayer);
-      this.player_states.set(nick, State.IN_LOBBY)
+      console.log("Setting state for "+nick)
+      this.player_states.set(nick, State.IN_LOBBY_QUEUE)
     }
 
     AddPlayerToLobby(playerClient: Socket, nick: string)
     {
+      if (!this.player_states.has(nick) || this.player_states.get(nick) != State.LOBBY_PLAYER)
+      {
+        this.UpdatePlayerState(nick)
+        return; 
+      }
       const freePlayerIndex = this.lobbyPlayers.findIndex(player => player.user.intra_nick === nick)
       if (freePlayerIndex !== -1) {
         if (this.lobbyPlayers[freePlayerIndex].client != playerClient) {
@@ -97,6 +121,7 @@ export class GameService {
         else {
           console.log("Joined lobby " + nick)
           this.lobby.push(this.lobbyPlayers[freePlayerIndex])
+          this.player_states.set(nick, State.IN_LOBBY_QUEUE)
         }
         this.lobbyPlayers.splice(freePlayerIndex, 1);
       }
@@ -116,14 +141,27 @@ export class GameService {
 
   async CreatePrivateGamePlayer(playerClient: Socket, nick: string, skin: string = "")
     {
+      if (!this.player_states.has(nick) || this.player_states.get(nick) != State.SETTING_PRIVATE_GAME)
+      {
+        this.UpdatePlayerState(nick)
+        return; 
+      }
       console.log("Creating new Private Game Player " + playerClient + " with intra " + nick + " and skin " + skin)
       const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
       let newPlayer = new PlayerPaddle(playerClient, user, skin);
       this.privateGamePlayers.push(newPlayer);
+      this.player_states.set(nick, State.CHOSE_PRIVATE_PLAYER)
     }
 
   async createPrivateGame(player1_intra_nick: string, player2_intra_nick: string)
     {
+      if (this.player_states.has(player1_intra_nick) || this.player_states.has(player2_intra_nick))
+      {
+        // Check if active games otherwise just remove them and continue creating
+        this.UpdatePlayerState(player1_intra_nick)
+        this.UpdatePlayerState(player2_intra_nick)
+        return; 
+      }
       console.log("Creating new Private Game for " + player1_intra_nick + " and " + player2_intra_nick);
       if (this.IsInPrivateGame(player1_intra_nick)) {
         console.log("Already existing game for player " + player1_intra_nick)
@@ -137,6 +175,8 @@ export class GameService {
       const player2User = AppService.UsersOnline.find((online) => online.user.intra_nick == player2_intra_nick);
       if (player1User && player2User) {
         this.private_games.push(new PrivateGame(player1_intra_nick, player2_intra_nick));
+        this.player_states.set(player1_intra_nick, State.SETTING_PRIVATE_GAME)
+        this.player_states.set(player1_intra_nick, State.SETTING_PRIVATE_GAME)
         player1User.client?.emit("StartPaddleSelection");
         player2User.client?.emit("StartPaddleSelection");
       }
@@ -154,6 +194,15 @@ export class GameService {
 
         this.active_games[player1ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
         this.active_games[player1ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
+        if (this.player_states.get(this.active_games[player1ActiveGameIndex].playerPaddle2.user.intra_nick) == State.DISCONNECTED)
+        {
+          this.player_states.set(this.active_games[player1ActiveGameIndex].playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
+        }
+        else
+        {
+          this.player_states.set(this.active_games[player1ActiveGameIndex].playerPaddle1.user.intra_nick, State.PLAYING)
+          this.player_states.set(this.active_games[player1ActiveGameIndex].playerPaddle2.user.intra_nick, State.PLAYING)
+        }
         return true
       }
       let player2ActiveGameIndex = this.active_games.findIndex(game => game.playerPaddle2.user.intra_nick === nick)
@@ -163,6 +212,15 @@ export class GameService {
 
         this.active_games[player2ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
         this.active_games[player2ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
+        if (this.player_states.get(this.active_games[player2ActiveGameIndex].playerPaddle1.user.intra_nick) == State.DISCONNECTED)
+        {
+          this.player_states.set(this.active_games[player2ActiveGameIndex].playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
+        }
+        else
+        {
+          this.player_states.set(this.active_games[player2ActiveGameIndex].playerPaddle1.user.intra_nick, State.PLAYING)
+          this.player_states.set(this.active_games[player2ActiveGameIndex].playerPaddle2.user.intra_nick, State.PLAYING)
+        }
         return true
       }
       return false
@@ -172,13 +230,33 @@ export class GameService {
       for (let game of this.active_games) {
         if (game.playerPaddle1.user.intra_nick === intra_nick) {
           game.playerPaddle1.ready = true
+          if (game.playerPaddle2.ready)
+          {
+            this.player_states.set(game.playerPaddle1.user.intra_nick, State.STARTING)
+            this.player_states.set(game.playerPaddle2.user.intra_nick, State.STARTING)
+          }
+          else
+          {
+            this.player_states.set(intra_nick, State.WAITING_OTHER_READY)
+          }
           game.playerPaddle1.handlePlayersNotReady();
           game.playerPaddle2.handlePlayersNotReady();
         }
         else if (game.playerPaddle2.user.intra_nick === intra_nick)
+        {
           game.playerPaddle2.ready = true
-        game.playerPaddle1.handlePlayersNotReady();
-        game.playerPaddle2.handlePlayersNotReady();
+          if (game.playerPaddle1.ready)
+          {
+            this.player_states.set(game.playerPaddle1.user.intra_nick, State.STARTING)
+            this.player_states.set(game.playerPaddle2.user.intra_nick, State.STARTING)
+          }
+          else
+          {
+            this.player_states.set(intra_nick, State.WAITING_OTHER_READY)
+          }
+          game.playerPaddle1.handlePlayersNotReady();
+          game.playerPaddle2.handlePlayersNotReady();
+        }
       }
     }
 
@@ -186,10 +264,14 @@ export class GameService {
       for (let game of this.active_games) {
         if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
           game.playerPaddle1.ready = false
+          this.player_states.set(game.playerPaddle1.user.intra_nick, State.DISCONNECTED)
+          this.player_states.set(game.playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
           game.playerPaddle2.client?.emit("PlayerDisconnected")
           console.log("PlayerExited " + game.playerPaddle1.user.intra_nick)
         } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
           game.playerPaddle2.ready = false
+          this.player_states.set(game.playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
+          this.player_states.set(game.playerPaddle2.user.intra_nick, State.DISCONNECTED)
           game.playerPaddle1.client?.emit("PlayerDisconnected")
           console.log("PlayerExited " + game.playerPaddle2.user.intra_nick)
         }
@@ -245,11 +327,11 @@ export class GameService {
               if (!game.timeStart) {
                 if (!game.starting) {
                   game.starting = true
-                  game.start();
+                  game.start(this.player_states);
                 }
               } else {
                 game.update();
-                game.checkStatus();
+                game.checkStatus(this.player_states);
               }
             }
           }
@@ -268,6 +350,8 @@ export class GameService {
         console.log("ADDING PRIVATE GAME for player " + private_game.player1 + " and " + private_game.player2)
         let game = new Game(this.privateGamePlayers[indexPlayer1], this.privateGamePlayers[indexPlayer2], this.gameHistoryService, this.userRepository)
         this.active_games.push(game)
+        this.player_states.set(this.privateGamePlayers[indexPlayer1].user.intra_nick, State.NOT_READY)
+        this.player_states.set(this.privateGamePlayers[indexPlayer2].user.intra_nick, State.NOT_READY)
         AppService.UsersOnline.forEach((user) => {
           user.client.emit("online-status-update");
         })

@@ -10,11 +10,4 @@ export class GameController {
   findAll() : PrivateGame[] {
     return this.gameService.getPrivate();
   }
-
-  @UseGuards(JwtAuthGuard)
-  @Get("state")
-  GameStateValue(@getUserIDFromToken() user) : number {
-    return this.gameService.getGameStateValue(user);
-  }
-
 }
