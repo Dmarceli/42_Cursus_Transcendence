@@ -36,7 +36,7 @@ import { MessagesService } from './db_interactions_modules/messages/messages.ser
       host: 'db',
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_USER,
+      database: process.env.DB_NAME,
       entities: [User,Messages, GameHistory, Channel, friend, UserToChannel, Events],
       synchronize: true,
     }),
