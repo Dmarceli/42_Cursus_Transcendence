@@ -5,15 +5,17 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import jwt_decode from 'jwt-decode';
+import router from '@/router';
 
 const userTokenData = ref({
 	id: 0,
-	intra_nick: '',
+	nick: '',
 });
 
 let token = getCookieValueByName('token');
 const decodedToken = jwt_decode(token);
 userTokenData.value.id = decodedToken.user["id"];
+userTokenData.value.nick = decodedToken.user["nick"];
 
 const userProfile = ref({
 	id: 0,
@@ -52,6 +54,8 @@ const updateAvatar = ref('');
 let inputKey=ref(0)
 const route = useRoute();
 const isUserBlocked = ref(false)
+const isUserFriend = ref(false)
+const showAlert = ref(false);
 
 const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
 
@@ -85,7 +89,7 @@ const fetchUserProfile = async () => {
   if (route.name === 'myProfile') {
     url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
   } else {
-    url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/'+route.params.nick;
+    url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/'+route.params.intra_nick;
   }
   try {
     const response = await fetch(url, {
@@ -97,13 +101,14 @@ const fetchUserProfile = async () => {
       const data = await response.json();
       userProfile.value = data;
     } else {
-      // Handle the case when the request fails
-      console.error('Error fetching User Profile data:', response.statusText);
+      router.replace("/")
     }
   } catch (error) {
-    console.error('Error fetching User Profile data', error);
+    router.replace("/")
   }
 }
+
+
 
 const fetchBlockStatus = async () => {
   if (route.name !== 'otherProfile')
@@ -126,12 +131,35 @@ const fetchBlockStatus = async () => {
     console.error('Error fetching User Profile data', error);
   }
 }
+
+const fetchFriends = async () => {
+  if (route.name !== 'otherProfile')
+    return
+    let url = process.env.VUE_APP_BACKEND_URL + '/friends/';
+    try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      isUserFriend.value = data.some((friendUser: any) => friendUser.id === userProfile.value.id);
+    } else {
+      // Handle the case when the request fails
+      console.error('Error fetching Friends data:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching Friends data', error);
+  }
+}
+
 const fetchLeaderboard = async () => {
     try {
       let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
       const response = await fetch(url);
       const data = await response.json();
-      let rank = data.findIndex((user) => user.id == userProfile.value.id)
+      let rank = data.findIndex((user: any) => user.id == userProfile.value.id)
       if (rank == -1) {
         console.error('Could not find current user in leaderboard');
         return
@@ -202,6 +230,7 @@ const fetchLeaderboard = async () => {
 onBeforeMount(async () => {
 	await fetchUserProfile();
   await fetchBlockStatus();
+  await fetchFriends();
   await fetchLeaderboard();
 	await fetchLastFiveGames();
 });
@@ -241,6 +270,7 @@ async function saveSettings() {
   if (!usernameRegex.test(updateNickname.value)){
     return
   }
+  let oldNick = userProfile.value.nick;
 	if (updateNickname.value !== ''){
     userProfile.value.nick = updateNickname.value;
   }
@@ -259,11 +289,43 @@ async function saveSettings() {
       if (response.ok) {
         let data = await response.json();
         console.log("NEW URL "+data.newAvatar);
+        updateToken();        
+      }
+      //Caso o Nick já esteja em Uso
+      else if(response){
+        userProfile.value.nick = oldNick;
+        alert("User already in Use")
       }
     } catch(error) {
         console.log('Error:', error);
+        userProfile.value.nick = oldNick;
       }
   closeSettings();
+}
+
+async function updateToken() {
+  let token = getCookieValueByName('token');
+  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/auth/updateToken';
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const newToken = data.newToken;
+      document.cookie = `token=${newToken}`;
+      window.location.reload();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
 }
 
 function closeSettings() {
@@ -286,6 +348,7 @@ async function BlockUser() {
       const data = await response.json();
       console.log(data)
       isUserBlocked.value = true
+      isUserFriend.value = false
     } else {
       console.log('Error during BlockUser:', response.status);
     }
@@ -319,10 +382,70 @@ async function UnBlockUser() {
     return false;
   }
 }
+
+const addFriend = async () => {
+  try {
+    const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/friendship_request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ requester_user: parseInt(userTokenData.value.id), decider_user: parseInt(userProfile.value.id), message: "You have received a friend request from " + userTokenData.value.nick }),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+      }, 4000);
+    } else {
+      if (response.status == 303) {
+        window.alert('friendship request already sent!')
+      }
+      else
+        console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
+const removeFriend = async () => {
+  if (confirm('Are you sure you want to stop being friends with ' + userProfile.value.nick + '?')) {
+    try {
+      console.log("Us"+userTokenData.value.id)
+      console.log("Them"+userProfile.value.id)
+      const url = `${process.env.VUE_APP_BACKEND_URL}/friends/deletefriends/${userTokenData.value.id}/${userProfile.value.id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        isUserFriend.value=false;
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
+
+  }
+};
+
+
 </script>
 
 <template>
 	<div class="profile">
+    <transition name="fade" mode="out-in">
+    <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert" color="success"
+      icon="$success" title="Success!" text="Friendship request sent successfully!" dismissible></v-alert>
+    </transition>
     <!-- Avatar and Nick -->
     <div class="profile-header">
       <v-avatar class="avatar-container">
@@ -331,11 +454,18 @@ async function UnBlockUser() {
       <h1 class="nickname" >{{ userProfile.nick }}</h1>
       <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
 			<div class="user-actions" >
-					<v-btn class="ma-2" v-if="!isOwnProfile && isUserBlocked" @click="UnBlockUser()" color="light-blue-lighten-2">
-						{{ "Unblock" }}<v-icon end icon="mdi-account-lock-open-outline"></v-icon>
-					</v-btn>
+          <v-btn class="ma-2" v-if="!isOwnProfile && !isUserFriend" @click="addFriend()" color="green-darken-1">
+            Add Friend <v-icon end icon="mdi-account-plus-outline"></v-icon>
+          </v-btn>
+          <v-btn class="ma-2" v-if="!isOwnProfile && isUserFriend" @click="removeFriend()" color="blue-grey-darken-3">
+            You are Friends <v-icon end icon="mdi-star-face" color="green-darken-1"></v-icon>
+          </v-btn>
+
           <v-btn class="ma-2" v-if="!isOwnProfile && !isUserBlocked" @click="BlockUser()" color="red-darken-4">
-						{{ "Block" }}<v-icon end icon="mdi-account-cancel-outline"></v-icon>
+            Block <v-icon end icon="mdi-account-cancel-outline"></v-icon>
+          </v-btn>
+					<v-btn class="ma-2" v-if="!isOwnProfile && isUserBlocked" @click="UnBlockUser()" color="light-blue-lighten-2">
+						Unblock <v-icon end icon="mdi-account-lock-open-outline"></v-icon>
 					</v-btn>
 			</div>
     </div>

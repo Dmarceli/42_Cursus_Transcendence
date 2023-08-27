@@ -1,4 +1,4 @@
-import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete, Res, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete, Res, Req, UploadedFile, UseInterceptors, HttpStatus } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'
 import { UsersService } from './users.service';
@@ -33,9 +33,17 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get('/getUsers/:nick')
-  findbyusername(@Param('nick') nick_: string, @Res() res) {
-    return this.usersService.findbyusername_(nick_, res);
+  @UseGuards(JwtAuthGuard)
+  @Get('/getUsers/:intra_nick')
+  async findbyLogin(@Param('intra_nick') intra_nick: string, @Res() res) {
+    let login =  await this.usersService.findByLogin(intra_nick);
+    if (!login) {
+      return res.status(HttpStatus.NOT_FOUND).json();
+    }
+    else
+    {
+      return res.status(HttpStatus.OK).json(login);
+    }
   }
 
   @UseGuards(JwtAuthGuard)

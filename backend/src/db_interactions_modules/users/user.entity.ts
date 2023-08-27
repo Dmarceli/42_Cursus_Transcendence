@@ -18,7 +18,7 @@ export class User {
     @Column()
     intra_nick: string;
 
-    @Column()
+    @Column({nullable: true})
     avatar: string;
     
     @Column()

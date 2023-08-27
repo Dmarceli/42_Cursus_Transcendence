@@ -18,7 +18,7 @@
       </div>
       <div v-if="side_info === 1">
         <div class="list-header">FRIENDS</div>
-        <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.nick)" class="tooltip">
+        <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.intra_nick)" class="tooltip">
           <div class="user">
             <span class="tooltiptext">
               <img :src="user_friend.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
@@ -28,7 +28,7 @@
               Games Lost: {{ user_friend.lost_games }}<br>
             </span>
             <v-avatar class="avatar-circle" :style="{ '--online-status': onlineStatus(user_friend.id) }">
-                <img :src="user_friend.avatar" alt="Avatar" class="avatar-circle" />
+              <img :src="user_friend.avatar" alt="Avatar" class="avatar-circle" />
             </v-avatar>
             {{ user_friend.nick }}
             <button class="friend-remove" @click="removeFriend(user_friend)"></button>
@@ -92,7 +92,7 @@
               Games Won: {{ user.won_games }}<br>
               Games Lost: {{ user.lost_games }}<br>
             </v-tooltip>
-            <div @click="goToProfile(user.nick)" class="nickname-container">
+            <div @click="goToProfile(user.intra_nick)" class="nickname-container">
               {{ user.nick }}
             </div>
             <button v-if="!isFriend(user.id)" class="add-friend" @click="addFriend(user.id)"></button>
@@ -166,32 +166,65 @@
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
             getChannelName(selected_channel)
             }}</h2>
-          <div class="usersInChannel" v-for="usersInChannel in usersInChannels" @click="goToProfile(usersInChannel.user_id.nick)" :key="usersInChannels.id">
+          <div class="usersInChannel" v-for="usersInChannel in usersInChannels" @click="goToProfile(usersInChannel.user_id.intra_nick)" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
               <v-menu transition=" slide-x-transition">
-              <template v-slot:activator="{ props }">
-                <v-btn color="grey" v-bind="props">
-                  Admin Commands
-                </v-btn>
-              </template>
-              <v-list>
-                <v-list-item>
-                  <v-btn style="width: 100%;" @click="kickUser(usersInChannel.user_id.id)">Kick</v-btn>
-                </v-list-item>
-                <v-list-item>
-                  <v-btn style="width: 100%;" @click="banUser(usersInChannel.user_id.id)">Ban</v-btn>
-                </v-list-item>
-                <v-list-item>
-                  <v-btn style="width: 100%;" @click="MuteUser(usersInChannel.user_id.id)">Toggle Mute</v-btn>
-                </v-list-item>
-                <v-list-item>
-                  <v-btn style="width: 100%;" @click="ToggleAdminUser(usersInChannel.user_id.id)">Toggle Admin Access</v-btn>
-                </v-list-item>
-              </v-list>
+                <template v-slot:activator="{ props }">
+                  <v-btn color="grey" v-bind="props">
+                    Admin Commands
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item>
+                    <v-btn style="width: 100%;" @click="kickUser(usersInChannel.user_id.id)">
+                      Kick
+                      <v-icon style="margin-left: 10px;">
+                        mdi-account-remove
+                      </v-icon>
+                    </v-btn>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-btn style="width: 100%;" @click="banUser(usersInChannel.user_id.id, 1)">
+                      Ban
+                      <v-icon style="margin-left: 10px;">
+                        mdi-account-cancel
+                      </v-icon>
+                    </v-btn>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-btn style="width: 100%;" @click="muteUser(usersInChannel.user_id.id)">
+                      Toggle Mute
+                      <v-icon style="margin-left: 10px;">
+                        mdi-volume-off
+                      </v-icon>
+                    </v-btn>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-btn style="width: 100%;" @click="toggleAdminUser(usersInChannel.user_id.id)">
+                      Toggle Admin Access
+                      <v-icon style="margin-left: 10px;">
+                        mdi-shield-account
+                      </v-icon>
+                    </v-btn>
+                  </v-list-item>
+                </v-list>
               </v-menu>
             </div>
+            <v-icon v-if="userPrivileges(usersInChannel.user_id.id)" style="margin-left: 10px;">
+              mdi-shield-account
+            </v-icon>
             {{ usersInChannel.user_id.intra_nick }}
+          </div>
+          <div v-if="bannedUsersInChannel.length > 0 && isUserAdminOrOwner(usersInChannels)">
+            <h2 class="userHeader">Banned Users</h2>
+            <div class="usersInChannel" v-for="bannedUserInChannel in bannedUsersInChannel"
+              :key="bannedUsersInChannel.id">
+              <img :src="bannedUserInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
+              <v-btn @click="banUser(bannedUserInChannel.user_id.id, 0)">unban<v-icon
+                  left>mdi-account-check</v-icon></v-btn>
+              {{ bannedUserInChannel.user_id.intra_nick }}
+            </div>
           </div>
         </div>
         <div style=" position: relative;bottom: 0; left: 0;">
@@ -226,7 +259,7 @@
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
         <div v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
           <span v-if="usersInChannel.user_id.intra_nick !== users_Name">
-            <div class="userInfo-container" @click="goToProfile(usersInChannel.user_id.nick)">
+            <div class="userInfo-container" @click="goToProfile(usersInChannel.user_id.intra_nick)">
               <div class="userInfo">
                 <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="alone-user-avatar">
                 <h1>{{ usersInChannel.user_id.intra_nick }}</h1>
@@ -287,7 +320,7 @@ let showModal = ref(false);
 const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 let showSideInfo = ref(true);
-let createChannelOptions = ref(null);
+let createChannelOptions = ref(false);
 let protectChannelPass = ref('');
 let channelPasswordModal = ref(false);
 
@@ -362,8 +395,10 @@ const users_Nick = decodedToken.user['nick'];
 
 
 const getChannelType = (channelID) => {
+  
   const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelID)
-  return channel.channel_id.type;
+  if(channel)
+    return channel.channel_id.type;
 }
 
 const getChannelName = (channelId) => {
@@ -425,11 +460,11 @@ const getMessages = async () => {
     try {
       let url = process.env.VUE_APP_BACKEND_URL + '/chat/msg_in_channel/' + selected_channel
       const response = await fetch(url,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
       if (response.ok) {
         const data = await response.json();
         messages.value = data;
@@ -478,6 +513,29 @@ const getUsersInGivenChannel = async (channel_ID) => {
     if (response.ok) {
       const data = await response.json();
       usersInChannels.value = data;
+      getBannedUsersInGivenChannel(channel_ID)
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
+
+const bannedUsersInChannel = ref([]);
+const getBannedUsersInGivenChannel = async (channel_ID) => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/bannedusersinchannel/' + channel_ID;
+    const response = await fetch(url,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    if (response.ok) {
+      const data = await response.json();
+      bannedUsersInChannel.value = data;
     } else {
       console.log('Error:', response.status);
     }
@@ -638,29 +696,63 @@ const kickUser = async (KickedUserID) => {
   await getUsersInGivenChannel(selected_channel)
 }
 
-const banUser = async (bannedUserID) => {
-  try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/ban/' + bannedUserID + '/from/' + selected_channel
-    const response = await fetch(url,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-      });
-    if (response.ok) {
-      await getChannelsJoined();
-    } else {
-      console.log('Error:', response.status);
+const banUser = async (bannedUserID, flag) => {
+  if (flag) {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/ban/' + bannedUserID + '/from/' + selected_channel
+      const response = await fetch(url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+      if (response.ok) {
+        await getChannelsJoined();
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
     }
-  } catch (error) {
-    console.log('Error:', error);
+  }
+  else {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/unban/' + bannedUserID + '/from/' + selected_channel
+      const response = await fetch(url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+      if (response.ok) {
+        await getChannelsJoined();
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
   }
   await getChannelsJoined();
   await getUsersInGivenChannel(selected_channel)
 }
 
+const userPrivileges = (actionToUserID: number) => {
+  for (const userId in usersInChannels.value) {
+    if (usersInChannels.value[userId].user_id.id == actionToUserID) {
+      if (usersInChannels.value[userId].is_admin)
+        return 1
+      else if (usersInChannels.value[userId].is_owner)
+        return 2
+      else
+        return 0;
+    }
+  }
+}
 const is_already_admin = async (actionToUserID) => {
   for (const userId in usersInChannels.value) {
     if (usersInChannels.value[userId].user_id.id == actionToUserID) {
@@ -672,11 +764,10 @@ const is_already_admin = async (actionToUserID) => {
   }
 }
 
-const ToggleAdminUser = async (actionToUserID) => {
+const toggleAdminUser = async (actionToUserID) => {
   let action = await is_already_admin(actionToUserID)
   console.log(await action)
   try {
-
     let url = await process.env.VUE_APP_BACKEND_URL + '/usertochannel/giveadmin/' + actionToUserID + '/on/' + selected_channel + "/" + action
     const response = await fetch(url,
       {
@@ -698,7 +789,7 @@ const ToggleAdminUser = async (actionToUserID) => {
   await getUsersInGivenChannel(selected_channel)
 }
 
-const MuteUser = async (userToMute) => {
+const muteUser = async (userToMute) => {
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/mute/' + userToMute + '/from/' + selected_channel
     const response = await fetch(url,
@@ -919,8 +1010,7 @@ const isChannelJoined = (givenID) => {
   });
 };
 
-const fetchOnlineStatus = async () =>
-{
+const fetchOnlineStatus = async () => {
   try {
     const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/online-status`,
       {
@@ -931,7 +1021,6 @@ const fetchOnlineStatus = async () =>
     if (response.ok) {
       const data = await response.json();
       allOnlineStatuses.value = data;
-      console.log(allOnlineStatuses.value)
     } else {
       console.log('Error:', response.status);
     }
@@ -1021,9 +1110,10 @@ const removeFriend = async (friend) => {
   }
 };
 
-const goToProfile = (userNick: string) =>
+
+const goToProfile = (userIntraNick: number) =>
 {
-  router.push("/profile/"+userNick)
+  router.push("/profile/"+userIntraNick)
 }
 
 onBeforeMount(() => {
@@ -1035,18 +1125,18 @@ onBeforeMount(() => {
 
 });
 
-if(socket){
-socket.on('recMessage', async (message) =>  {
-	if (message.channelId === selected_channel) {
-		scrollToBottom();
-	} else {
-		if (typeof unreadMessages.value[message.channelId] === 'undefined') {
-			unreadMessages.value[message.channelId] = 0;
-		}
-		unreadMessages.value[message.channelId]++;
-	}
-	await getMessages();
-});
+if (socket) {
+  socket.on('recMessage', async (message) => {
+    if (message.channelId === selected_channel) {
+      scrollToBottom();
+    } else {
+      if (typeof unreadMessages.value[message.channelId] === 'undefined') {
+        unreadMessages.value[message.channelId] = 0;
+      }
+      unreadMessages.value[message.channelId]++;
+    }
+    await getMessages();
+  });
 }
 
 
@@ -1061,6 +1151,16 @@ socket.on('notification', Notification => {
 socket.on('online-status-update', () => {
   fetchOnlineStatus();
 });
+
+function logout() {
+  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  window.location.href = '/login';
+  window.location.reload()
+}
+
+socket.on('DisconnectSocketToken', () => {
+  logout();
+})
 
 watch(messages, () => {
   scrollToBottom();
@@ -1106,23 +1206,22 @@ const inviteToPrivateGame = async () => {
   animation: glowShadow 1.0s linear infinite alternate;
 }
 
-img.avatar-circle  {
+img.avatar-circle {
   width: 100%;
   height: 100%;
   object-fit: cover;
   overflow: hidden;
 }
 
-@keyframes glowShadow{
-  from
-   {
+@keyframes glowShadow {
+  from {
     box-shadow: 0px 0px 5px 2px var(--online-status, #535FED);
-   }
+  }
+
   to {
     box-shadow: 0px 0px 10px 2.5px var(--online-status, #535FED);
   }
 }
-
 </style>
 
 
