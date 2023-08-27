@@ -74,7 +74,6 @@ export class UserToChannelService {
      }
     });
     const filteredUsersInChannel = usersInChannel.filter(userInChannel => !userInChannel.is_banned);
-    console.log(caller_id)
     if(caller_id == -1){
     return filteredUsersInChannel;
     }
