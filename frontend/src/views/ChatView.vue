@@ -1140,11 +1140,17 @@ if (socket) {
 }
 
 
-socket.on('notification', Notification => {
+socket.on('notification',  async() => {
+  await getChannelsJoined();
   if (selected_channel)
     getUsersInGivenChannel(selected_channel);
+  if(!isChannelJoined(selected_channel))
+  { 
+    selected_channel=null
+    messages.value=[]
+    showChannelOptions.value=false;
+  }
   getUsers();
-  getChannelsJoined();
   fetchFriends();
 });
 
