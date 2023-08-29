@@ -25,7 +25,7 @@ export class TwoFactorAuthService {
         const app_name = 'Raquetas';
         const otpAuthUrl = authenticator.keyuri(user.intra_nick, app_name, secret);
 
-        await this.userRepository.update({ intra_nick: user.intra_nick }, { TwoFASecret: secret });
+        await this.userRepository.update({ intra_nick: user.intra_nick }, { TwoFASecret: secret, TwoFAEnabled: true });
         return {
             secret,
             otpAuthUrl

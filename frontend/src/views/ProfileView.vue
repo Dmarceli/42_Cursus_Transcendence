@@ -27,6 +27,7 @@ const userProfile = ref({
   win_streak: 0,
   highest_win_streak: 0,
   rank: 0,
+  TwoFAEnabled: false
 });
 
 const defaultGame = {
@@ -56,6 +57,8 @@ const route = useRoute();
 const isUserBlocked = ref(false)
 const isUserFriend = ref(false)
 const showAlert = ref(false);
+let twofaSwitch = ref('false');
+let qrcode_twofa= ref('')
 
 const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
 
@@ -100,6 +103,7 @@ const fetchUserProfile = async () => {
     if (response.ok) {
       const data = await response.json();
       userProfile.value = data;
+      twofaSwitch.value=userProfile.value.TwoFAEnabled.toString()
     } else {
       router.replace("/")
     }
@@ -187,7 +191,7 @@ const fetchLeaderboard = async () => {
         let oppponentScore: number
         let oppponentAvatar: number
         let isUserWinner = backendPastGame.user_id_winner.nick == userProfile.value.nick
-        console.log(backendPastGame)
+        //console.log(backendPastGame)
         if (isUserWinner)
         {
           userScore = 5
@@ -437,6 +441,36 @@ const removeFriend = async () => {
   }
 };
 
+const twofahandling = async () => {
+  console.log(twofaSwitch.value, userProfile)
+  if(twofaSwitch.value == 'false'){
+    qrcode_twofa.value=''
+    return
+  }
+    try {
+      const url = `${process.env.VUE_APP_BACKEND_URL}/auth/gen2fa`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+      if (response.ok) {
+        const img = await response.blob();
+        const imageObjectURL = URL.createObjectURL(img);
+        const image = document.createElement('img')
+        image.src = imageObjectURL
+        qrcode_twofa.value= imageObjectURL
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  
+};
+
 
 </script>
 
@@ -541,6 +575,11 @@ const removeFriend = async () => {
         <!-- Nickname -->
         <div class="settings-section">
 					<v-text-field v-model="updateNickname" label="Nickname" class="nickname-settings" :rules="nickname.rules"/>
+        </div>
+        <!-- Enable 2 Fa -->
+        <v-switch label="2FA" inset inline   v-model="twofaSwitch" true-value='true' false-value='false' @change="twofahandling"></v-switch>
+        <div v-if="twofaSwitch=='true'">
+          <img :src=qrcode_twofa>
         </div>
         <div class="modal-buttons">
           <v-btn variant="outlined" @click="saveSettings" class="save">Save</v-btn>
