@@ -15,7 +15,7 @@
     <h1>Starting game {{ startingCounter }}</h1>
   </div>
   <div class="overlays" v-else>
-    <h1 v-if="IsOpponentDisconnected()">{{ reconnecting }}</h1>
+    <h1 v-if="IsOpponentDisconnected()"> {{ reconnecting }}</h1>
     <canvas v-else ref="gamecanvas"></canvas>
   </div>
 </template>
@@ -38,7 +38,7 @@ const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
 // State control variables
 
-let startingCounter = ref(0)
+let startingCounter = ref("...")
 
 // Game related variables
 const gamecanvas = ref<HTMLCanvasElement | null>(null)
@@ -66,7 +66,7 @@ function IsInQueue()
 
 function IsNotReady()
 {
-  return props.gameState == State.NOT_READY
+  return props.gameState == State.NOT_READY || props.gameState == State.DISCONNECTED
 }
 
 function OtherNotReady()
@@ -89,6 +89,19 @@ onMounted(() => {
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
+  if (props.gameState == State.OPPONENT_DISCONNECTED)
+  {
+    let ellipsis = ''
+    disconnectedId = setInterval(() => {
+      reconnecting.value = 'Waiting for other user to reconnect'
+      if (ellipsis.length < 3) {
+        ellipsis += '.'
+      } else {
+        ellipsis = ''
+      }
+      reconnecting.value += ellipsis
+    }, 800)
+  }
 })
 
 onUnmounted(() => {
@@ -143,7 +156,8 @@ socket?.on('PlayerLost', () => {
   emit('PlayerLost')
 })
 
-socket?.on('PlayerDisconnected', () => {
+socket?.on('Starting', (counter: number) => {
+  startingCounter.value = counter
 })
 
 function init_values(game: any) {

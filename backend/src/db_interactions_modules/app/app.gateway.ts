@@ -94,7 +94,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
   @SubscribeMessage('PlayerReady')
   handlePlayerReady(client: Socket, intra_nick: string) {
     console.log("New Player ready "+intra_nick)
-    this.gameService.PlayerReady(intra_nick)
+    this.gameService.PlayerReady(client, intra_nick)
   }
   @SubscribeMessage('keydown')
   handlePlayerKeyDown(client: Socket, key: string)

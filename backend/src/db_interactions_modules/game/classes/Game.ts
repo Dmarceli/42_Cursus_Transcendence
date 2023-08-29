@@ -5,6 +5,7 @@ import { GameHistoryService } from 'src/db_interactions_modules/game_history/gam
 import { User } from 'src/db_interactions_modules/users/user.entity'
 import { Repository } from 'typeorm'
 import { State } from './game-state-enum'
+import { Socket } from 'socket.io';
 
 const board_dims = {
   width: 1400,
@@ -41,7 +42,7 @@ export class Game {
 
   gameHistoryService: GameHistoryService
   userRepository: Repository<User>
-  constructor(player1:PlayerPaddle, player2: PlayerPaddle, gameHistoryService: GameHistoryService, userRepository: Repository<User>) {
+  constructor(player1: PlayerPaddle, player2: PlayerPaddle, gameHistoryService: GameHistoryService, userRepository: Repository<User>) {
     this.timeStart = null
     this.starting = false
     this.startCounter = 3
@@ -62,8 +63,12 @@ export class Game {
         clearInterval(interval);
         this.timeStart = new Date()
         this.starting = false
+        console.log("GOT HERE")
+        this.SetPlayerStateEmit(player_states, this.playerPaddle1.client, this.playerPaddle1.user.intra_nick, State.PLAYING)
+        this.SetPlayerStateEmit(player_states, this.playerPaddle2.client, this.playerPaddle2.user.intra_nick, State.PLAYING)
         player_states.set(this.playerPaddle1.user.intra_nick, State.PLAYING)
         player_states.set(this.playerPaddle2.user.intra_nick, State.PLAYING)
+        return
       }
       if (player_states.has(this.playerPaddle1.user.intra_nick) && player_states.get(this.playerPaddle1.user.intra_nick) != State.STARTING)
         player_states.set(this.playerPaddle1.user.intra_nick, State.STARTING)
@@ -152,10 +157,14 @@ export class Game {
   }
   async checkStatus(player_states) {
     if (this.isGameFinished()) {
+      if (player_states.has(this.playerPaddle1.user.intra_nick)) {
+        player_states.delete(this.playerPaddle1.user.intra_nick)
+      }
+      if (player_states.has(this.playerPaddle2.user.intra_nick)) {
+        player_states.delete(this.playerPaddle2.user.intra_nick)
+      }
       await this.handleFinishGame()
       this.isFinished = true
-      player_states.delete(this.playerPaddle1.user.intra_nick)
-      player_states.delete(this.playerPaddle2.user.intra_nick)
     }
     this.handleGameContinue()
   }
@@ -196,7 +205,7 @@ export class Game {
   async calculateXP(winner: User, loser: User, loserScore: number) {
     let loserPoints = loser.xp_total
     let gameSeconds = this.getSeconds()
-    return Math.round(gameSeconds + loserPoints*0.01*(5-loserScore))
+    return Math.round(gameSeconds + loserPoints * 0.01 * (5 - loserScore))
   }
   getSeconds(): number {
     const currentTime = new Date();
@@ -213,5 +222,19 @@ export class Game {
     winnerUser.won_games++
     winnerUser.xp_total += await this.calculateXP(winnerUser, loserUser, loserScore)
     return await this.userRepository.save(winnerUser);
+  }
+  // TODO: extract these 2 methods into module
+  EmitUpdatedState(player_states, client: Socket, nick: string) {
+    console.log(player_states)
+    if (!player_states.has(nick)) {
+      client.emit("UpdatedState", 0)
+      return
+    }
+    client.emit("UpdatedState", player_states.get(nick))
+  }
+
+  SetPlayerStateEmit(player_states, client: Socket, nick: string, state: State) {
+    player_states.set(nick, state)
+    this.EmitUpdatedState(player_states, client, nick)
   }
 };

@@ -28,7 +28,6 @@ import { onBeforeMount } from 'vue';
 import type { Socket } from 'socket.io-client';
 import { StateMessage, type State } from '@/helpers/state';
 
-let startmenu = ref(true)
 let playerWon = ref(false)
 let playerLost = ref(false)
 let token: string | null = null;
@@ -67,9 +66,9 @@ onMounted(() => {
 
 function ResetView()
 {
-  startmenu.value=true
   playerWon.value=false
   playerLost.value=false
+  gameState.value = 0
 }
 
 function getCookieValueByName(name: any) {
