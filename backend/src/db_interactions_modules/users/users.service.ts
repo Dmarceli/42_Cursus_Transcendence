@@ -223,7 +223,6 @@ export class UsersService {
         console.log("Deleting PREVIOUS AVATAR "+prevAvatarPath)
         unlinkSync(prevAvatarPath);
       }
-    }
       let extension = "."+file.originalname.split(".").pop()
       let newPathName = file.path+extension;
       if (existsSync(file.path)) {
