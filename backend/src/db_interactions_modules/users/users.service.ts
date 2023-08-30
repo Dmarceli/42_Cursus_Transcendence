@@ -56,7 +56,7 @@ export class UsersService {
    	 else {
       let fileName = './uploads/' + resp.avatar.split('/').pop();
 			if (!resp.avatar || !existsSync(fileName)) {
-				resp.avatar = 'http://localhost:3000/users/avatar/default.jpg';
+				resp.avatar = process.env.BACKEND_URL + '/users/avatar/default.jpg';
         await this.userRepository.save(resp);
 			}
    	   return res.status(200).json(resp);
