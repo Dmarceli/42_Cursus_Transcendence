@@ -63,17 +63,14 @@ export class Game {
         clearInterval(interval);
         this.timeStart = new Date()
         this.starting = false
-        console.log("GOT HERE")
         this.SetPlayerStateEmit(player_states, this.playerPaddle1.client, this.playerPaddle1.user.intra_nick, State.PLAYING)
         this.SetPlayerStateEmit(player_states, this.playerPaddle2.client, this.playerPaddle2.user.intra_nick, State.PLAYING)
-        player_states.set(this.playerPaddle1.user.intra_nick, State.PLAYING)
-        player_states.set(this.playerPaddle2.user.intra_nick, State.PLAYING)
         return
       }
       if (player_states.has(this.playerPaddle1.user.intra_nick) && player_states.get(this.playerPaddle1.user.intra_nick) != State.STARTING)
-        player_states.set(this.playerPaddle1.user.intra_nick, State.STARTING)
+        this.SetPlayerStateEmit(player_states, this.playerPaddle1.client, this.playerPaddle1.user.intra_nick, State.STARTING)
       if (player_states.has(this.playerPaddle2.user.intra_nick) && player_states.get(this.playerPaddle2.user.intra_nick) != State.STARTING)
-        player_states.set(this.playerPaddle2.user.intra_nick, State.STARTING)
+        this.SetPlayerStateEmit(player_states,this.playerPaddle2.client, this.playerPaddle2.user.intra_nick, State.STARTING)
       this.playerPaddle1.client.emit("Starting", this.startCounter)
       this.playerPaddle2.client.emit("Starting", this.startCounter)
       this.startCounter--;

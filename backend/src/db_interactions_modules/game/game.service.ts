@@ -182,11 +182,11 @@ export class GameService {
       this.active_games[player1ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
       this.active_games[player1ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
       if (this.player_states.get(this.active_games[player1ActiveGameIndex].playerPaddle2.user.intra_nick) == State.DISCONNECTED) {
-        this.player_states.set(this.active_games[player1ActiveGameIndex].playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
+        this.SetPlayerStateEmit(this.active_games[player1ActiveGameIndex].playerPaddle1.client, this.active_games[player1ActiveGameIndex].playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
       }
       else {
-        this.player_states.set(this.active_games[player1ActiveGameIndex].playerPaddle1.user.intra_nick, State.PLAYING)
-        this.player_states.set(this.active_games[player1ActiveGameIndex].playerPaddle2.user.intra_nick, State.PLAYING)
+        this.SetPlayerStateEmit(this.active_games[player1ActiveGameIndex].playerPaddle1.client, this.active_games[player1ActiveGameIndex].playerPaddle1.user.intra_nick, State.PLAYING)
+        this.SetPlayerStateEmit(this.active_games[player1ActiveGameIndex].playerPaddle2.client, this.active_games[player1ActiveGameIndex].playerPaddle2.user.intra_nick, State.PLAYING)
       }
       return true
     }
@@ -198,11 +198,11 @@ export class GameService {
       this.active_games[player2ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
       this.active_games[player2ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
       if (this.player_states.get(this.active_games[player2ActiveGameIndex].playerPaddle1.user.intra_nick) == State.DISCONNECTED) {
-        this.player_states.set(this.active_games[player2ActiveGameIndex].playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
+        this.SetPlayerStateEmit(this.active_games[player2ActiveGameIndex].playerPaddle2.client, this.active_games[player2ActiveGameIndex].playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
       }
       else {
-        this.player_states.set(this.active_games[player2ActiveGameIndex].playerPaddle1.user.intra_nick, State.PLAYING)
-        this.player_states.set(this.active_games[player2ActiveGameIndex].playerPaddle2.user.intra_nick, State.PLAYING)
+        this.SetPlayerStateEmit(this.active_games[player2ActiveGameIndex].playerPaddle1.client, this.active_games[player2ActiveGameIndex].playerPaddle1.user.intra_nick, State.PLAYING)
+        this.SetPlayerStateEmit(this.active_games[player2ActiveGameIndex].playerPaddle2.client, this.active_games[player2ActiveGameIndex].playerPaddle2.user.intra_nick, State.PLAYING)
       }
       return true
     }
@@ -235,19 +235,22 @@ export class GameService {
         game.playerPaddle2.ready = true
         if (game.playerPaddle1.ready) {
           if (game.timeStart) {
-            console.log("LETS PLAY 1")
+            console.log("LETS PLAY 2")
             this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.PLAYING)
             this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.PLAYING)
           } else {
+            console.log("LETS START 2")
             this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.STARTING)
             this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.STARTING)
           }
         }
         else {
+          console.log("WAITING 2")
           this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.WAITING_OTHER_READY)
         }
       }
     }
+    console.log(this.active_games.length)
   }
 
   HandlePlayerDisconnected(client: Socket) {
@@ -307,7 +310,7 @@ export class GameService {
 
   UpdateAllPositions() {
     setInterval(() => {
-      this.addPrivateGames();
+      this.addPrivateGames(this.player_states);
       this.addLobbyGames();
       this.removeFinishedGames();
       for (let game of this.active_games) {
@@ -329,17 +332,18 @@ export class GameService {
     )
   }
 
-  PrivateGameStillNotAdded(private_game: PrivateGame) {
-    if (!this.privateGamePlayers)
+  PrivateGameStillNotAdded(private_game: PrivateGame, player_states) {
+    if (!this.privateGamePlayers){
       return true;
+    }
     const indexPlayer1 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player1);
     const indexPlayer2 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player2);
     if (indexPlayer1 !== -1 && indexPlayer2 !== -1) {
       console.log("ADDING PRIVATE GAME for player " + private_game.player1 + " and " + private_game.player2)
       let game = new Game(this.privateGamePlayers[indexPlayer1], this.privateGamePlayers[indexPlayer2], this.gameHistoryService, this.userRepository)
       this.active_games.push(game)
-      this.player_states.set(this.privateGamePlayers[indexPlayer1].user.intra_nick, State.NOT_READY)
-      this.player_states.set(this.privateGamePlayers[indexPlayer2].user.intra_nick, State.NOT_READY)
+      this.SetPlayerStateEmit(this.privateGamePlayers[indexPlayer1].client, this.privateGamePlayers[indexPlayer1].user.intra_nick, State.NOT_READY)
+      this.SetPlayerStateEmit(this.privateGamePlayers[indexPlayer2].client, this.privateGamePlayers[indexPlayer2].user.intra_nick, State.NOT_READY)
       AppService.UsersOnline.forEach((user) => {
         user.client.emit("online-status-update");
       })
@@ -356,8 +360,8 @@ export class GameService {
     return true;
   }
 
-  addPrivateGames() {
-    let updated_private_games = this.private_games.filter(this.PrivateGameStillNotAdded.bind(this))
+  addPrivateGames(player_states) {
+    let updated_private_games = this.private_games.filter(this.PrivateGameStillNotAdded.bind(this), player_states)
     this.private_games = updated_private_games
   }
 

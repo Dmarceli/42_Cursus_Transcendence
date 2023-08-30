@@ -1228,7 +1228,8 @@ const inviteToPrivateGame = async () => {
           const data = await response.json();
         } else {
           if (response.status == 303) {
-            window.alert('You already already invited this user to a private game!')
+            const data = await response.json();
+            window.alert(data.message)
           }
           else
             console.log('Error:', response.status);
