@@ -1,4 +1,4 @@
-import { Controller,Param, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Param, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AuthService } from './auth.service';
 import { FortyTwoAuthGuard } from './42/auth.guard';
@@ -44,7 +44,7 @@ export class AuthController {
     else {
       res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
-      res.setHeader('Location', process.env.BACKEND_URL) 
+      res.setHeader('Location', process.env.BACKEND_URL)
     }
     res.redirect(process.env.FRONTEND_URL)
   }
@@ -74,7 +74,7 @@ export class AuthController {
       res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
-      
+
     }
     res.redirect(process.env.FRONTEND_URL)
   }
@@ -82,9 +82,7 @@ export class AuthController {
   @Post('/check2fa')
   async check2FAcode(@Req() req: any, @Res() res: any) {
     const user_ = await this.userService.findByLogin(req.body.id.login)
-    console.log(req.body.id.login)
-    let  verified = await this.TwoFactorAuthService.verifyTwoFaCode(req.body.code, user_)
-
+    let verified = await this.TwoFactorAuthService.verifyTwoFaCode(req.body.code, user_)
     if (verified && user_) {
       const payload = await this.authService.login(user_)
       res.cookie('token', payload.access_token)
@@ -96,7 +94,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/gen2fa')
-  async gen2FAcode(@Res() res: any, @getUserIDFromToken() user:User) {
+  async gen2FAcode(@Res() res: any, @getUserIDFromToken() user: User) {
     const user_ = await this.userService.findByLogin(user['login'])
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
     const qrCode = require('qrcode')
@@ -110,9 +108,25 @@ export class AuthController {
     } catch (error) {
       res.status(500).send('Error generating QR code');
     }
-
   }
-  
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/updateToken')
+  async updateToken(@Res() res: any, @getUserIDFromToken() user: User) {
+    try {
+      const user_ = await this.userService.findById(user['id']);
+      if (!user_) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      res.cookie('token', '', { expires: new Date(0), secure: true, sameSite: 'None', domain: 'localhost' });
+      const newToken = await this.authService.login(user_);
+      res.cookie('token', newToken.access_token, { secure: true, sameSite: 'None', domain: 'localhost' });
+      return res.status(200).json({ message: 'Token updated successfully', newToken: newToken.access_token });
+    } catch (error) {
+      return res.status(500).json({ message: 'An error occurred', error: error.message });
+    }
+  }
 
   // TEMPORARY
   @Get('/tempbypass/:id')
