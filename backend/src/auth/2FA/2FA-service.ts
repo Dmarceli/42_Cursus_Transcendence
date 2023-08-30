@@ -25,12 +25,25 @@ export class TwoFactorAuthService {
         const app_name = 'Raquetas';
         const otpAuthUrl = authenticator.keyuri(user.intra_nick, app_name, secret);
 
-        await this.userRepository.update({ intra_nick: user.intra_nick }, { TwoFASecret: secret, TwoFAEnabled: true });
+        const Cryptr = require('cryptr');
+        const cryptr = new Cryptr(`${process.env.JWT_SECRET_KEY}`);
+        const encryptedString = cryptr.encrypt(secret);
+        //const decryptedString = cryptr.decrypt(encryptedString);
+        //console.log("encripted",encryptedString)
+        //console.log("decrypted",decryptedString)
+        await this.userRepository.update({ intra_nick: user.intra_nick }, { TwoFASecret: encryptedString, TwoFAEnabled: true });
         return {
             secret,
             otpAuthUrl
         }
     }
+
+    public async remove2fa(user: User) {
+      const auth = await this.userService.findByLogin(user.intra_nick);
+      await this.userRepository.update({ intra_nick: user.intra_nick }, { TwoFASecret: null, TwoFAEnabled: false });
+      return 
+  }
+    
 
     public async GenerateqrCode(otpUrl: string) {
         return toDataURL(HTMLCanvasElement, otpUrl)
@@ -44,9 +57,12 @@ export class TwoFactorAuthService {
 
     public async verifyTwoFaCode(code: string, user: User) {
         if(user){
+        const Cryptr = require('cryptr');
+        const cryptr = new Cryptr(`${process.env.JWT_SECRET_KEY}`);
+        const decryptedString = cryptr.decrypt(user.TwoFASecret);
         return authenticator.verify({
             token: code,
-            secret: user.TwoFASecret
+            secret: decryptedString
         });
         }
         else{

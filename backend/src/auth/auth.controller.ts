@@ -113,6 +113,15 @@ export class AuthController {
 
 
   @UseGuards(JwtAuthGuard)
+  @Get('/remove2fa')
+  async remove2facode(@Res() res: any, @getUserIDFromToken() user: User) {
+    console.log(user)
+    const user_ = await this.userService.findByLogin(user['user']['intra_nick'])
+    await this.TwoFactorAuthService.remove2fa(user_)
+  }
+
+
+  @UseGuards(JwtAuthGuard)
   @Get('/updateToken')
   async updateToken(@Res() res: any, @getUserIDFromToken() user: User) {
     try {

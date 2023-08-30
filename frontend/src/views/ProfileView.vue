@@ -445,8 +445,25 @@ const twofahandling = async () => {
   console.log(twofaSwitch.value, userProfile)
   if(twofaSwitch.value == 'false'){
     qrcode_twofa.value=''
+    try {
+      const url = `${process.env.VUE_APP_BACKEND_URL}/auth/remove2fa`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+      if (response.ok) {
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
     return
   }
+  else{
     try {
       const url = `${process.env.VUE_APP_BACKEND_URL}/auth/gen2fa`;
       const response = await fetch(url, {
@@ -468,7 +485,7 @@ const twofahandling = async () => {
     } catch (error) {
       console.log('Error:', error);
     }
-  
+  }
 };
 
 
