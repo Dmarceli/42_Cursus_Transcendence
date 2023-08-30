@@ -37,14 +37,14 @@
       <div v-if="side_info === 1">
         <div class="list-header">FRIENDS</div>
         <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.intra_nick)" class="tooltip">
-          <div class="user">
-            <span class="tooltiptext">
+          <div class="user-friend">
+            <v-tooltip activator="parent" location="end" class="user-friend-tooltip">
               <img :src="user_friend.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
               Nickname: {{ user_friend.nick }}<br>
               Intra Nick: {{ user_friend.intra_nick }}<br>
               Games Won: {{ user_friend.won_games }}<br>
               Games Lost: {{ user_friend.lost_games }}<br>
-            </span>
+            </v-tooltip>
             <v-avatar class="avatar-circle" :style="{ '--online-status': onlineStatus(user_friend.id) }">
               <img :src="user_friend.avatar" alt="Avatar" class="avatar-circle" />
             </v-avatar>
@@ -271,7 +271,6 @@
             </v-card>
           </v-dialog>
         </div>
-
         <button class="leave-button" @click="leaveChannel(selected_channel)"></button>
       </div>
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">

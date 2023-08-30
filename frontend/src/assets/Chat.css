@@ -290,9 +290,24 @@
   padding: 10px;
   border-bottom: 1px solid #ccc;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 
 .user:hover {
+  background-color: #888;
+}
+
+.user-friend {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.user-friend:hover {
   background-color: #888;
 }
 
@@ -783,6 +798,8 @@
 }
 
 .tooltip-user-avatar{
-  border-radius: 50%;
   height: 150px;
+  width: 150px;
+  object-fit: cover;
+  border-radius: 50%; 
 }
