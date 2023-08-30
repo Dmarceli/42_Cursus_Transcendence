@@ -30,7 +30,7 @@ export class AuthController {
 
   @UseGuards(FortyTwoAuthGuard)
   @Get('/callback_intra')
-  async callbackIntra(@Req() req: any, @Res() res: any) {
+  async callbackIntra(@Req() req: { user: User }, @Res() res: any) {
     const payload = await this.authService.login(req.user);
     if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
@@ -59,8 +59,8 @@ export class AuthController {
 
   @Get('/callback_google')
   @UseGuards(GoogleAuthGuard)
-  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
-    const payload = this.authService.googleLogin(req)
+  async googleAuthRedirect(@Req() req: { user: User }, @Res() res: any) {
+    const payload = this.authService.googleLogin(req.user)
     if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
         login: payload.user.intra_nick,
@@ -150,18 +150,5 @@ export class AuthController {
       res.status(401).json({ message: 'Invalid verification code' });
     }
   }
-  // @UseGuards(JwtAuthGuard)
-  // @Post('logout')
-  // async logout(@Req() req: any, @Res() res: any) {
-  //   console.log('\nlogout');
-  //   const userName = req.user.username;
 
-  //   return req.logOut(() => {
-  //     res.json({
-  //       user: userName,
-  //       message: 'User has been logged out!',
-  //     });
-  //   });
-
-  // }
 }
