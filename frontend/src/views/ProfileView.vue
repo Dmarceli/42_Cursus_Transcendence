@@ -6,6 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import jwt_decode from 'jwt-decode';
 import router from '@/router';
+import ErrorPage from "../components/ErrorPage.vue"
 
 const userTokenData = ref({
 	id: 0,
@@ -59,6 +60,7 @@ const isUserFriend = ref(false)
 const showAlert = ref(false);
 let twofaSwitch = ref('false');
 let qrcode_twofa= ref('')
+let profileFound = ref(true)
 
 const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
 
@@ -105,7 +107,7 @@ const fetchUserProfile = async () => {
       userProfile.value = data;
       twofaSwitch.value=userProfile.value.TwoFAEnabled.toString()
     } else {
-      router.replace("/")
+      profileFound.value=false
     }
   } catch (error) {
     router.replace("/")
@@ -492,7 +494,10 @@ const twofahandling = async () => {
 </script>
 
 <template>
-	<div class="profile">
+ <div v-if="!profileFound">
+  <ErrorPage></ErrorPage>
+</div>
+	<div v-else class="profile">
     <transition name="fade" mode="out-in">
     <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert" color="success"
       icon="$success" title="Success!" text="Friendship request sent successfully!" dismissible></v-alert>
