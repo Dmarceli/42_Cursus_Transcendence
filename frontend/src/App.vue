@@ -120,7 +120,7 @@ async function verifyCode(token: string, code: any) {
     const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/check2fa", {
       method: 'POST',
       body: JSON.stringify({
-        'id': payload,
+        'id': payload.login,
         'code': code
       }),
       headers: {

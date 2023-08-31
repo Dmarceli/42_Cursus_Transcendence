@@ -1,4 +1,4 @@
-import { Controller, Param, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Param, Get, Post, Query, Req, Res, UseGuards, Body } from '@nestjs/common';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AuthService } from './auth.service';
 import { FortyTwoAuthGuard } from './42/auth.guard';
@@ -10,6 +10,9 @@ import { JwtService } from '@nestjs/jwt';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { GoogleAuthGuard } from './google/auth_google.guard';
+import { TwoFACodeCheck } from './2FA/2FA-CodeCheck-Dto';
+
+
 @Controller('/auth')
 export class AuthController {
   constructor(
@@ -80,9 +83,12 @@ export class AuthController {
   }
 
   @Post('/check2fa')
-  async check2FAcode(@Req() req: any, @Res() res: any) {
-    const user_ = await this.userService.findByLogin(req.body.id.login)
-    let verified = await this.TwoFactorAuthService.verifyTwoFaCode(req.body.code, user_)
+  async check2FAcode(@Body() body: TwoFACodeCheck, @Res() res: any) {
+    console.log(body)
+    console.log("LOGIN: ",body.id)
+    console.log("code: " , body.code)
+    const user_ = await this.userService.findByLogin(body.id)
+    let verified = await this.TwoFactorAuthService.verifyTwoFaCode(body.code, user_)
     if (verified && user_) {
       const payload = await this.authService.login(user_)
       res.cookie('token', payload.access_token)
