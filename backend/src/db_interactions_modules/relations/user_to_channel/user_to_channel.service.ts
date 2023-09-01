@@ -251,12 +251,20 @@ export class UserToChannelService {
     const channel= await this.ChannelRepository.findOne({
       where: {type : 0,channel_name : user_lower_id.id.toString() + "-" + user_higher_id.id.toString()}
     })
+    let created_channel : Channel=channel;
+    if(!channel){
+    created_channel = await this.ChannelRepository.save({type: 0, channel_name: user_lower_id.id.toString() + "-" + user_higher_id.id.toString()})
+    }
+    await this.joinchannel(created_channel,caller_user,null);
+    await this.joinchannel(created_channel,user_to_chat,null);
+    await this.notifyRoom(created_channel.id);
+
+    //const joinchannels = await this.UserToChannelRepository.save({is_owner: false, is_admin: false, is_banned: false, is_muted:false, user_id: user_lower_id, channel_id: created_channel});
+    //const joinchannels2 = await this.UserToChannelRepository.save({is_owner: false, is_admin: false, is_banned: false, is_muted:false, user_id: user_higher_id, channel_id: created_channel});
     if(channel)
       return channel;
-    const created_channel = await this.ChannelRepository.save({type: 0, channel_name: user_lower_id.id.toString() + "-" + user_higher_id.id.toString()})
-    const joinchannels = await this.UserToChannelRepository.save({is_owner: false, is_admin: false, is_banned: false, is_muted:false, user_id: user_lower_id, channel_id: created_channel});
-    const joinchannels2 = await this.UserToChannelRepository.save({is_owner: false, is_admin: false, is_banned: false, is_muted:false, user_id: user_higher_id, channel_id: created_channel});
-    return created_channel;
+    else 
+      return created_channel
   }
 
   async notifyRoom(ch_id: number){
