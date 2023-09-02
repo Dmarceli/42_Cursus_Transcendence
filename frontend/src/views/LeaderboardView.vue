@@ -80,29 +80,28 @@ const goToProfile = (intraNick: string) =>
 		      </tr>
 		    </thead>
 		    <tbody>
-          <tr v-for="(player, index) in top10" :key="player.id" @click="openPlayerProfile(player)">
+          <tr v-for="(player, index) in top10" :key="player.id" @click="goToProfile(player.name)">
             <td class="player-name">
               <span v-if="index === 0">🥇</span>
               <span v-else-if="index === 1">🥈</span>
               <span v-else-if="index === 2">🥉</span>
               <span v-else>{{ index + 1 }}</span>
             </td>
-            <td class="player-name" @click="openPlayerProfile(player)">{{ player.name }}</td>
+            <td class="player-name" @click="goToProfile(player.name)">{{ player.name }}</td>
             <td>{{ player.score }}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div v-if="selectedPlayer" class="modal">
+    <!-- <div v-if="selectedPlayer" class="modal">
       <div class="modal-content">
         <h2>{{ selectedPlayer.name }}</h2>
         <p>Score: {{ selectedPlayer.score }}</p>
-        <!-- Add more profile information here -->
 				<v-btn @click="goToProfile(selectedPlayer.name)" class="viewProfile">View Profile</v-btn>
 				<v-icon icon="mdi-close" @click="closeModal" class="closeModal"></v-icon>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
   
