@@ -13,9 +13,14 @@ let ok = 4;
 
 <style scoped>
 .container {
-  margin-top: 6%;
+  display: flex;
+  margin-top: 3%;
   background-color: var(--color-background-mute);
   overflow: hidden;
+  width: 95%;
+  height: 80%;
+  justify-items: left;
+  align-items: left;
 }
 
 .over-arm-text {
@@ -24,23 +29,35 @@ let ok = 4;
   font-family: 'Gotham Black', sans-serif;
   font-weight: 700;
   margin-left: 15vw;
-  top: 20vw;
+  top: 25%;
   z-index: 2;
   color: rgb(171, 37, 53);
 }
 
 img.arm {
-  width: 80vw;
+  width: 100%;
   padding: 2% 3% 0% 0%;
   animation: slide-in 1s ease-in-out forwards;
+  padding-right: 30%;
 }
+
 
 @media (max-width: 1025px) {
   .over-arm-text {
-    font-size: 80px;
-    top: 12%
+    font-size: 10vw;
+    top: 20vh;
+    left: 5%
   }
 }
+
+@media (max-width: 767px) {
+  .over-arm-text {
+    font-size: 50px;
+    top: 15%;
+    left: 5%
+  }
+}
+
 
 @keyframes slide-in {
   0% {
