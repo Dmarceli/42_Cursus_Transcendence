@@ -150,6 +150,7 @@ async function verifyCode(token: string, code: any) {
       if (new_code) {
         console.log('Verification successful', new_code);
         document.cookie = `token=${new_code.code}`
+        window.location.reload()
         first_login_modal.value = await fetch_logged_previous()
         islogged.value = true;
       } else {
@@ -168,8 +169,6 @@ async function verifyCode(token: string, code: any) {
 	};
     }
   }
-
-
 )();
 
 
@@ -336,7 +335,6 @@ if (socket)  {
 }
 
 onBeforeMount(() => {
- 
   let token = getCookieValueByName('token');
   if(token)
     fetchNotifications();
