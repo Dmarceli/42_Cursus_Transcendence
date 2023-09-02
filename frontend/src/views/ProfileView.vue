@@ -6,7 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import jwt_decode from 'jwt-decode';
 import router from '@/router';
-import ErrorPage from "../components/ErrorPage.vue"
+import NotFound from "../components/NotFound.vue";
 
 const userTokenData = ref({
 	id: 0,
@@ -235,10 +235,13 @@ const fetchLeaderboard = async () => {
 
 onBeforeMount(async () => {
 	await fetchUserProfile();
-  await fetchBlockStatus();
-  await fetchFriends();
-  await fetchLeaderboard();
-	await fetchLastFiveGames();
+  if (profileFound.value)
+  {
+    await fetchBlockStatus();
+    await fetchFriends();
+    await fetchLeaderboard();
+    await fetchLastFiveGames();
+  }
 });
 
 function openSettings() {
@@ -495,7 +498,7 @@ const twofahandling = async () => {
 
 <template>
  <div v-if="!profileFound">
-  <ErrorPage></ErrorPage>
+  <NotFound></NotFound>
 </div>
 	<div v-else class="profile">
     <transition name="fade" mode="out-in">
