@@ -161,7 +161,11 @@ const fetchFriends = async () => {
 const fetchLeaderboard = async () => {
     try {
       let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       let rank = data.findIndex((user: any) => user.id == userProfile.value.id)
       if (rank == -1) {
