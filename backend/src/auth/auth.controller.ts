@@ -42,12 +42,14 @@ export class AuthController {
         TwoFAEnabled: true
       };
       let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
-      res.cookie('token', "2FA" + access_token2FA)
+      res.cookie('token', "2FA" + access_token2FA, { secure: true, sameSite: 'None', domain: '.raquetas.pt' })
+      res.setHeader('Access-Control-Allow-Origin', ".raquetas.pt")
+      res.setHeader('Location',".raquetas.pt" )
     }
     else {
-      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
-      res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
-      res.setHeader('Location', process.env.BACKEND_URL)
+      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: '.raquetas.pt' })
+      res.setHeader('Access-Control-Allow-Origin',".raquetas.pt")
+      res.setHeader('Location',".raquetas.pt" )
     }
     res.redirect(process.env.FRONTEND_URL)
   }
@@ -71,12 +73,14 @@ export class AuthController {
         TwoFAEnabled: true
       };
       let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
-      res.cookie('token', "2FA" + access_token2FA)
+      res.cookie('token', "2FA" + access_token2FA,  { secure: true, sameSite: 'None', domain: '.raquetas.pt' })
+      res.setHeader('Access-Control-Allow-Origin', ".raquetas.pt")
+      res.setHeader('Location',".raquetas.pt" )
     }
     else {
-      res.cookie('token', payload.access_token, { secure: true, SameSite: 'None', domain: 'localhost' })
-      res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
-      res.setHeader('Location', process.env.BACKEND_URL)
+      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: '.raquetas.pt' })
+      res.setHeader('Access-Control-Allow-Origin',".raquetas.pt" )
+      res.setHeader('Location',".raquetas.pt" )
 
     }
     res.redirect(process.env.FRONTEND_URL)
@@ -88,7 +92,10 @@ export class AuthController {
     let verified = await this.TwoFactorAuthService.verifyTwoFaCode(body.code, user_)
     if (verified && user_) {
       const payload = await this.authService.login(user_)
-      res.cookie('token', payload.access_token)
+      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: '.raquetas.pt'})
+      //res.setHeader('Access-Control-Allow-Origin',"https://raquetas.pt" )
+      res.setHeader('Location',"https://backend.raquetas.pt" )
+      //res.redirect(process.env.FRONTEND_URL)
       res.status(200).json({ message: 'Verification successful', code: payload.access_token });
     } else {
       res.status(401).json({ message: 'Invalid verification code' });
@@ -130,9 +137,11 @@ export class AuthController {
       if (!user_) {
         return res.status(404).json({ message: 'User not found' });
       }
-      res.cookie('token', '', { expires: new Date(0), secure: true, sameSite: 'None', domain: 'localhost' });
+      res.cookie('token', '', { expires: new Date(0), secure: true, sameSite: 'None', domain: '.raquetas.pt' });
       const newToken = await this.authService.login(user_);
-      res.cookie('token', newToken.access_token, { secure: true, sameSite: 'None', domain: 'localhost' });
+      res.cookie('token', newToken.access_token, { secure: true, sameSite: 'None', domain: '.raquetas.pt' });
+      //res.setHeader('Access-Control-Allow-Origin',".raquetas.pt" )
+      //res.setHeader('Location',".raquetas.pt" )
       return res.status(200).json({ message: 'Token updated successfully', newToken: newToken.access_token });
     } catch (error) {
       return res.status(500).json({ message: 'An error occurred', error: error.message });
@@ -140,7 +149,7 @@ export class AuthController {
   }
 
   // TEMPORARY
-  @Get('/tempbypass/:id')
+  /*@Get('/tempbypass/:id')
   async tempsecbypass(@Req() req: any, @Res() res: any, @Param('id') id1: number) {
     const user_ = await this.userService.findById(id1)
     if (user_) {
@@ -151,5 +160,5 @@ export class AuthController {
       res.status(401).json({ message: 'Invalid verification code' });
     }
   }
-
+*/
 }

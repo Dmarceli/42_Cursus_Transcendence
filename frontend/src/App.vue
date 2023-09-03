@@ -63,7 +63,7 @@ const first_login_modal = ref(false);
 const islogged = ref(false);
 const isGameRoute = computed(() => router.currentRoute.value.path === '/')
 let routerKey = ref(0)
-
+provide('socket', undefined)
 async function decideNotification(NotificationID: number, Decision: boolean) {
   let token = getCookieValueByName('token');
   try {
@@ -86,9 +86,16 @@ async function decideNotification(NotificationID: number, Decision: boolean) {
 }
 
 function logout() {
-  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; Path=/; Domain=raquetas.pt; Secure=false; SameSite=None';
+	document.cookie = 'token= ; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=.raquetas.pt;';
+document.cookie = 'token=""; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=.raquetas.pt';
+document.cookie = 'token=""; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=.raquetas.pt';
+document.cookie = 'token=""; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=';
+document.cookie = 'token=""; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=';
+document.cookie = ''
+ 
   islogged.value = false;
-  window.location.href = '/login';
+  //window.location.href = '/login';
 }
 
 let socket: Socket | null = null;
@@ -144,14 +151,24 @@ async function verifyCode(token: string, code: any) {
 
 (async () => {
   let token = getCookieValueByName('token');
+
   if (token) {
+
     if (token.substring(0, 3) === "2FA") {
       const user_input = prompt("Enter the code");
-      const new_code = await verifyCode(token, user_input);
+      
+const new_code = await verifyCode(token, user_input);
       if (new_code) {
+document.cookie = 'token=""; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=.raquetas.pt';
+document.cookie = 'token=""; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=.raquetas.pt';
+document.cookie = 'token=""; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=';
+document.cookie = 'token=""; expires="Thu, 01 Jan 1970 00:00:00 UTC"; Path=/; Domain=';
+document.cookie = ''
+ 
         document.cookie = `token=${new_code.code}`
-        window.location.reload()
-        islogged.value = true;
+islogged.value=true
+ 	 window.location.reload()
+	
       } else {
         console.log('Invalid code');
       }
