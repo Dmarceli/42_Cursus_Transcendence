@@ -675,7 +675,6 @@ const joinChannel = async (channel, ownerPWD) => {
       });
     if (response.ok) {
       await getChannelsJoined();
-      console.log("VIMS")
     } else {
       console.log('Error:', response.status);
     }
