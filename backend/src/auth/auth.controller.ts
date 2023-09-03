@@ -74,7 +74,7 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
-      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
+      res.cookie('token', payload.access_token, { secure: true, SameSite: 'None', domain: 'localhost' })
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
 

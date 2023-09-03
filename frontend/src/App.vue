@@ -149,10 +149,8 @@ async function verifyCode(token: string, code: any) {
       const user_input = prompt("Enter the code");
       const new_code = await verifyCode(token, user_input);
       if (new_code) {
-        console.log('Verification successful', new_code);
         document.cookie = `token=${new_code.code}`
         window.location.reload()
-        first_login_modal.value = await fetch_logged_previous()
         islogged.value = true;
       } else {
         console.log('Invalid code');
@@ -338,7 +336,7 @@ if (socket && islogged.value == true) {
 
 onBeforeMount(() => {
   let token = getCookieValueByName('token');
-  if (token)
+  if (token && token.substring(0, 3) != "2FA")
     fetchNotifications();
 });
 </script>
