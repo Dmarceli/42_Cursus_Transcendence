@@ -1,50 +1,44 @@
 <template>
-  <div class="states" v-if="NotchoseType && !isPrivateGame">
+  <div class="states" v-if="IsLobbyPlayer()">
     <v-btn @click="onJoinLobby">Join Lobby</v-btn>
   </div>
-  <div class="states" v-else-if="inQueue">
+  <div class="states" v-else-if="IsInQueue()">
     <WaitingLobbyPage></WaitingLobbyPage>
   </div>
-  <div class="states" v-else-if="ImNotReady">
+  <div class="states" v-else-if="IsNotReady()">
     <v-btn @click="SigReady">I'm ready to play</v-btn>
   </div>
-  <div class="states" v-else-if="OtherNotReady">
+  <div class="states" v-else-if="OtherNotReady()">
     <h1>ALL SET! Game is about to start...</h1>
   </div>
-  <div class="states" v-else-if="starting">
+  <div class="states" v-else-if="IsStarting()">
     <h1>Starting game {{ startingCounter }}</h1>
   </div>
   <div class="overlays" v-else>
-    <h1 v-if="userDisconnected">{{ reconnecting }}</h1>
+    <h1 v-if="IsOpponentDisconnected()"> {{ reconnecting }}</h1>
     <canvas v-else ref="gamecanvas"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onMounted, onUnmounted } from 'vue'
+import { ref, inject, onMounted, onUnmounted, watch } from 'vue'
 import { Socket } from 'socket.io-client'
 import WaitingLobbyPage from './WaitingLobbyPage.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
+import { State } from '@/helpers/state';
 
 const socket: Socket | undefined = inject('socket')
 let reconnecting = ref('')
 interface Props {
   intraNick?: string
-  isPrivateGame: boolean
+  gameState: State
 }
 const props = defineProps<Props>()
 const emit = defineEmits(['gameOver', 'PlayerWon', 'PlayerLost'])
 
 // State control variables
-let NotchoseType = ref(true)
-let isPrivateGame = ref(false)
 
-let inQueue = ref(false)
-let ImNotReady = ref(true)
-let OtherNotReady = ref(true)
-let starting = ref(false)
-let startingCounter = ref(0)
-let userDisconnected = ref(false)
+let startingCounter = ref("...")
 
 // Game related variables
 const gamecanvas = ref<HTMLCanvasElement | null>(null)
@@ -60,12 +54,54 @@ const board_dims = {
 let score: Score | null = null
 let disconnectedId: number | null = null
 
+function IsLobbyPlayer()
+{
+  return props.gameState == State.LOBBY_PLAYER
+}
+
+function IsInQueue()
+{
+  return props.gameState == State.IN_LOBBY_QUEUE
+}
+
+function IsNotReady()
+{
+  return props.gameState == State.NOT_READY || props.gameState == State.DISCONNECTED
+}
+
+function OtherNotReady()
+{
+  return props.gameState == State.WAITING_OTHER_READY
+}
+
+function IsStarting()
+{
+  return props.gameState == State.STARTING
+}
+
+function IsOpponentDisconnected()
+{
+  return props.gameState == State.OPPONENT_DISCONNECTED
+}
+
 onMounted(() => {
-  isPrivateGame.value = props.isPrivateGame
   console.log('Mounted Pong')
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
+  if (props.gameState == State.OPPONENT_DISCONNECTED)
+  {
+    let ellipsis = ''
+    disconnectedId = setInterval(() => {
+      reconnecting.value = 'Waiting for other user to reconnect'
+      if (ellipsis.length < 3) {
+        ellipsis += '.'
+      } else {
+        ellipsis = ''
+      }
+      reconnecting.value += ellipsis
+    }, 800)
+  }
 })
 
 onUnmounted(() => {
@@ -76,39 +112,24 @@ onUnmounted(() => {
   window.removeEventListener('keyup', onKeyUp)
 })
 
-socket?.on('GetReady', () => {
-  ImNotReady.value = true
-
-  NotchoseType.value = false
-  inQueue.value = false
-  OtherNotReady.value = false
-})
-
-socket?.on('WaitingOtherPlayer', () => {
-  OtherNotReady.value = true
-
-  NotchoseType.value = false
-  inQueue.value = false
-  ImNotReady.value = false
-})
-
-socket?.on('Starting', (counter: number) => {
-  starting.value = true
-  startingCounter.value = counter
-  
-  NotchoseType.value = false
-  inQueue.value = false
-  ImNotReady.value = false
-  OtherNotReady.value = false
-})
+watch(props, (newValue, oldValue) => {
+  console.log("PONG NOTICED CHANGE IN Game state from "+oldValue+" to "+newValue)
+  if (props.gameState == State.OPPONENT_DISCONNECTED)
+  {
+    let ellipsis = ''
+    disconnectedId = setInterval(() => {
+      reconnecting.value = 'Waiting for other user to reconnect'
+      if (ellipsis.length < 3) {
+        ellipsis += '.'
+      } else {
+        ellipsis = ''
+      }
+      reconnecting.value += ellipsis
+    }, 800)
+  }
+});
 
 socket?.on('updateGame', (game) => {
-  NotchoseType.value = false
-  inQueue.value = false
-  ImNotReady.value = false
-  OtherNotReady.value = false
-  starting.value = false
-  userDisconnected.value = false
   if (disconnectedId) {
     clearInterval(disconnectedId)
   }
@@ -135,18 +156,8 @@ socket?.on('PlayerLost', () => {
   emit('PlayerLost')
 })
 
-socket?.on('PlayerDisconnected', () => {
-  userDisconnected.value = true
-  let ellipsis = ''
-  disconnectedId = setInterval(() => {
-    reconnecting.value = 'Waiting for other user to reconnect'
-    if (ellipsis.length < 3) {
-      ellipsis += '.'
-    } else {
-      ellipsis = ''
-    }
-    reconnecting.value += ellipsis
-  }, 800)
+socket?.on('Starting', (counter: number) => {
+  startingCounter.value = counter
 })
 
 function init_values(game: any) {
@@ -254,15 +265,12 @@ function onKeyUp(event: KeyboardEvent) {
 
 function onJoinLobby()
 {
-  NotchoseType.value = false;
-  inQueue.value = true;
   socket?.emit('AddToLobby', props.intraNick)
 }
 
 function SigReady() {
   socket?.emit('PlayerReady', props.intraNick)
 }
-
 
 </script>
 

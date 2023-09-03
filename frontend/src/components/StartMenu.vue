@@ -1,7 +1,7 @@
 <template>
-  <div v-if="isPrivate == false">
+  <div v-if="ShowPlayInstructions()">
     <img src="racketas.svg" alt="" />
-    <v-btn class="play-game" @click="isPrivate = true">Let's Play</v-btn>
+    <v-btn class="play-game" @click="clickedPlay = true">Let's Play</v-btn>
     <v-btn class="play-game" @click="instructions = true">How to Play</v-btn>
     <InstructionsPage :dialog="instructions" @close-window="instructions = false" ></InstructionsPage>
   </div>
@@ -19,32 +19,25 @@ import { ref, inject, watch } from 'vue'
 import { Socket } from 'socket.io-client'
 import PaddleCarousel from './PaddleCarousel.vue'
 import InstructionsPage from './InstructionsPage.vue'
-import { onMounted } from 'vue';
+import { State } from '@/helpers/state';
 
-let isPrivate = ref(false)
 let instructions = ref(false)
+let clickedPlay = ref(false)
 
 interface Props {
   intraNick: string | null
-  isPrivateGame: boolean
+  gameState: State
 }
 const props = defineProps<Props>()
 
 const emits = defineEmits(['PlayerCreated', "closeInstructions"])
 
-let joinLobbyView = ref(false)
-let choosePaddle = ref(true)
-
 const socket: Socket | undefined = inject('socket')
 
-onMounted(() => {
-  isPrivate.value = props.isPrivateGame;
-})
-
-watch(() => props.isPrivateGame, (newValue, oldValue) => {
-      console.log("PRIVATE GAME CHANGED FROM "+oldValue+" to "+newValue);
-      isPrivate.value = props.isPrivateGame;
-    });
+function ShowPlayInstructions()
+{
+  return props.gameState != State.SETTING_PRIVATE_GAME && !clickedPlay.value;
+}
 
 function selectPaddle(paddleSkin: string) {
   console.log(props.intraNick)
