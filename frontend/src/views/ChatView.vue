@@ -1,22 +1,21 @@
 <template>
   <!-- Password hidden to Join Channel -->
   <v-dialog v-model="pass_to_join_ch">
-          <v-card class="password_overlay">
-          <v-card-title>
-           Add Channel Password<br>
-          </v-card-title>
-          <v-card-text>
-            <v-text-field v-model="InputChannelPass" label="New Password" type="password"
-              :rules="[value => !!value || 'This field is required']"></v-text-field>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn @click="pass_to_join_ch = false">Cancel</v-btn>
-            <v-btn @click="pwd_hash_and_join()" color="primary"
-              :disabled="InputChannelPass.length == 0">Join</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-<!-- End of Password hidden to Join Channel -->
+    <v-card class="password_overlay">
+      <v-card-title>
+        Add Channel Password<br>
+      </v-card-title>
+      <v-card-text>
+        <v-text-field v-model="InputChannelPass" label="New Password" type="password"
+          :rules="[value => !!value || 'This field is required']"></v-text-field>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn @click="pass_to_join_ch = false">Cancel</v-btn>
+        <v-btn @click="pwd_hash_and_join()" color="primary" :disabled="InputChannelPass.length == 0">Join</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <!-- End of Password hidden to Join Channel -->
   <transition name="fade" mode="out-in">
     <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert" color="success"
       icon="$success" title="Success!" text="Friendship request sent successfully!" dismissible></v-alert>
@@ -36,15 +35,16 @@
       </div>
       <div v-if="side_info === 1">
         <div class="list-header">FRIENDS</div>
-        <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.intra_nick)" class="tooltip">
-          <div class="user">
-            <span class="tooltiptext">
+        <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.intra_nick)"
+          class="tooltip">
+          <div class="user-friend">
+            <v-tooltip activator="parent" location="end" class="user-friend-tooltip">
               <img :src="user_friend.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
               Nickname: {{ user_friend.nick }}<br>
               Intra Nick: {{ user_friend.intra_nick }}<br>
               Games Won: {{ user_friend.won_games }}<br>
               Games Lost: {{ user_friend.lost_games }}<br>
-            </span>
+            </v-tooltip>
             <v-avatar class="avatar-circle" :style="{ '--online-status': onlineStatus(user_friend.id) }">
               <img :src="user_friend.avatar" alt="Avatar" class="avatar-circle" />
             </v-avatar>
@@ -121,7 +121,8 @@
         <div v-for="channel in channels" :key="channel.id"
           :class="['channel', { 'selected': channel.id === selected_channel }]" style="cursor: auto;">
           <span class="channel-name-wrap">{{ channel.channel_name }}</span>
-          <button v-if="!isChannelJoined(channel.id)" @click="is_channel_with_pwd(channel)" class="join-button">Join</button>
+          <button v-if="!isChannelJoined(channel.id)" @click="is_channel_with_pwd(channel)"
+            class="join-button">Join</button>
           <button v-else @click="chooseChannel(channel.id)"><v-icon class="chat-button">mdi-send</v-icon></button>
         </div>
         <form @submit.prevent="searchQuery">
@@ -169,6 +170,10 @@
         <div class="channel-name">
           {{ getChannelName(selected_channel) }}
         </div>
+        <transition name="fade" mode="out-in">
+          <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert_Game"
+            color="success" icon="$success" title="Success!" text="Game request sent successfully!" dismissible></v-alert>
+        </transition>
         <div v-if="!getChannelType(selected_channel)" class="fightButton">
           <v-btn icon @click="inviteToPrivateGame">
             <font-awesome-icon :icon="['fas', 'table-tennis-paddle-ball']" style="color: #ffffff" />
@@ -183,8 +188,9 @@
         <div id="user-list-container">
           <h2 class="userHeader">{{ getChannelUserCount(usersInChannels) }} Users in {{
             getChannelName(selected_channel)
-            }}</h2>
-          <div class="usersInChannel" v-for="usersInChannel in usersInChannels" @click="goToProfile(usersInChannel.user_id.intra_nick)" :key="usersInChannels.id">
+          }}</h2>
+          <div class="usersInChannel" v-for="usersInChannel in usersInChannels"
+            @click="goToProfile(usersInChannel.user_id.intra_nick)" :key="usersInChannels.id">
             <img :src="usersInChannel.user_id.avatar" alt="UserAvatar" class="user-avatar">
             <div class="adminCommands" v-if="isUserMorePowerful(usersInChannels, usersInChannel)">
               <v-menu transition=" slide-x-transition">
@@ -271,7 +277,6 @@
             </v-card>
           </v-dialog>
         </div>
-
         <button class="leave-button" @click="leaveChannel(selected_channel)"></button>
       </div>
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
@@ -320,11 +325,16 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import router from '@/router';
+import { useStore } from 'vuex'
+
+
+const store1 = useStore()
 
 library.add(fas)
 
 const msgsContainer = ref(null);
 let showAlert = ref(false);
+let showAlert_Game = ref(false);
 const messageText = ref('');
 const searchText = ref('');
 const messages = ref([]);
@@ -416,9 +426,9 @@ const users_Nick = decodedToken.user['nick'];
 
 
 const getChannelType = (channelID) => {
-  
+
   const channel = joinedchannels.value.find((joinedchannel) => joinedchannel.channel_id.id === channelID)
-  if(channel)
+  if (channel)
     return channel.channel_id.type;
 }
 
@@ -430,7 +440,7 @@ const getChannelName = (channelId) => {
     const user2ID = channelname.split('-')[1];
     const pmwith = user1ID == userId ? user2ID : user1ID;
     const user = users.value.find((user) => user.id === parseInt(pmwith));
-    return user.intra_nick;
+    return user.intra_nick ? user.intra_nick : '';
   }
   return channel ? channel.channel_id.channel_name : '';
 };
@@ -489,7 +499,7 @@ const getMessages = async () => {
       if (response.ok) {
         const data = await response.json();
         messages.value = data;
-        if(!showChannelOptions.value)
+        if (!showChannelOptions.value)
           scrollToBottom();
       } else {
         console.log('Error:', response.status);
@@ -638,13 +648,13 @@ const leaveChannel = async (channelid) => {
 }
 
 
-const pwd_hash_and_join = async() => {
-  joinChannel(channel_to_join.value,"")
-  channel_to_join.value =""
+const pwd_hash_and_join = async () => {
+  joinChannel(channel_to_join.value, "")
+  channel_to_join.value = ""
 }
 
 const is_channel_with_pwd = async (channel) => {
-  if (channel.type == 2){
+  if (channel.type == 2) {
     channel_to_join.value = channel
     pass_to_join_ch.value = true;
   }
@@ -655,10 +665,10 @@ const is_channel_with_pwd = async (channel) => {
 const joinChannel = async (channel, ownerPWD) => {
   let pass = ownerPWD
   if (channel.type == 2 && !ownerPWD) {
-    pass=  Md5.hashStr(InputChannelPass.value);
-    InputChannelPass.value =""
+    pass = Md5.hashStr(InputChannelPass.value);
+    InputChannelPass.value = ""
     pass_to_join_ch.value = false;
-  }  
+  }
   try {
     let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/joinchannel'
     const response = await fetch(url,
@@ -672,7 +682,6 @@ const joinChannel = async (channel, ownerPWD) => {
       });
     if (response.ok) {
       await getChannelsJoined();
-      console.log("VIMS")
     } else {
       console.log('Error:', response.status);
     }
@@ -804,7 +813,6 @@ const is_already_admin = async (actionToUserID) => {
 
 const toggleAdminUser = async (actionToUserID) => {
   let action = await is_already_admin(actionToUserID)
-  console.log(await action)
   try {
     let url = await process.env.VUE_APP_BACKEND_URL + '/usertochannel/giveadmin/' + actionToUserID + '/on/' + selected_channel + "/" + action
     const response = await fetch(url,
@@ -914,7 +922,8 @@ const scrollToBottom = () => {
   try {
     nextTick(() => {
       let container = msgsContainer.value;
-      container.scrollTop = container.scrollHeight;
+      if (container)
+        container.scrollTop = container.scrollHeight;
     });
   } catch (error) {
   }
@@ -1149,12 +1158,14 @@ const removeFriend = async (friend) => {
 };
 
 
-const goToProfile = (userIntraNick: number) =>
-{
-  router.push("/profile/"+userIntraNick)
+const goToProfile = (userIntraNick: number) => {
+  router.push("/profile/" + userIntraNick)
 }
 
+watch(() => store1.state.user_dm, (newval) => { if (newval != 0) { Dmessage(newval); store1.commit('user_dm', 0) } })
 onBeforeMount(() => {
+
+
   getUsers();
   getChannels();
   fetchFriends();
@@ -1166,7 +1177,7 @@ onBeforeMount(() => {
 if (socket) {
   socket.on('recMessage', async (message) => {
     if (message.channelId === selected_channel) {
-      if(!showChannelOptions.value)
+      if (!showChannelOptions.value)
         scrollToBottom();
     } else {
       if (typeof unreadMessages.value[message.channelId] === 'undefined') {
@@ -1179,16 +1190,15 @@ if (socket) {
 }
 
 
-socket.on('notification',  async() => {
+socket.on('notification', async () => {
   await getChannelsJoined();
-  if(selected_channel && !isChannelJoined(selected_channel))
-  {
-    selected_channel=null
-    messages.value=[]
-    showChannelOptions.value=false;
+  if (selected_channel && !isChannelJoined(selected_channel)) {
+    selected_channel = null
+    messages.value = []
+    showChannelOptions.value = false;
   }
   if (selected_channel)
-   await getUsersInGivenChannel(selected_channel);
+    await getUsersInGivenChannel(selected_channel);
   await getUsers();
   await fetchFriends();
 });
@@ -1208,7 +1218,7 @@ socket.on('DisconnectSocketToken', () => {
 })
 
 watch(messages, () => {
-  if(!showChannelOptions.value)
+  if (!showChannelOptions.value)
     scrollToBottom();
 });
 const inviteToPrivateGame = async () => {
@@ -1226,6 +1236,10 @@ const inviteToPrivateGame = async () => {
         });
         if (response.ok) {
           const data = await response.json();
+          showAlert_Game.value = true;
+          setTimeout(() => {
+            showAlert_Game.value = false;
+          }, 4000);
         } else {
           if (response.status == 303) {
             const data = await response.json();

@@ -34,7 +34,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     let userintranick = profile.emails[0].value.split("@")[0];
     const userFound = await this.userService.findByLogin(userintranick);
     if (userFound) {
-      console.log('User already exists!');
       return userFound;
     }
     

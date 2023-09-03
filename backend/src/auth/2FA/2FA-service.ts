@@ -28,9 +28,6 @@ export class TwoFactorAuthService {
         const Cryptr = require('cryptr');
         const cryptr = new Cryptr(`${process.env.JWT_SECRET_KEY}`);
         const encryptedString = cryptr.encrypt(secret);
-        //const decryptedString = cryptr.decrypt(encryptedString);
-        //console.log("encripted",encryptedString)
-        //console.log("decrypted",decryptedString)
         await this.userRepository.update({ intra_nick: user.intra_nick }, { TwoFASecret: encryptedString, TwoFAEnabled: true });
         return {
             secret,

@@ -46,22 +46,20 @@ class Paddle implements Rectangle {
     this.drawRectangle(context)
     this.drawNick(context)
   }
-  drawRectangle(context: CanvasRenderingContext2D)
-  {
+  drawRectangle(context: CanvasRenderingContext2D) {
     const img = new Image();
-  img.src = this.skin
-  context.drawImage(img, this.x, this.y, this.width, this.height)
+    img.src = this.skin
+    context.drawImage(img, this.x, this.y, this.width, this.height)
   }
-  drawNick(context: CanvasRenderingContext2D)
-  {
+  drawNick(context: CanvasRenderingContext2D) {
     const board_height = board_dims.height * this.conv_rate
     const board_width = board_dims.width * this.conv_rate
-    let nick_height = board_height /20
-    context.font = nick_height+"px Helvetica Neue";
+    let nick_height = board_height / 20
+    context.font = nick_height + "px Helvetica Neue";
     context.fillStyle = "white";
     const text_width = context.measureText(this.nick).width
-    const x = this.x > board_width/2 ? this.x-text_width-this.width: this.x+this.width*2
-    const y = this.x > board_width/2 ? board_width-this.x+nick_height : this.x+this.width+nick_height
+    const x = this.x > board_width / 2 ? this.x - text_width - this.width : this.x + this.width * 2
+    const y = this.x > board_width / 2 ? board_width - this.x + nick_height : this.x + this.width + nick_height
     context.fillText(this.nick, x, y);
   }
 }
@@ -113,16 +111,16 @@ class Score {
   constructor(score_ref: any, conv_rate: number) {
     this.board_width = board_dims.width * conv_rate
     this.board_height = board_dims.height * conv_rate
-    this.fontSize = this.board_height/10
-    this.text = score_ref.player1+"|"+score_ref.player2
+    this.fontSize = this.board_height / 10
+    this.text = score_ref.player1 + "|" + score_ref.player2
   }
   update(score_ref: any) {
-    this.text = score_ref.player1+"|"+score_ref.player2
+    this.text = score_ref.player1 + "|" + score_ref.player2
   }
   update_dims(conv_rate: number): void {
     this.board_width = board_dims.width * conv_rate
     this.board_height = board_dims.height * conv_rate
-    this.fontSize = this.board_height/10
+    this.fontSize = this.board_height / 10
   }
   draw(context: CanvasRenderingContext2D): void {
     context.font = this.fontSize + "px Helvetica Neue";

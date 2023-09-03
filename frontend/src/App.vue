@@ -12,7 +12,7 @@
       <v-btn @click="logout">Logout</v-btn>
     </nav>
   </header>
- 
+
   <v-dialog v-model="showNotifications" max-width="400">
     <v-card>
       <v-card-title>
@@ -36,18 +36,18 @@
       </v-card-text>
       <v-card-actions>
         <v-btn color="primary" @click="showNotifications = false;">Close</v-btn>
-        <v-btn color="primary" v-if="notifications.length > 0" @click="clearNotifications()" >Clear Notifications</v-btn>
+        <v-btn color="primary" v-if="notifications.length > 0" @click="clearNotifications()">Clear Notifications</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <div v-if="islogged && !first_login_modal" :class="{'game-view': isGameRoute}">
-    <RouterView :key="routerKey"/>
+  <div v-if="islogged && !first_login_modal" :class="{ 'game-view': isGameRoute }">
+    <RouterView :key="routerKey" />
   </div>
   <div v-else-if="!first_login_modal">
     <Login @clicked42="login42" @clickedgoogle="loginGoogle" @id_to_login="executeLoginwithId" />
   </div>
   <div v-else-if="first_login_modal" class="first_login_modal">
-    <userValidation @submitted="first_login_modal= false"></userValidation>
+    <userValidation @submitted="first_login_modal = false"></userValidation>
   </div>
 </template>
 
@@ -67,7 +67,7 @@ let routerKey = ref(0)
 async function decideNotification(NotificationID: number, Decision: boolean) {
   let token = getCookieValueByName('token');
   try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/events/event_decision/' + NotificationID + '/' + Decision ;
+    let url = process.env.VUE_APP_BACKEND_URL + '/events/event_decision/' + NotificationID + '/' + Decision;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -112,6 +112,8 @@ function getCookieValueByName(name: any) {
   return null;
 }
 
+
+
 async function verifyCode(token: string, code: any) {
   try {
     const payloadBase64 = token.split('.')[1];
@@ -120,7 +122,7 @@ async function verifyCode(token: string, code: any) {
     const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/auth/check2fa", {
       method: 'POST',
       body: JSON.stringify({
-        'id': payload,
+        'id': payload.login,
         'code': code
       }),
       headers: {
@@ -128,7 +130,6 @@ async function verifyCode(token: string, code: any) {
       },
     });
     if (response.ok) {
-      //console.log(response.headers.get('token2'))
       return response.json();
     } else {
       return false;
@@ -148,9 +149,8 @@ async function verifyCode(token: string, code: any) {
       const user_input = prompt("Enter the code");
       const new_code = await verifyCode(token, user_input);
       if (new_code) {
-        console.log('Verification successful', new_code);
         document.cookie = `token=${new_code.code}`
-        first_login_modal.value = await fetch_logged_previous()
+        window.location.reload()
         islogged.value = true;
       } else {
         console.log('Invalid code');
@@ -158,18 +158,16 @@ async function verifyCode(token: string, code: any) {
     }
     else {
       islogged.value = true;
-      socket = io(process.env.VUE_APP_BACKEND_URL,{
-          auth: {
-            token: token
-          }
-        });
-        provide('socket', socket)
+      socket = io(process.env.VUE_APP_BACKEND_URL, {
+        auth: {
+          token: token
+        }
+      });
+      provide('socket', socket)
       first_login_modal.value = await fetch_logged_previous()
-	};
-    }
+    };
   }
-
-
+}
 )();
 
 
@@ -201,16 +199,16 @@ async function authtempBYPASS(idvalue: number) {
 }
 
 
-  async function fetch_logged_previous(){
-	try {
+async function fetch_logged_previous() {
+  try {
     let token = getCookieValueByName('token');
-		let url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
-		const response = await fetch(url, {
+    let url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
+    const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    
+
     if (response.ok) {
       const data = await response.json();
       return data.is_first_login
@@ -218,14 +216,13 @@ async function authtempBYPASS(idvalue: number) {
       // Handle the case when the request fails
       console.error('Error fetching User Profile data:', response.statusText);
     }
-	} catch (error) {
-		console.error('Error fetching User Profile data', error);
-	}
+  } catch (error) {
+    console.error('Error fetching User Profile data', error);
+  }
 }
 
 
 async function executeLoginwithId(idvalue: number) {
-  console.log(idvalue)
   let verify = await authtempBYPASS(idvalue)
   if (verify) {
     islogged.value = true;
@@ -307,7 +304,7 @@ const clearNotifications = async () => {
     });
 
     if (response.ok) {
-      fetchNotifications(); 
+      fetchNotifications();
     } else {
       console.log('Error clearing notifications:', response.status);
     }
@@ -316,16 +313,15 @@ const clearNotifications = async () => {
   }
 };
 
-if (socket)  {
-	if (islogged.value === true)
-	{
-		socket.on('notification', Notification => {
-			fetchNotifications();
-		});
-	}
-	  socket.on('logout', Notification => {
-			logout();
-		});
+if (socket && islogged.value == true) {
+
+  socket.on('notification', Notification => {
+    fetchNotifications();
+  });
+
+  socket.on('logout', Notification => {
+    logout();
+  });
   socket.on('StartPaddleSelection', async () => {
     await nextTick()
     if (router.currentRoute.value.path !== '/') {
@@ -333,12 +329,14 @@ if (socket)  {
     }
     routerKey.value++
   })
+  socket.on('DisconnectSocketToken', () => {
+    logout();
+  })
 }
 
 onBeforeMount(() => {
- 
   let token = getCookieValueByName('token');
-  if(token)
+  if (token && token.substring(0, 3) != "2FA")
     fetchNotifications();
 });
 </script>
@@ -373,7 +371,8 @@ nav a {
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
 }
-.notifications-box{
+
+.notifications-box {
   overflow-y: scroll;
 }
 
@@ -389,12 +388,12 @@ nav a {
 
 
 .first_login_modal {
-  display: flex;            
-  justify-content: center;  
-  align-items: center;      
-  width: 100vw;             
-  height: 100vh;            
-  position: fixed;          
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
   top: 0;
   left: 0;
 }
@@ -413,7 +412,7 @@ nav a {
     margin: 0%;
   }
 
-  .notify-button{
+  .notify-button {
     background-color: #555;
     width: 50px;
     height: 50px;
@@ -437,13 +436,11 @@ nav a {
     border-radius: 50%;
   }
 
-.game-view
-{
-  display: flex;
-  align-content: center;
-  justify-content: center;
-}
+  .game-view {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+  }
 
 }
-
 </style>

@@ -34,7 +34,6 @@ export class GameService {
   }
 
   EmitUpdatedState(client: Socket, nick: string) {
-    console.log(this.player_states)
     if (!this.player_states.has(nick)) {
       client.emit("UpdatedState", 0)
       return
@@ -90,12 +89,10 @@ export class GameService {
       this.UpdatePlayerState(nick)
       return;
     }
-    console.log("Creating new Lobby Player " + playerClient + " with intra " + nick + " and skin " + skin)
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
     let newPlayer = new PlayerPaddle(playerClient, user, skin);
     this.lobbyPlayers.push(newPlayer);
     this.SetPlayerStateEmit(playerClient, nick, State.LOBBY_PLAYER)
-    console.log("LOBBY PLAYERS ARE " + this.lobbyPlayers.length)
   }
 
   AddPlayerToLobby(playerClient: Socket, nick: string) {
@@ -110,10 +107,8 @@ export class GameService {
         this.lobbyPlayers[freePlayerIndex].client = playerClient
       }
       if (this.ReconnectedPlayer(this.lobbyPlayers[freePlayerIndex], nick)) {
-        console.log("Reconnected " + nick)
       }
       else {
-        console.log("Joined lobby " + nick)
         this.lobby.push(this.lobbyPlayers[freePlayerIndex])
         this.SetPlayerStateEmit(playerClient, nick, State.IN_LOBBY_QUEUE)
       }
@@ -136,7 +131,6 @@ export class GameService {
       this.UpdatePlayerState(nick)
       return;
     }
-    console.log("Creating new Private Game Player " + playerClient + " with intra " + nick + " and skin " + skin)
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
     let newPlayer = new PlayerPaddle(playerClient, user, skin);
     this.privateGamePlayers.push(newPlayer);
@@ -150,13 +144,10 @@ export class GameService {
       this.UpdatePlayerState(player2_intra_nick)
       return;
     }
-    console.log("Creating new Private Game for " + player1_intra_nick + " and " + player2_intra_nick);
     if (this.IsInPrivateGame(player1_intra_nick)) {
-      console.log("Already existing game for player " + player1_intra_nick)
       return;
     }
     if (this.IsInPrivateGame(player2_intra_nick)) {
-      console.log("Already existing game for player " + player2_intra_nick)
       return;
     }
     const player1User = AppService.UsersOnline.find((online) => online.user.intra_nick == player1_intra_nick);
@@ -216,17 +207,14 @@ export class GameService {
         game.playerPaddle1.ready = true
         if (game.playerPaddle2.ready) {
           if (game.timeStart) {
-            console.log("LETS PLAY 1")
             this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.PLAYING)
             this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.PLAYING)
           } else {
-            console.log("LETS START 1")
             this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.STARTING)
             this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.STARTING)
           }
         }
         else {
-          console.log("WAITING 1")
           this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.WAITING_OTHER_READY)
         }
       }
@@ -235,22 +223,18 @@ export class GameService {
         game.playerPaddle2.ready = true
         if (game.playerPaddle1.ready) {
           if (game.timeStart) {
-            console.log("LETS PLAY 2")
             this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.PLAYING)
             this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.PLAYING)
           } else {
-            console.log("LETS START 2")
             this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.STARTING)
             this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.STARTING)
           }
         }
         else {
-          console.log("WAITING 2")
           this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.WAITING_OTHER_READY)
         }
       }
     }
-    console.log(this.active_games.length)
   }
 
   HandlePlayerDisconnected(client: Socket) {
@@ -259,13 +243,11 @@ export class GameService {
         game.playerPaddle1.ready = false
         this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.DISCONNECTED)
         this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
-        console.log("PlayerExited " + game.playerPaddle1.user.intra_nick)
       } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
         game.playerPaddle2.ready = false
         this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
         this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.DISCONNECTED)
         game.playerPaddle1.client?.emit("PlayerDisconnected")
-        console.log("PlayerExited " + game.playerPaddle2.user.intra_nick)
       }
     }
   }
@@ -339,7 +321,6 @@ export class GameService {
     const indexPlayer1 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player1);
     const indexPlayer2 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player2);
     if (indexPlayer1 !== -1 && indexPlayer2 !== -1) {
-      console.log("ADDING PRIVATE GAME for player " + private_game.player1 + " and " + private_game.player2)
       let game = new Game(this.privateGamePlayers[indexPlayer1], this.privateGamePlayers[indexPlayer2], this.gameHistoryService, this.userRepository)
       this.active_games.push(game)
       this.SetPlayerStateEmit(this.privateGamePlayers[indexPlayer1].client, this.privateGamePlayers[indexPlayer1].user.intra_nick, State.NOT_READY)
@@ -368,7 +349,6 @@ export class GameService {
   addLobbyGames() {
     if (this.lobby.length < 2)
       return
-    console.log("Creating new game between " + this.lobby[0].user.intra_nick + " and " + this.lobby[1].user.intra_nick)
     let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)
     this.lobby.splice(0, 2)
     this.active_games.push(game)

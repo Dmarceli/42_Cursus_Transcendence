@@ -42,7 +42,6 @@ export class EventsService {
       else if(this.gameService.player_states.has(decider_user.intra_nick))
         return "4"
     }
-    console.log(event_type)
         try {
       const event_created=await this.eventsRepository.save({
         ...createEventDto as any,
@@ -50,7 +49,6 @@ export class EventsService {
         type: event_type.valueOf(),
         already_seen: false
       });
-      //console.log(event_created)
     } catch (error) {
       console.error('Error notifying user:', error);
     }

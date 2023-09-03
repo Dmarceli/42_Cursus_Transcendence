@@ -29,7 +29,7 @@ export class UsersController {
   }
 
   @Get('/getUsers')
-  findAll(@Req() req: any) {
+  findAll() {
     return this.usersService.findAll();
   }
 
