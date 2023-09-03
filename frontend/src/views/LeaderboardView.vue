@@ -91,15 +91,6 @@ const goToProfile = (intraNick: string) => {
         </tbody>
       </table>
     </div>
-
-    <!-- <div v-if="selectedPlayer" class="modal">
-      <div class="modal-content">
-        <h2>{{ selectedPlayer.name }}</h2>
-        <p>Score: {{ selectedPlayer.score }}</p>
-				<v-btn @click="goToProfile(selectedPlayer.name)" class="viewProfile">View Profile</v-btn>
-				<v-icon icon="mdi-close" @click="closeModal" class="closeModal"></v-icon>
-      </div>
-    </div> -->
   </div>
 </template>
   
