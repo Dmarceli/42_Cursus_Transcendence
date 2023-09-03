@@ -270,6 +270,22 @@ const handleNewAvatar = async (event: Event) => {
   }
 }
 
+// // FirstComponent.vue
+
+import { useStore } from 'vuex'
+
+
+ const store1 = useStore()
+ const emit = defineEmits(['user_dm'])
+
+const goToSecondComponent = () => {
+  router.push({ name: 'chat' }).then(() => {
+    //emit('user_dm', userProfile.value.id)
+    store1.commit('user_dm', userProfile.value.id)
+  })
+}
+
+
 async function saveSettings() {	
   if (!usernameRegex.test(updateNickname.value)){
     return
@@ -518,6 +534,10 @@ const twofahandling = async () => {
 					<v-btn class="ma-2" v-if="!isOwnProfile && isUserBlocked" @click="UnBlockUser()" color="light-blue-lighten-2">
 						Unblock <v-icon end icon="mdi-account-lock-open-outline"></v-icon>
 					</v-btn>
+
+          <v-btn class="ma-2" v-if="!isOwnProfile" @click="goToSecondComponent" color="green-darken-1">
+            DM to User <v-icon end icon="mdi-email"></v-icon>
+          </v-btn>
 			</div>
     </div>
     <div class="profile-body">

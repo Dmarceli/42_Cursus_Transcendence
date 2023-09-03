@@ -319,6 +319,10 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import router from '@/router';
+import { useStore } from 'vuex'
+
+
+const store1 = useStore()
 
 library.add(fas)
 
@@ -1153,7 +1157,10 @@ const goToProfile = (userIntraNick: number) =>
   router.push("/profile/"+userIntraNick)
 }
 
+watch(()=> store1.state.user_dm, (newval) => {if(newval != 0){Dmessage(newval); store1.commit('user_dm',0)}})
 onBeforeMount(() => {
+  
+
   getUsers();
   getChannels();
   fetchFriends();
