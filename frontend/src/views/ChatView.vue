@@ -916,7 +916,8 @@ const scrollToBottom = () => {
   try {
     nextTick(() => {
       let container = msgsContainer.value;
-      container.scrollTop = container.scrollHeight;
+      if(container)
+        container.scrollTop = container.scrollHeight;
     });
   } catch (error) {
   }
