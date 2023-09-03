@@ -45,15 +45,26 @@ export class UsersService {
   }
 
    async findbyusername_(nick_:string, res: Response) {
-   const resp= await this.userRepository.findOne({where: {
-      nick: nick_
-    }});
-    // console.log(resp)
-    if(!resp)
-      return res.status(404).json()
-    else
-      return res.status(200).json(resp);
+		try {
+   	const resp= await this.userRepository.findOne({where: {
+   	   nick: nick_
+   	 }});
+   	 // console.log(resp)
+   	 if(!resp) {
+   	  return res.status(404).json()
+		 }
+   	 else {
+      let fileName = './uploads/' + resp.avatar.split('/').pop();
+			if (!resp.avatar || !existsSync(fileName)) {
+				resp.avatar = process.env.BACKEND_URL + '/users/avatar/default.jpg';
+        await this.userRepository.save(resp);
+			}
+   	   return res.status(200).json(resp);
+		}
+		} catch (error) {
+			console.log(error);
     }
+	}
     
     async findByNick(nick_ :string) {
       if(!nick_)
@@ -91,7 +102,15 @@ export class UsersService {
     const resp= await this.userRepository.findOne(
       {where: {id: id_to_search}}
      );
-     return resp;
+		 if(!resp) {
+			return null
+		}
+    let fileName = './uploads/' + resp.avatar.split('/').pop();
+		if (!resp.avatar || !existsSync(fileName)) {
+		 resp.avatar = process.env.BACKEND_URL + '/users/avatar/default.jpg';
+     await this.userRepository.save(resp);
+		}
+		return resp;
    }
 
   
@@ -197,14 +216,13 @@ export class UsersService {
     }
 
     updateAvatar(user: User, file: Express.Multer.File) {
-      if(user.avatar){
-      let prevUrl = user.avatar.split('/').pop();
-      let prevAvatar = './uploads/' + prevUrl
-      if (existsSync(prevAvatar && prevUrl)) {
-        console.log("Deleting previous avatar "+prevAvatar)
-        unlinkSync(prevAvatar);
+
+      let prevFileName = user.avatar.split('/').pop();
+      let prevAvatarPath = './uploads/' + prevFileName
+      if (existsSync(prevAvatarPath) && prevFileName != "default.jpg") {
+        console.log("Deleting PREVIOUS AVATAR "+prevAvatarPath)
+        unlinkSync(prevAvatarPath);
       }
-    }
       let extension = "."+file.originalname.split(".").pop()
       let newPathName = file.path+extension;
       if (existsSync(file.path)) {

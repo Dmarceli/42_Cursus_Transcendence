@@ -38,12 +38,12 @@ export class friendsController {
   }
 
   @Get()
-  findOne(@Req() req:any, @getUserIDFromToken() user:User) {
+  findOne(@getUserIDFromToken() user:User) {
     return this.friendService.findByUserId(user.id);
   }
 
   @Get('/blocked')
-  get_blocked(@Req() req:any, @getUserIDFromToken() user:User) {
+  get_blocked(@getUserIDFromToken() user:User) {
     return this.friendService.get_blockedusers(user.id);
   }
   

@@ -33,8 +33,14 @@ export class EventsService {
 		if(event_type == 2){
       const already_requested = await this.eventsRepository.findOne({where: {decider_user:{id: createEventDto.decider_user},requester_user: {id: createEventDto.requester_user}, type:2},
       relations: ['requester_user', 'decider_user'],})
+      const decider_user = await this.usersService.findById(createEventDto.decider_user)
+      const requester_user = await this.usersService.findById(createEventDto.requester_user)
       if(already_requested)
         return "2"
+      else if (this.gameService.player_states.has(requester_user.intra_nick))
+        return "3"
+      else if(this.gameService.player_states.has(decider_user.intra_nick))
+        return "4"
     }
     console.log(event_type)
         try {

@@ -73,6 +73,11 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
 }
 
 // Game Service
+  @SubscribeMessage('GetUpdatedState')
+  handleGetUpdatedState(client: Socket, intra_nick: string)
+  {
+    this.gameService.EmitUpdatedState(client, intra_nick)
+  }
   @SubscribeMessage('PlayerSelectedPaddle')
   handlePlayerSelectedPaddle(client: Socket, info: any) {
     let [intra_nick, paddleSkin] = info;
@@ -80,7 +85,6 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
       this.gameService.CreatePrivateGamePlayer(client, intra_nick, paddleSkin);
     else
       this.gameService.CreateLobbyPlayer(client, intra_nick, paddleSkin);
-    client.emit("PlayerCreated")
   }
 
   @SubscribeMessage('AddToLobby')
@@ -90,7 +94,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
   @SubscribeMessage('PlayerReady')
   handlePlayerReady(client: Socket, intra_nick: string) {
     console.log("New Player ready "+intra_nick)
-    this.gameService.PlayerReady(intra_nick)
+    this.gameService.PlayerReady(client, intra_nick)
   }
   @SubscribeMessage('keydown')
   handlePlayerKeyDown(client: Socket, key: string)

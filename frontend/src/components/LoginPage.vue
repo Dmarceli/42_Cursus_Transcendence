@@ -5,7 +5,7 @@
       <button class="button" @click="button42">Login with 42</button>
       <button class="button" @click="buttonGoogle">Login with Google</button>
       <button class="button" @click="buttonBYPASS_TEMP">BYPASS</button>
-      <input  class="button" v-model="id_to_login_form" placeholder=0>
+      <input class="button" v-model="id_to_login_form" placeholder=0>
     </div>
   </div>
 </template>
@@ -16,7 +16,7 @@ import { mergeProps, ref } from 'vue'
 let id_to_login_form = ref(0);
 
 
-const emit = defineEmits(['clicked42', 'clickedgoogle', 'id_to_login' ])
+const emit = defineEmits(['clicked42', 'clickedgoogle', 'id_to_login'])
 
 function buttonGoogle() {
   emit('clickedgoogle')
@@ -40,6 +40,7 @@ function buttonBYPASS_TEMP() {
   height: 100vh;
   width: 100vw;
 }
+
 .button {
   background-color: #c2fbd7;
   border-radius: 100px;
@@ -63,6 +64,7 @@ function buttonBYPASS_TEMP() {
   height: 40px;
   margin-top: 1rem;
 }
+
 .button:hover {
   box-shadow: rgba(44, 187, 99, 0.35) 0 -25px 18px -14px inset, rgba(44, 187, 99, 0.25) 0 1px 2px,
     rgba(44, 187, 99, 0.25) 0 2px 4px, rgba(44, 187, 99, 0.25) 0 4px 8px,
@@ -72,7 +74,8 @@ function buttonBYPASS_TEMP() {
 
 .welcome {
   display: table-cell;
-  text-align: center; /* Horizontally center */
-  vertical-align: middle; /* Vertically center */
-}
-</style>
+  text-align: center;
+  /* Horizontally center */
+  vertical-align: middle;
+  /* Vertically center */
+}</style>

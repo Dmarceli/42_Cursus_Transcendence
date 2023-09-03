@@ -24,9 +24,14 @@ export class EventsController {
   @Post('/private_game_request')
   async create_private_game_request(@Body() createEventDto: EventCreateDto, @Res() res: any) {
     const ret = await this.eventsService.create(createEventDto, 2);
-		if (ret == "2")
-		{
+		if (ret == "2") {
 			return res.status(303).json({ message: 'Private Game Request Already Sent' });
+		}
+    if (ret == "3") {
+			return res.status(303).json({ message: 'You are already in a game' });
+		}
+    if (ret == "4") {
+			return res.status(303).json({ message: 'Other player is already in a game' });
 		}
     return res.status(200).json({ message: 'Private Game Requested' });
   }
