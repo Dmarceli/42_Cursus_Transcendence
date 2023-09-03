@@ -2,15 +2,11 @@
   <div>
     <v-carousel :show-arrows="true" :hide-delimiters="true" v-model="model" style="height: 100%">
       <template v-slot:prev="{ props }">
-        <v-btn class="choosePaddle" variant="elevated" color="pink" @click="props.onClick"
-          >Previous</v-btn
-        >
+        <v-btn class="choosePaddle" variant="elevated" color="pink" @click="props.onClick">Previous</v-btn>
       </template>
 
       <template v-slot:next="{ props }">
-        <v-btn class="choosePaddle" variant="elevated" color="pink" @click="props.onClick"
-          >Next</v-btn
-        >
+        <v-btn class="choosePaddle" variant="elevated" color="pink" @click="props.onClick">Next</v-btn>
       </template>
 
       <v-carousel-item :content-class="'cardClass'" v-for="(item, i) in items" :key="i">
@@ -18,9 +14,7 @@
       </v-carousel-item>
     </v-carousel>
     <v-card-actions>
-      <v-btn class="choosePaddle" variant="outlined" block @click="selectPaddle"
-        >Choose Paddle</v-btn
-      >
+      <v-btn class="choosePaddle" variant="outlined" block @click="selectPaddle">Choose Paddle</v-btn>
     </v-card-actions>
   </div>
 </template>

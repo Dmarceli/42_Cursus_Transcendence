@@ -3,7 +3,7 @@
     <img src="racketas.svg" alt="" />
     <v-btn class="play-game" @click="clickedPlay = true">Let's Play</v-btn>
     <v-btn class="play-game" @click="instructions = true">How to Play</v-btn>
-    <InstructionsPage :dialog="instructions" @close-window="instructions = false" ></InstructionsPage>
+    <InstructionsPage :dialog="instructions" @close-window="instructions = false"></InstructionsPage>
   </div>
   <div v-else class="start-menu">
     <v-card elevation="18" class="testclass">
@@ -34,13 +34,11 @@ const emits = defineEmits(['PlayerCreated', "closeInstructions"])
 
 const socket: Socket | undefined = inject('socket')
 
-function ShowPlayInstructions()
-{
+function ShowPlayInstructions() {
   return props.gameState != State.SETTING_PRIVATE_GAME && !clickedPlay.value;
 }
 
 function selectPaddle(paddleSkin: string) {
-  console.log(props.intraNick)
   socket?.emit('PlayerSelectedPaddle', props.intraNick, paddleSkin)
 }
 
@@ -128,5 +126,4 @@ button.play-game {
   align-items: center;
   justify-content: center;
 }
-
 </style>
