@@ -49,7 +49,6 @@ export class UsersService {
    	const resp= await this.userRepository.findOne({where: {
    	   nick: nick_
    	 }});
-   	 // console.log(resp)
    	 if(!resp) {
    	  return res.status(404).json()
 		 }
@@ -116,16 +115,7 @@ export class UsersService {
   
 
    async update_channels_on_list(UserId: number,ChannelId: number){
-    
-      //     let i=0;
-      // AppService.UsersOnline.forEach((element) => {
-      //   console.log( AppService.UsersOnline[i].user.id, AppService.UsersOnline[i].user.intra_nick, AppService.UsersOnline[i++].client.id)
-      // })
-    
-    console.log("CHEGOU USER ID",UserId)
     const element= AppService.UsersOnline.find(element => element.user.id == UserId);
-    // if(!element)
-    //   console.log("ERROR on UPDATE CHANNELS LIST USER:",UserId)
     if(element)
       element.client.join(ChannelId.toString())
    }
@@ -142,7 +132,7 @@ export class UsersService {
         }
       );
     } catch {
-      console.log("User Unhautorized")
+      console.log("User Unauthorized")
       return null
     } 
     const user_logged = AppService.UsersOnline.find( User_ => User_.user.id == payload.id)
@@ -159,25 +149,12 @@ export class UsersService {
      ChannelList.push(element.channel_id.id.toString())
     })
       AppService.UsersOnline.push(new UserSocketArray(resp,client))
-      // let i=0;
-      // AppService.UsersOnline.forEach((element) => {
-      //   console.log(AppService.UsersOnline[i].user.id,AppService.UsersOnline[i].user.intra_nick,AppService.UsersOnline[i++].client.id)
-      // })
      return true;
    }
 
    async notifyUser(user_id: number,UsersOnline : UserSocketArray[]){
-    
-     console.log('Notification sent to user:', user_id);
-
-     
-    //  AppService.UsersOnline.forEach((user) => {
-    //   console.log(user.user.id,user.user.intra_nick,user.client.id)
-    // })
-
      const user = AppService.UsersOnline.find( User_ => User_.user.id == user_id)
      if(!user){
-        console.log("FALHOU Notificação", user_id) 
       return;
      }
      user.client.emit("notification")
@@ -187,15 +164,9 @@ export class UsersService {
     const Index = AppService.UsersOnline.findIndex( User_ => User_.client == client_)
     if(Index != -1)
       AppService.UsersOnline.splice(Index,1)
-    
-    //   let i=0;
-    //   AppService.UsersOnline.forEach((user) => {
-    //    console.log(this.UsersOnline[i].user.id,this.UsersOnline[i].user.intra_nick,this.UsersOnline[i++].client.id)
-    //  })  
    }
 
 	 async updateProfile(file: Express.Multer.File, userId: number, nickUpdate: string) {
-    console.log(file);
     let error_ :Boolean = false; 
 		 const user = await this.findById(userId);
      if (file)
@@ -220,7 +191,6 @@ export class UsersService {
       let prevFileName = user.avatar.split('/').pop();
       let prevAvatarPath = './uploads/' + prevFileName
       if (existsSync(prevAvatarPath) && prevFileName != "default.jpg") {
-        console.log("Deleting PREVIOUS AVATAR "+prevAvatarPath)
         unlinkSync(prevAvatarPath);
       }
       let extension = "."+file.originalname.split(".").pop()
@@ -233,9 +203,6 @@ export class UsersService {
     }
 
     updateNick(user: User, nickUpdate: string){
-      console.log("UPDATING NICK");
-      console.log(user.nick);
-      console.log(nickUpdate);
       user.nick = nickUpdate;
     }
 }

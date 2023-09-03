@@ -222,7 +222,6 @@ export class Game {
   }
   // TODO: extract these 2 methods into module
   EmitUpdatedState(player_states, client: Socket, nick: string) {
-    console.log(player_states)
     if (!player_states.has(nick)) {
       client.emit("UpdatedState", 0)
       return

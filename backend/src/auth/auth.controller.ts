@@ -84,9 +84,6 @@ export class AuthController {
 
   @Post('/check2fa')
   async check2FAcode(@Body() body: TwoFACodeCheck, @Res() res: any) {
-    console.log(body)
-    console.log("LOGIN: ",body.id)
-    console.log("code: " , body.code)
     const user_ = await this.userService.findByLogin(body.id)
     let verified = await this.TwoFactorAuthService.verifyTwoFaCode(body.code, user_)
     if (verified && user_) {
@@ -101,7 +98,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/gen2fa')
   async gen2FAcode(@Res() res: any, @getUserIDFromToken() user: User) {
-    console.log(user)
     const user_ = await this.userService.findByLogin(user['user']['intra_nick'])
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
     const qrCode = require('qrcode')
@@ -121,7 +117,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/remove2fa')
   async remove2facode(@Res() res: any, @getUserIDFromToken() user: User) {
-    console.log(user)
     const user_ = await this.userService.findByLogin(user['user']['intra_nick'])
     await this.TwoFactorAuthService.remove2fa(user_)
   }

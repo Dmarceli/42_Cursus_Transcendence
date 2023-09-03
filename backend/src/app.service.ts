@@ -29,7 +29,6 @@ export class AppService {
   const channel= await this.channelRepository.findOne({where:{
     id: msg_payload.channelId
   }})
-  //console.log(msg_payload.channelId)
     return await this.messagesRepository.save({...msg_payload,
     author: user,
     channel: channel});

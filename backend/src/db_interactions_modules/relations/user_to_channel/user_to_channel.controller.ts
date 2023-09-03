@@ -19,7 +19,6 @@ export class UserToChannelController {
   
  @Post('/joinchannel')
   async create(@Body() channelID: CreateUserToChannDto, @getUserIDFromToken() user:User, @Res() res: any) {
-    console.log("BODY: ",channelID);
     const channel = await this.channelService.getChannelByID(channelID.id)
     if (!channel || !channelID.id || !channelID ){
       return res.status(202).json({ message: 'Channel Doesnt exist' });

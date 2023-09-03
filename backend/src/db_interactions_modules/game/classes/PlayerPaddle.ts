@@ -52,11 +52,9 @@ export class PlayerPaddle {
     {
       if (!this.ready)
       {
-        console.log("User "+this.user.intra_nick+" needs to get Ready.")
         this.client.emit("GetReady")
         return
       }
-        console.log(this.user.intra_nick+" is still waiting for other player to be ready")
         this.client.emit("WaitingOtherPlayer")
     }
 }
