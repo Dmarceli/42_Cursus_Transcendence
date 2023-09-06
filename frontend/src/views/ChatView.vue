@@ -36,9 +36,9 @@
       <div v-if="side_info === 1">
         <div class="list-header">FRIENDS</div>
         <div v-for="user_friend in User_Friends" :key="user_friend.id" @click="goToProfile(user_friend.intra_nick)"
-          class="tooltip">
-          <div class="user-friend">
-            <v-tooltip activator="parent" location="end" class="user-friend-tooltip">
+        class="tooltip">
+        <div class="user-friend">
+          <v-tooltip activator="parent" location="end" class="user-friend-tooltip">
               <img :src="user_friend.avatar" alt="UserAvatar" class="tooltip-user-avatar"><br>
               Nickname: {{ user_friend.nick }}<br>
               Intra Nick: {{ user_friend.intra_nick }}<br>
@@ -60,24 +60,24 @@
               <span class="close" @click="closeModal()">&times;</span>
               <h1>New Message</h1>
               <button class="next"
-                @click="selectedUsers.length === 1 ? Dmessage(selectedUsers[0]) : createChannelOptions = true">Next</button>
+              @click="selectedUsers.length === 1 ? Dmessage(selectedUsers[0]) : createChannelOptions = true">Next</button>
             </div>
             <h3 style="text-align: center;">Selected Users</h3>
             <select class="invitedUsersList" id="inviteUser" name="inviteUser" multiple
-              @mousedown="toggleOptionSelection($event)">
-              <option v-for="user in users" :key="user.id" :value="user.id" :selected="isSelectedUser(user.id)"
-                class="user_options">
-                {{ user.intra_nick }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div v-if="showModal && createChannelOptions">
-          <v-dialog v-model="createChannelOptions" persistent max-width="400px">
-            <v-card>
-              <v-card-title>
-                <span class="close" @click="closeModal">&times;</span>
-              </v-card-title>
+            @mousedown="toggleOptionSelection($event)">
+            <option v-for="user in users" :key="user.id" :value="user.id" :selected="isSelectedUser(user.id)"
+            class="user_options">
+            {{ user.intra_nick }}
+          </option>
+        </select>
+      </div>
+    </div>       
+    <div v-if="showModal && createChannelOptions">
+      <v-dialog v-model="createChannelOptions" persistent max-width="400px">
+        <v-card>
+          <v-card-title>
+            <span class="close" @click="closeModal">&times;</span>
+          </v-card-title>
               <v-card-text>
                 <v-container>
                   <v-row>
@@ -119,17 +119,17 @@
         </div>
         <div class="list-header">CHANNELS LIST</div>
         <div v-for="channel in channels" :key="channel.id"
-          :class="['channel', { 'selected': channel.id === selected_channel }]" style="cursor: auto;">
-          <span class="channel-name-wrap">{{ channel.channel_name }}</span>
-          <button v-if="!isChannelJoined(channel.id)" @click="is_channel_with_pwd(channel)"
+        :class="['channel', { 'selected': channel.id === selected_channel }]" style="cursor: auto;">
+        <span class="channel-name-wrap">{{ channel.channel_name }}</span>
+        <button v-if="!isChannelJoined(channel.id)" @click="is_channel_with_pwd(channel)"
             class="join-button">Join</button>
-          <button v-else @click="chooseChannel(channel.id)"><v-icon class="chat-button">mdi-send</v-icon></button>
-        </div>
-        <form @submit.prevent="searchQuery">
-          <div class="search-input-container">
-            <button @click="searchText = ''; side_info = 0;">
-              <v-icon>mdi-arrow-left</v-icon>
-            </button>
+            <button v-else @click="chooseChannel(channel.id)"><v-icon class="chat-button">mdi-send</v-icon></button>
+          </div>
+          <form @submit.prevent="searchQuery">
+            <div class="search-input-container">
+              <button @click="searchText = ''; side_info = 0;">
+                <v-icon>mdi-arrow-left</v-icon>
+              </button>
             <input v-model="searchText" type="text" placeholder="Search..." class="search-input">
           </div>
         </form>
@@ -138,45 +138,66 @@
         <v-row class="fill-parent">
           <v-col cols="3" class="button-column">
             <v-btn class="bar-button" block flat style="background-color: transparent; border: none;"
-              @click="getChannelsJoined(); side_info = 0">
-              <v-icon size="25" style="color: white;">mdi-format-list-bulleted</v-icon>
-            </v-btn>
-          </v-col>
-          <v-col cols="3" class="button-column">
-            <v-btn class="bar-button" block flat style="background-color: transparent; border: none;"
-              @click="getFriends()">
-              <v-icon size="25" style="color: white;">mdi-account-group</v-icon>
-            </v-btn>
-          </v-col>
-          <v-col cols="3" class="button-column">
-            <v-btn class="bar-button" block flat style="background-color: transparent; border: none;"
-              @click="enableModal()">
-              <v-icon size="25" style="color: white;">mdi-plus</v-icon>
-            </v-btn>
-          </v-col>
-          <v-col cols="3" class="button-column">
-            <v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="search()">
-              <v-icon size="25" style="color: white;">mdi-magnify</v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </div>
-    </div>
-    <div id="chat-container" ref="chatContainer">
-      <div v-if="selected_channel" class="chat-container-header">
-        <v-btn icon :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]" @click="toggleChannelList">
-          <v-icon>mdi-menu</v-icon>
+            @click="getChannelsJoined(); side_info = 0">
+            <v-icon size="25" style="color: white;">mdi-format-list-bulleted</v-icon>
+          </v-btn>
+        </v-col>
+        <v-col cols="3" class="button-column">
+          <v-btn class="bar-button" block flat style="background-color: transparent; border: none;"
+          @click="getFriends()">
+          <v-icon size="25" style="color: white;">mdi-account-group</v-icon>
+        </v-btn>
+      </v-col>
+      <v-col cols="3" class="button-column">
+        <v-btn class="bar-button" block flat style="background-color: transparent; border: none;"
+        @click="enableModal()">
+        <v-icon size="25" style="color: white;">mdi-plus</v-icon>
+      </v-btn>
+    </v-col>
+    <v-col cols="3" class="button-column">
+      <v-btn class="bar-button" block flat style="background-color: transparent; border: none;" @click="search()">
+        <v-icon size="25" style="color: white;">mdi-magnify</v-icon>
+      </v-btn>
+    </v-col>
+  </v-row>
+</div>
+</div>
+<div v-if="showUserInvitePanel" class="modal-content">
+  <div class="modal-header">
+    <span class="close" @click="showUserInvitePanel=false">&times;</span>
+    <h1>Invite to Channel</h1>
+    <button class="next"
+      @click="selectedUsers.length === 1 ? Dmessage(selectedUsers[0]) : createChannelOptions = true">Invite</button>
+  </div>
+  <h3 style="text-align: center;">Selected Users</h3>
+  <select class="invitedUsersList" id="inviteUser" name="inviteUser" multiple
+    @mousedown="toggleOptionSelection($event)">
+    <option v-for="user in users" :key="user.id" :value="user.id" :selected="isSelectedUser(user.id)"
+      class="user_options">
+      {{ user.intra_nick }}
+    </option>
+  </select>
+</div>
+<div id="chat-container" ref="chatContainer">
+  <div v-if="selected_channel" class="chat-container-header">
+    <v-btn icon :class="['hamburguer-button', { 'full-hamburguer-button': showSideInfo }]" @click="toggleChannelList">
+      <v-icon>mdi-menu</v-icon>
         </v-btn>
         <div class="channel-name">
           {{ getChannelName(selected_channel) }}
         </div>
         <transition name="fade" mode="out-in">
           <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert_Game"
-            color="success" icon="$success" title="Success!" text="Game request sent successfully!" dismissible></v-alert>
+          color="success" icon="$success" title="Success!" text="Game request sent successfully!" dismissible></v-alert>
         </transition>
         <div v-if="!getChannelType(selected_channel)" class="fightButton">
           <v-btn icon @click="inviteToPrivateGame">
             <font-awesome-icon :icon="['fas', 'table-tennis-paddle-ball']" style="color: #ffffff" />
+          </v-btn>
+        </div>
+        <div v-if="getChannelType(selected_channel)" class="fightButton">
+          <v-btn icon @click="showUserInvitePanel=true">
+            <font-awesome-icon :icon="['fas', 'user-plus']" style="color: #ffffff" />
           </v-btn>
         </div>
         <v-btn icon class="more-options ml-auto" :class="{ 'close-moreoptions': showChannelOptions }"
@@ -232,6 +253,16 @@
                       </v-icon>
                     </v-btn>
                   </v-list-item>
+                  <div v-if="isUserOwner(usersInChannels, usersInChannel)">
+                  <v-list-item>
+                    <v-btn style="width: 100%;" @click="giveownership(usersInChannel.user_id.id)">
+                      Give Room Ownership
+                      <v-icon style="margin-left: 10px;">
+                        mdi-arm-flex
+                      </v-icon>
+                    </v-btn>
+                  </v-list-item>
+                  </div>
                 </v-list>
               </v-menu>
             </div>
@@ -277,7 +308,8 @@
             </v-card>
           </v-dialog>
         </div>
-        <button class="leave-button" @click="leaveChannel(selected_channel)"></button>
+          <button v-if="!isUserOwner(usersInChannels, usersInChannel)" class="leave-button" @click="leaveChannel(selected_channel)"></button>
+          <button v-else class="del-ch-button" @click="deleteChannel(selected_channel)"></button>     
       </div>
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
         <div v-for="usersInChannel in usersInChannels" :key="usersInChannels.id">
@@ -347,6 +379,7 @@ let side_info = ref(0);
 let showModal = ref(false);
 const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
+let showUserInvitePanel = ref(false);
 let showSideInfo = ref(true);
 let createChannelOptions = ref(false);
 let protectChannelPass = ref('');
@@ -648,6 +681,35 @@ const leaveChannel = async (channelid) => {
 }
 
 
+const deleteChannel = async (channelid) => {
+  if (confirm("Are you sure you want to delete this channel?")) {
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/usertochannel/deletechannel'
+      const response = await fetch(url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ id: parseInt(channelid) })
+        });
+      if (response.ok) {
+        await getChannelsJoined();
+      } else {
+        console.log('Error:', response.status);
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
+    selected_channel = null;
+    showChannelOptions.value = !showChannelOptions.value;
+    messages.value = null;
+    showSideInfo.value = true;
+    await getChannelsJoined();
+  }
+}
+
 const pwd_hash_and_join = async () => {
   joinChannel(channel_to_join.value, "")
   channel_to_join.value = ""
@@ -711,6 +773,17 @@ const isUserMorePowerful = (userList, target) => {
   if (target['is_owner'])
     return false
   return true;
+}
+
+const isUserOwner = (userList, target) => {
+  let is_owner_of_channel = false
+  for (const userId in userList) {
+    if (userList[userId]['user_id']['nick'] == users_Nick && userList[userId]['is_owner'])
+      is_owner_of_channel = true;
+  }
+  if(is_owner_of_channel)
+    return true
+  return false;
 }
 
 
@@ -836,6 +909,30 @@ const toggleAdminUser = async (actionToUserID) => {
   await getChannelsJoined();
   await getUsersInGivenChannel(selected_channel)
 }
+
+const giveownership = async (actionToUserID) => {
+  try {
+    let url = await process.env.VUE_APP_BACKEND_URL + '/usertochannel/giveownership/' + actionToUserID + '/on/' + selected_channel
+    const response = await fetch(url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+    if (response.ok) {
+      await getChannelsJoined();
+    } else {
+      console.log('Error:', response.status);
+    }
+  } catch (error) {
+    console.log('Error:', error);
+  }
+  await getChannelsJoined();
+  await getUsersInGivenChannel(selected_channel)
+}
+
 
 const muteUser = async (userToMute) => {
   try {
@@ -1223,6 +1320,43 @@ watch(messages, () => {
   if (!showChannelOptions.value)
     scrollToBottom();
 });
+
+
+const inviteToChannel = () => {
+ UsersNo
+  // if (usersInChannels.value.length > 2) return
+  // for (const id in usersInChannels.value) {
+  //   if (usersInChannels.value[id].user_id.id != userId) {
+  //     try {
+  //       const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/private_game_request`, {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Authorization': `Bearer ${token}`
+  //         },
+  //         body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(usersInChannels.value[id].user_id.id), message: users_Name + " just invited you to a PONG Game! " + users_Name }),
+  //       });
+  //       if (response.ok) {
+  //         const data = await response.json();
+  //         showAlert_Game.value = true;
+  //         setTimeout(() => {
+  //           showAlert_Game.value = false;
+  //         }, 4000);
+  //       } else {
+  //         if (response.status == 303) {
+  //           const data = await response.json();
+  //           window.alert(data.message)
+  //         }
+  //         else
+  //           console.log('Error:', response.status);
+  //       }
+  //     } catch (error) {
+  //       console.log('Error:', error);
+  //     }
+  //   }
+  // }
+};
+
 const inviteToPrivateGame = async () => {
   if (usersInChannels.value.length > 2) return
   for (const id in usersInChannels.value) {
