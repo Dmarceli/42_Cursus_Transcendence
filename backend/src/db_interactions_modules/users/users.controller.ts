@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Post, Body, Patch, Param, Delete, Res, Req, UploadedFile, UseInterceptors, HttpStatus, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+import { Controller, UseGuards, Get, Post, Body, Patch, Param, Delete, Res, Req, UploadedFile, UseInterceptors, HttpStatus, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'
 import { UsersService } from './users.service';
@@ -7,6 +7,7 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from './user.entity';
 import { UserProfileSettingsDto } from './dtos/user-profile.dto';
+import * as sanitizeHtml from 'sanitize-html';
 
 @Controller('users')
 export class UsersController {
@@ -20,6 +21,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/profile/')
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
   async uploadFile(@UploadedFile(new ParseFilePipe({
     validators: [
@@ -27,6 +29,7 @@ export class UsersController {
       new FileTypeValidator({ fileType: /\.(jpg|jpeg|png|gif)$/i }),
     ]
   })) file: Express.Multer.File, @Body() userProfileDto : UserProfileSettingsDto) {
+    userProfileDto.nickUpdate = sanitizeHtml(userProfileDto.nickUpdate);
     return this.usersService.updateProfile(file, userProfileDto.userId, userProfileDto.nickUpdate);
   }
 
