@@ -734,8 +734,6 @@ const twofahandling = async () => {
 .nickname {
   font-size: 2.5rem;
   font-weight: bold;
-  color: white;
-  /* Customize the color if needed */
 }
 
 .user-actions {
@@ -900,14 +898,11 @@ td {
   top: 10px;
   right: 20px;
   transition: all 0.2s ease-in-out;
-  /* Add a smooth transition on hover */
 }
 
 .settingsButton:hover {
   color: #c0c0c0;
-  /* Change the color when hovering */
   transform: scale(1.2);
-  /* Make the icon 20% bigger on hover */
 }
 
 .settings-content {
