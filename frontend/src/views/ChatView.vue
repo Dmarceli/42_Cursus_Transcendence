@@ -706,6 +706,8 @@ const isUserMorePowerful = (userList, target) => {
   }
   if (target['user_id']['nick'] === users_Nick || !is_owner_of_channel && !is_admin_of_channel)
     return false;
+  if((!is_owner_of_channel && is_admin_of_channel) && target['is_admin'])
+    return false
   if (target['is_owner'])
     return false
   return true;
