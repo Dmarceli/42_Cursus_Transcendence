@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { ref,onBeforeMount, reactive, computed } from 'vue';
+import { ref, onBeforeMount, reactive, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import jwt_decode from 'jwt-decode';
 import router from '@/router';
+import NotFound from "../components/NotFound.vue";
 
 const userTokenData = ref({
-	id: 0,
-	nick: '',
+  id: 0,
+  nick: '',
 });
 
 let token = getCookieValueByName('token');
@@ -18,9 +19,9 @@ userTokenData.value.id = decodedToken.user["id"];
 userTokenData.value.nick = decodedToken.user["nick"];
 
 const userProfile = ref({
-	id: 0,
+  id: 0,
   nick: '',
-	intra_nick: '',
+  intra_nick: '',
   avatar: '',
   won_games: 0,
   lost_games: 0,
@@ -48,31 +49,32 @@ const defaultGame = {
 const lastGames = ref([
 ]);
 
-let avatarUploadFile = ref<File|null>(null);
+let avatarUploadFile = ref<File | null>(null);
 const isSettingsOpen = ref(false);
 const updateNickname = ref(userProfile.value.nick);
 const updateAvatar = ref('');
-let inputKey=ref(0)
+let inputKey = ref(0)
 const route = useRoute();
 const isUserBlocked = ref(false)
 const isUserFriend = ref(false)
 const showAlert = ref(false);
 let twofaSwitch = ref('false');
 let qrcode_twofa= ref('')
+let profileFound = ref(true)
 
 const usernameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
 
 const nickname = reactive({
-	rules: [
-		value => value.length < 20 || 'Nickname too long',
-		value => usernameRegex.test(value) || 'Invalid Characters found',
-	],
+  rules: [
+    value => value.length < 20 || 'Nickname too long',
+    value => usernameRegex.test(value) || 'Invalid Characters found',
+  ],
 });
 
 library.add(fas);
 
 const isOwnProfile = computed(() => {
-	return userProfile.value.id === userTokenData.value.id;
+  return userProfile.value.id === userTokenData.value.id;
 });
 
 function getCookieValueByName(name: string) {
@@ -92,7 +94,7 @@ const fetchUserProfile = async () => {
   if (route.name === 'myProfile') {
     url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
   } else {
-    url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/'+route.params.intra_nick;
+    url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/' + route.params.intra_nick;
   }
   try {
     const response = await fetch(url, {
@@ -103,9 +105,9 @@ const fetchUserProfile = async () => {
     if (response.ok) {
       const data = await response.json();
       userProfile.value = data;
-      twofaSwitch.value=userProfile.value.TwoFAEnabled.toString()
+      twofaSwitch.value = userProfile.value.TwoFAEnabled.toString()
     } else {
-      router.replace("/")
+      profileFound.value=false
     }
   } catch (error) {
     router.replace("/")
@@ -139,8 +141,8 @@ const fetchBlockStatus = async () => {
 const fetchFriends = async () => {
   if (route.name !== 'otherProfile')
     return
-    let url = process.env.VUE_APP_BACKEND_URL + '/friends/';
-    try {
+  let url = process.env.VUE_APP_BACKEND_URL + '/friends/';
+  try {
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -178,32 +180,29 @@ const fetchLeaderboard = async () => {
     }
   };
 
-  const fetchLastFiveGames = async () => {
-	try {
-		let url = process.env.VUE_APP_BACKEND_URL + '/game-history/'+userProfile.value.id;
-		const response = await fetch(url, {
+
+const fetchLastFiveGames = async () => {
+  try {
+    let url = process.env.VUE_APP_BACKEND_URL + '/game-history/' + userProfile.value.id;
+    const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
     if (response.ok) {
       const data = await response.json();
-      for (let backendPastGame of data)
-      {
+      for (let backendPastGame of data) {
         let opponentNick: string
         let userScore: number
         let oppponentScore: number
         let oppponentAvatar: number
         let isUserWinner = backendPastGame.user_id_winner.nick == userProfile.value.nick
-        //console.log(backendPastGame)
-        if (isUserWinner)
-        {
+        if (isUserWinner) {
           userScore = 5
           oppponentScore = backendPastGame.points
           opponentNick = backendPastGame.user_id_loser.nick
           oppponentAvatar = backendPastGame.user_id_loser.avatar
-        } else
-        {
+        } else {
           userScore = backendPastGame.points
           oppponentScore = 5
           opponentNick = backendPastGame.user_id_winner.nick
@@ -216,7 +215,7 @@ const fetchLeaderboard = async () => {
             score: userScore,
             avatar: userProfile.value.avatar,
           },
-          opponent: 
+          opponent:
           {
             nick: opponentNick,
             score: oppponentScore,
@@ -230,17 +229,20 @@ const fetchLeaderboard = async () => {
       // Handle the case when the request fails
       console.error('Error fetching Game History data:', response.statusText);
     }
-	} catch (error) {
-		console.error('Error fetching Game History data', error);
-	}
+  } catch (error) {
+    console.error('Error fetching Game History data', error);
+  }
 }
 
 onBeforeMount(async () => {
 	await fetchUserProfile();
-  await fetchBlockStatus();
-  await fetchFriends();
-  await fetchLeaderboard();
-	await fetchLastFiveGames();
+  if (profileFound.value)
+  {
+    await fetchBlockStatus();
+    await fetchFriends();
+    await fetchLeaderboard();
+    await fetchLastFiveGames();
+  }
 });
 
 function openSettings() {
@@ -250,7 +252,7 @@ function openSettings() {
 const handleNewAvatar = async (event: Event) => {
   const fileInput = event.target;
   if (fileInput instanceof HTMLInputElement && fileInput.files && fileInput.files.length > 0) {
-  const file = fileInput.files[0];
+    const file = fileInput.files[0];
     let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
     if (!regex.test(file.name)) {
       alert("Please upload an image file");
@@ -261,53 +263,68 @@ const handleNewAvatar = async (event: Event) => {
     }
     avatarUploadFile.value = file;
     const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          updateAvatar.value = result;
-        }
-        else {
-          console.error('Error reading file');
-        }
-      };
-      reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (typeof result === 'string') {
+        updateAvatar.value = result;
+      }
+      else {
+        console.error('Error reading file');
+      }
+    };
+    reader.readAsDataURL(file);
   }
 }
 
-async function saveSettings() {	
-  if (!usernameRegex.test(updateNickname.value)){
+// // FirstComponent.vue
+
+import { useStore } from 'vuex'
+
+
+const store1 = useStore()
+const emit = defineEmits(['user_dm'])
+
+const goToSecondComponent = () => {
+  router.push({ name: 'chat' }).then(() => {
+    //emit('user_dm', userProfile.value.id)
+    store1.commit('user_dm', userProfile.value.id)
+  })
+}
+
+
+async function saveSettings() {
+  if (!usernameRegex.test(updateNickname.value)) {
     return
   }
   let oldNick = userProfile.value.nick;
-	if (updateNickname.value !== ''){
+  if (updateNickname.value !== '') {
     userProfile.value.nick = updateNickname.value;
   }
   let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$/);
-    try {
-      const formData = new FormData();
-      if (avatarUploadFile.value && regex.test(avatarUploadFile.value.name)) {
-        formData.append('file', avatarUploadFile?.value );
-      }
-      formData.append('userId', String(userProfile.value.id));
-      formData.append('nickUpdate', userProfile.value.nick);
-      const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
-        method: 'POST',
-        body: formData,
-      });
-      if (response.ok) {
-        let data = await response.json();
-        console.log("NEW URL "+data.newAvatar);
-        updateToken();        
-      }
-      //Caso o Nick já esteja em Uso
-      else if(response){
-        userProfile.value.nick = oldNick;
-        alert("User already in Use")
-      }
-    } catch(error) {
-        console.log('Error:', error);
-        userProfile.value.nick = oldNick;
-      }
+  try {
+    const formData = new FormData();
+    if (avatarUploadFile.value && regex.test(avatarUploadFile.value.name)) {
+      formData.append('file', avatarUploadFile?.value);
+    }
+    formData.append('userId', String(userProfile.value.id));
+    formData.append('nickUpdate', userProfile.value.nick);
+    const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
+      method: 'POST',
+      body: formData,
+    });
+    if (response.ok) {
+      let data = await response.json();
+      updateToken();
+    }
+    //Caso o Nick já esteja em Uso
+    else if (response) {
+      userProfile.value.nick = oldNick;
+      alert("User already in Use")
+    }
+  } catch (error) {
+    console.log('Error:', error);
+    userProfile.value.nick = oldNick;
+  }
   closeSettings();
 }
 
@@ -348,13 +365,12 @@ async function BlockUser() {
         'user_to_block': userProfile.value.id,
       }),
       headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
     });
     if (response.ok) {
       const data = await response.json();
-      console.log(data)
       isUserBlocked.value = true
       isUserFriend.value = false
     } else {
@@ -374,13 +390,12 @@ async function UnBlockUser() {
         'user_to_unblock': userProfile.value.id,
       }),
       headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
     });
     if (response.ok) {
       const data = await response.json();
-      console.log(data)
       isUserBlocked.value = false
     } else {
       console.log('Error during UnblockUser:', response.status);
@@ -422,8 +437,6 @@ const addFriend = async () => {
 const removeFriend = async () => {
   if (confirm('Are you sure you want to stop being friends with ' + userProfile.value.nick + '?')) {
     try {
-      console.log("Us"+userTokenData.value.id)
-      console.log("Them"+userProfile.value.id)
       const url = `${process.env.VUE_APP_BACKEND_URL}/friends/deletefriends/${userTokenData.value.id}/${userProfile.value.id}`;
       const response = await fetch(url, {
         method: 'DELETE',
@@ -434,7 +447,7 @@ const removeFriend = async () => {
       });
       if (response.ok) {
         const data = await response.json();
-        isUserFriend.value=false;
+        isUserFriend.value = false;
       } else {
         console.log('Error:', response.status);
       }
@@ -446,9 +459,8 @@ const removeFriend = async () => {
 };
 
 const twofahandling = async () => {
-  console.log(twofaSwitch.value, userProfile)
-  if(twofaSwitch.value == 'false'){
-    qrcode_twofa.value=''
+  if (twofaSwitch.value == 'false') {
+    qrcode_twofa.value = ''
     try {
       const url = `${process.env.VUE_APP_BACKEND_URL}/auth/remove2fa`;
       const response = await fetch(url, {
@@ -467,7 +479,7 @@ const twofahandling = async () => {
     }
     return
   }
-  else{
+  else {
     try {
       const url = `${process.env.VUE_APP_BACKEND_URL}/auth/gen2fa`;
       const response = await fetch(url, {
@@ -482,7 +494,7 @@ const twofahandling = async () => {
         const imageObjectURL = URL.createObjectURL(img);
         const image = document.createElement('img')
         image.src = imageObjectURL
-        qrcode_twofa.value= imageObjectURL
+        qrcode_twofa.value = imageObjectURL
       } else {
         console.log('Error:', response.status);
       }
@@ -496,39 +508,48 @@ const twofahandling = async () => {
 </script>
 
 <template>
-	<div class="profile">
+ <div v-if="!profileFound">
+  <NotFound></NotFound>
+</div>
+	<div v-else class="profile">
     <transition name="fade" mode="out-in">
-    <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert" color="success"
-      icon="$success" title="Success!" text="Friendship request sent successfully!" dismissible></v-alert>
+      <v-alert style="position: fixed; z-index: 200; top: 20px; right: 20px; width: 300px;" v-if="showAlert"
+        color="success" icon="$success" title="Success!" text="Friendship request sent successfully!"
+        dismissible></v-alert>
     </transition>
     <!-- Avatar and Nick -->
     <div class="profile-header">
       <v-avatar class="avatar-container">
-        <img :src="userProfile.avatar" alt="Avatar" class="avatar" :class="{'grey-out' : isUserBlocked}" />
-			</v-avatar>
-      <h1 class="nickname" >{{ userProfile.nick }}</h1>
-      <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile" @click="openSettings" />
-			<div class="user-actions" >
-          <v-btn class="ma-2" v-if="!isOwnProfile && !isUserFriend" @click="addFriend()" color="green-darken-1">
-            Add Friend <v-icon end icon="mdi-account-plus-outline"></v-icon>
-          </v-btn>
-          <v-btn class="ma-2" v-if="!isOwnProfile && isUserFriend" @click="removeFriend()" color="blue-grey-darken-3">
-            You are Friends <v-icon end icon="mdi-star-face" color="green-darken-1"></v-icon>
-          </v-btn>
+        <img :src="userProfile.avatar" alt="Avatar" class="avatar" :class="{ 'grey-out': isUserBlocked }" />
+      </v-avatar>
+      <h1 class="nickname">{{ userProfile.nick }}</h1>
+      <font-awesome-icon class="settingsButton" :icon="['fas', 'gear']" style="color: #77767b;" v-if="isOwnProfile"
+        @click="openSettings" />
+      <div class="user-actions">
+        <v-btn class="ma-2" v-if="!isOwnProfile && !isUserFriend" @click="addFriend()" color="green-darken-1">
+          Add Friend <v-icon end icon="mdi-account-plus-outline"></v-icon>
+        </v-btn>
+        <v-btn class="ma-2" v-if="!isOwnProfile && isUserFriend" @click="removeFriend()" color="blue-grey-darken-3">
+          You are Friends <v-icon end icon="mdi-star-face" color="green-darken-1"></v-icon>
+        </v-btn>
 
-          <v-btn class="ma-2" v-if="!isOwnProfile && !isUserBlocked" @click="BlockUser()" color="red-darken-4">
-            Block <v-icon end icon="mdi-account-cancel-outline"></v-icon>
-          </v-btn>
-					<v-btn class="ma-2" v-if="!isOwnProfile && isUserBlocked" @click="UnBlockUser()" color="light-blue-lighten-2">
-						Unblock <v-icon end icon="mdi-account-lock-open-outline"></v-icon>
-					</v-btn>
-			</div>
+        <v-btn class="ma-2" v-if="!isOwnProfile && !isUserBlocked" @click="BlockUser()" color="red-darken-4">
+          Block <v-icon end icon="mdi-account-cancel-outline"></v-icon>
+        </v-btn>
+        <v-btn class="ma-2" v-if="!isOwnProfile && isUserBlocked" @click="UnBlockUser()" color="light-blue-lighten-2">
+          Unblock <v-icon end icon="mdi-account-lock-open-outline"></v-icon>
+        </v-btn>
+
+        <v-btn class="ma-2" v-if="!isOwnProfile" @click="goToSecondComponent" color="green-darken-1">
+          DM to User <v-icon end icon="mdi-email"></v-icon>
+        </v-btn>
+      </div>
     </div>
     <div class="profile-body">
       <!-- Statistics -->
       <h2 class="profile">Statistics</h2>
       <div class="statistics">
-	      <div class="stat-board">
+        <div class="stat-board">
           <div class="stat-item">
             <div class="stat-label">Games Won</div>
             <div class="stat-value">{{ userProfile.won_games }}</div>
@@ -542,43 +563,47 @@ const twofahandling = async () => {
             <div class="stat-value">{{ userProfile.lost_games }}</div>
           </div>
         </div>
-	    </div>
+      </div>
 
       <!-- Game History -->
       <template v-if=lastGames.length>
-      <h2 class="profile">Recent Games</h2></template>
+        <h2 class="profile">Recent Games</h2>
+      </template>
       <div class="game-history-container">
-	      <div class="game-history">
-        <table>
-          <tbody>
-          
-            <template v-if="lastGames.length" v-for="i in 5">
-              <tr v-if="i - 1< lastGames.slice(-5).length" :key="lastGames.slice(-5)[i-1].id" :class="{'game-won': lastGames.slice(-5)[i-1].userWon, 'game-lost': !lastGames.slice(-5)[i-1].userWon}">
-                <td class="recent-game-user">
-                  <div class="history-avatar-container">
-                    <img :src="lastGames.slice(-5)[i-1].user.avatar" alt="Avatar" class="history-avatar" />
-                    <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="lastGames.slice(-5)[i-1].userWon" />
-                  </div>
-                  <span class="history-player-nick">{{ lastGames.slice(-5)[i-1].user.nick }}</span>
-                </td>
-                <td class="user-score">{{ lastGames.slice(-5)[i-1].user.score }}</td>
-                <td class="vs">-</td>
-                <td class="opponent-score">{{ lastGames.slice(-5)[i-1].opponent.score }}</td>
-                <td  class="recent-game-user">
-                <div class="history-avatar-container">
-                  <img :src="lastGames.slice(-5)[i-1].opponent.avatar" alt="Avatar" class="history-avatar" />
-                  <FontAwesomeIcon :icon="['fas', 'crown']" :style="{color: 'gold'}" class="crown" v-if="!lastGames.slice(-5)[i-1].userWon" />
-                </div>
-                <span class="history-player-nick">{{ lastGames.slice(-5)[i-1].opponent.nick }}</span>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-	      </div>
+        <div class="game-history">
+          <table>
+            <tbody>
+
+              <template v-if="lastGames.length" v-for="i in 5">
+                <tr v-if="i - 1 < lastGames.slice(-5).length" :key="lastGames.slice(-5)[i - 1].id"
+                  :class="{ 'game-won': lastGames.slice(-5)[i - 1].userWon, 'game-lost': !lastGames.slice(-5)[i - 1].userWon }">
+                  <td class="recent-game-user">
+                    <div class="history-avatar-container">
+                      <img :src="lastGames.slice(-5)[i - 1].user.avatar" alt="Avatar" class="history-avatar" />
+                      <FontAwesomeIcon :icon="['fas', 'crown']" :style="{ color: 'gold' }" class="crown"
+                        v-if="lastGames.slice(-5)[i - 1].userWon" />
+                    </div>
+                    <span class="history-player-nick">{{ lastGames.slice(-5)[i - 1].user.nick }}</span>
+                  </td>
+                  <td class="user-score">{{ lastGames.slice(-5)[i - 1].user.score }}</td>
+                  <td class="vs">-</td>
+                  <td class="opponent-score">{{ lastGames.slice(-5)[i - 1].opponent.score }}</td>
+                  <td class="recent-game-user">
+                    <div class="history-avatar-container">
+                      <img :src="lastGames.slice(-5)[i - 1].opponent.avatar" alt="Avatar" class="history-avatar" />
+                      <FontAwesomeIcon :icon="['fas', 'crown']" :style="{ color: 'gold' }" class="crown"
+                        v-if="!lastGames.slice(-5)[i - 1].userWon" />
+                    </div>
+                    <span class="history-player-nick">{{ lastGames.slice(-5)[i - 1].opponent.nick }}</span>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  
+
 
     <!-- Settings Modal -->
     <div v-if="isSettingsOpen" class="dimmed-background"></div>
@@ -591,15 +616,16 @@ const twofahandling = async () => {
           <div class="avatar-container-settings">
             <img :src="updateAvatar || userProfile.avatar" alt="Avatar" class="avatar-settings" />
           </div>
-          <input type="file" @change="handleNewAvatar" id="avatar-file" :key="inputKey"/>
+          <input type="file" @change="handleNewAvatar" id="avatar-file" :key="inputKey" />
         </div>
         <!-- Nickname -->
         <div class="settings-section">
-					<v-text-field v-model="updateNickname" label="Nickname" class="nickname-settings" :rules="nickname.rules"/>
+          <v-text-field v-model="updateNickname" label="Nickname" class="nickname-settings" :rules="nickname.rules" />
         </div>
         <!-- Enable 2 Fa -->
-        <v-switch label="2FA" inset inline   v-model="twofaSwitch" true-value='true' false-value='false' @change="twofahandling"></v-switch>
-        <div v-if="twofaSwitch=='true'">
+        <v-switch label="2FA" inset inline v-model="twofaSwitch" true-value='true' false-value='false'
+          @change="twofahandling"></v-switch>
+        <div v-if="twofaSwitch == 'true'">
           <img :src=qrcode_twofa>
         </div>
         <div class="modal-buttons">
@@ -608,11 +634,10 @@ const twofahandling = async () => {
         </div>
       </div>
     </div>
-	</div>
+  </div>
 </template>
 
 <style scoped>
-
 .profile {
   font-family: 'Roboto', sans-serif;
   max-width: 80vw;
@@ -624,7 +649,7 @@ const twofahandling = async () => {
 .profile-header {
   display: flex;
   align-items: center;
-	justify-content: space-between;
+  justify-content: space-between;
   border: 2px solid hsla(160, 100%, 37%, 1);
   border-radius: 8px;
   padding: 20px;
@@ -633,15 +658,15 @@ const twofahandling = async () => {
 }
 
 .v-avatar.v-avatar--density-default {
-	width: 20vw;
+  width: 20vw;
   max-width: 200px;
   height: 20vw;
   max-height: 200px;
 }
 
 .avatar-container {
-  width:100px;
-  height:100px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 10px;
@@ -649,8 +674,8 @@ const twofahandling = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-	margin-top: 10px;
-	margin-bottom: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .avatar {
@@ -677,23 +702,23 @@ const twofahandling = async () => {
     text-align: center;
   }
 
-	.avatar-container img {
-		position: relative;
-	}
+  .avatar-container img {
+    position: relative;
+  }
 
-	.profile-header .stat-item {
-		margin-bottom: 10px;
-	}
+  .profile-header .stat-item {
+    margin-bottom: 10px;
+  }
 
-	.user-actions {
-		max-width: 170px;
-		margin: 0 auto;
-	}
+  .user-actions {
+    max-width: 170px;
+    margin: 0 auto;
+  }
 }
 
 .avatar-container-settings {
-  width:100px;
-  height:100px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 10px;
@@ -701,8 +726,8 @@ const twofahandling = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-	margin-top: 10px;
-	margin-bottom: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .avatar-settings {
@@ -713,15 +738,14 @@ const twofahandling = async () => {
 
 .nickname {
   font-size: 2.5rem;
-	font-weight: bold;
-  color: white; /* Customize the color if needed */
+  font-weight: bold;
 }
 
 .user-actions {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .profile-body {
@@ -798,6 +822,7 @@ table {
   border-collapse: collapse;
 
 }
+
 .game-won {
   background-color: #47a170;
 }
@@ -877,12 +902,12 @@ td {
   position: absolute;
   top: 10px;
   right: 20px;
-  transition: all 0.2s ease-in-out; /* Add a smooth transition on hover */
+  transition: all 0.2s ease-in-out;
 }
 
 .settingsButton:hover {
-  color: #c0c0c0; /* Change the color when hovering */
-  transform: scale(1.2); /* Make the icon 20% bigger on hover */
+  color: #c0c0c0;
+  transform: scale(1.2);
 }
 
 .settings-content {
@@ -897,13 +922,13 @@ td {
 .modal-buttons {
   display: flex;
   justify-content: flex-end;
-	align-content: space-around;
+  align-content: space-around;
   margin-top: 10px;
 }
 
 .save {
-	margin-right: 10px;
-	color: #87cefa;
+  margin-right: 10px;
+  color: #87cefa;
 }
 
 .dimmed-background {
@@ -915,11 +940,12 @@ td {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 99;
 }
+
 img.grey-out {
-    filter: grayscale(100%) opacity(0.5);
+  filter: grayscale(100%) opacity(0.5);
 }
 
-h2.profile{
+h2.profile {
   color: rgb(225, 225, 225);
   text-align: left;
   padding: 10px;
@@ -928,14 +954,10 @@ h2.profile{
   padding: 1.2vw;
 }
 
-.recent-game-user
-{
+.recent-game-user {
   padding: 1.7%;
 }
 
-.default-game
-{
+.default-game {
   background-color: rgb(234, 220, 192);
-}
-
-</style>
+}</style>

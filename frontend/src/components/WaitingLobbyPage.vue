@@ -9,16 +9,14 @@ let ellipsis = ref("")
 
 onMounted(() => {
   setInterval(() => {
-    if (ellipsis.value.length < 3)
-      {
-        ellipsis.value +="."
-      }
+    if (ellipsis.value.length < 3) {
+      ellipsis.value += "."
+    }
     else
-        ellipsis.value =""
-    }, 800);
+      ellipsis.value = ""
+  }, 800);
 })
 
 </script>
 
-<style>
-</style>
+<style></style>

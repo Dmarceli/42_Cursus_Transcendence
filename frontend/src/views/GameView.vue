@@ -13,9 +13,10 @@
     <v-btn @click="ResetView">
       Start Menu
     </v-btn>
-</div>
+  </div>
   <div v-else class="board">
-    <Pong2D :game-state="gameState" :intra-nick="users_Name" @player-won="playerWon = true" @player-lost="playerLost = true"/>
+    <Pong2D :game-state="gameState" :intra-nick="users_Name" @player-won="playerWon = true"
+      @player-lost="playerLost = true" />
   </div>
 </template>
 
@@ -35,8 +36,7 @@ let decodedToken: TokenType;
 let users_Name = ref("");
 let gameState = ref(0)
 
-interface TokenType
-{
+interface TokenType {
   user: {
     intra_nick: string,
     nick: string,
@@ -58,16 +58,13 @@ onBeforeMount(async () => {
 })
 
 onMounted(() => {
-  console.log('Mounted Game View');
-  playerWon.value=false
-  playerLost.value=false
-  console.log("users_name "+users_Name)
+  playerWon.value = false
+  playerLost.value = false
 })
 
-function ResetView()
-{
-  playerWon.value=false
-  playerLost.value=false
+function ResetView() {
+  playerWon.value = false
+  playerLost.value = false
   gameState.value = 0
 }
 
@@ -84,9 +81,7 @@ function getCookieValueByName(name: any) {
 }
 
 socket?.on('UpdatedState', (value: State) => {
-  console.log("GOT UPDATED STATE "+value)
-  console.log(StateMessage[value])
-  gameState.value=value
+  gameState.value = value
 })
 
 </script>
@@ -109,5 +104,4 @@ socket?.on('UpdatedState', (value: State) => {
   aspect-ratio: 2;
   min-width: 300px;
 }
-
 </style>

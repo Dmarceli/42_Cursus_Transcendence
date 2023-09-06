@@ -24,7 +24,6 @@ export class FortyTwoAuthStrategy extends PassportStrategy(Strategy, '42') {
     const user = await this.userService.findByLogin(profile._json.login);
 
     if (user) {
-      console.log('User already exists!');
       return user;
     }
 

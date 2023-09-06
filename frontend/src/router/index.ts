@@ -4,6 +4,7 @@ import ChatView from '../views/ChatView.vue'
 import LeaderboardView from '../views/LeaderboardView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import TwoFAVerification from '../views/TwoFAVerification.vue'
+import NotFound from '@/components/NotFound.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,11 +34,16 @@ const router = createRouter({
       name: 'myProfile',
       component: ProfileView,
     },
-		{
-			path: '/profile/:intra_nick',
+    {
+      path: '/profile/:intra_nick',
       name: 'otherProfile',
       component: ProfileView
-		}
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: NotFound
+    }
   ]
 })
 

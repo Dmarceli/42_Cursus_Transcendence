@@ -18,7 +18,7 @@ export class UserToChannelController {
     ) {}
   
  @Post('/joinchannel')
-  async create(@Body() channelID: any, @getUserIDFromToken() user:User, @Res() res: any) {
+  async create(@Body() channelID: CreateUserToChannDto, @getUserIDFromToken() user:User, @Res() res: any) {
     const channel = await this.channelService.getChannelByID(channelID.id)
     if (!channel || !channelID.id || !channelID ){
       return res.status(202).json({ message: 'Channel Doesnt exist' });
@@ -30,7 +30,7 @@ export class UserToChannelController {
   
 
   @Post('/leavechannel')
-  async leave(@Body() channelID: any, @getUserIDFromToken() user: User, @Res() res: any) {
+  async leave(@Body() channelID: { id: number }, @getUserIDFromToken() user: User, @Res() res: any) {
     const user_ = await this.userService.findByLogin(user['user']['intra_nick']);
     this.userToChannelService.leavechannel(user_.id, channelID.id);
     return res.status(200).json({ message: 'Left channel' });

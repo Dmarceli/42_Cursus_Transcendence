@@ -32,12 +32,6 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
  @SubscribeMessage('sendMessage')
  @UsePipes(new ValidationPipe())
  async handleSendMessage(client: Socket, payload: CreateMsgDto): Promise<void> {
-
-  // console.log(new Date(),payload)
-  // console.log("ROOM-",payload.channelId.toString(), client.id)
-  // console.log( this.server.sockets.adapter.rooms.get(payload.channelId.toString()))
-  // console.log(payload)
-
   await this.appService.createMessage(payload);
   this.server.to(payload.channelId.toString()).emit('recMessage', payload);
 
@@ -48,7 +42,6 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
  }
  
  handleDisconnect(client: Socket) {
-   console.log(`Disconnected: ${client.id}`);
    this.appService.user_remove_disconect(client)
    this.gameService.HandlePlayerDisconnected(client)
    AppService.UsersOnline.forEach((user) => {
@@ -58,14 +51,13 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
 
  //1º step após conexão
  async handleConnection(client: Socket, server: Server, @Res() res: any) {
-  console.log(`Connected ${client.id}`);
   let Channel_List:string [] = [];
   const authorization = await this.appService.add_user_to_lobby(client, server,Channel_List)
   client.join(Channel_List)
   if(!authorization){
     client.emit('logout')
     client.disconnect();
-    console.log(`Discnnected Auth missing -  ${client.id}`)
+    console.log(`Disconnected Auth missing -  ${client.id}`)
   }
   AppService.UsersOnline.forEach((user) => {
     user.client.emit("online-status-update");
@@ -93,7 +85,6 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
   }
   @SubscribeMessage('PlayerReady')
   handlePlayerReady(client: Socket, intra_nick: string) {
-    console.log("New Player ready "+intra_nick)
     this.gameService.PlayerReady(client, intra_nick)
   }
   @SubscribeMessage('keydown')

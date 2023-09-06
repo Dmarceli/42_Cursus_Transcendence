@@ -1,4 +1,4 @@
-import { Controller, Param, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Param, Get, Post, Query, Req, Res, UseGuards, Body } from '@nestjs/common';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AuthService } from './auth.service';
 import { FortyTwoAuthGuard } from './42/auth.guard';
@@ -10,6 +10,9 @@ import { JwtService } from '@nestjs/jwt';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { GoogleAuthGuard } from './google/auth_google.guard';
+import { TwoFACodeCheck } from './2FA/2FA-CodeCheck-Dto';
+
+
 @Controller('/auth')
 export class AuthController {
   constructor(
@@ -30,7 +33,7 @@ export class AuthController {
 
   @UseGuards(FortyTwoAuthGuard)
   @Get('/callback_intra')
-  async callbackIntra(@Req() req: any, @Res() res: any) {
+  async callbackIntra(@Req() req: { user: User }, @Res() res: any) {
     const payload = await this.authService.login(req.user);
     if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
@@ -59,8 +62,8 @@ export class AuthController {
 
   @Get('/callback_google')
   @UseGuards(GoogleAuthGuard)
-  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
-    const payload = this.authService.googleLogin(req)
+  async googleAuthRedirect(@Req() req: { user: User }, @Res() res: any) {
+    const payload = this.authService.googleLogin(req.user)
     if (payload.TwoFAEnabled && payload.TwoFASecret) {
       const payload2FA = {
         login: payload.user.intra_nick,
@@ -71,7 +74,7 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
-      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
+      res.cookie('token', payload.access_token, { secure: true, SameSite: 'None', domain: 'localhost' })
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
 
@@ -80,9 +83,9 @@ export class AuthController {
   }
 
   @Post('/check2fa')
-  async check2FAcode(@Req() req: any, @Res() res: any) {
-    const user_ = await this.userService.findByLogin(req.body.id.login)
-    let verified = await this.TwoFactorAuthService.verifyTwoFaCode(req.body.code, user_)
+  async check2FAcode(@Body() body: TwoFACodeCheck, @Res() res: any) {
+    const user_ = await this.userService.findByLogin(body.id)
+    let verified = await this.TwoFactorAuthService.verifyTwoFaCode(body.code, user_)
     if (verified && user_) {
       const payload = await this.authService.login(user_)
       res.cookie('token', payload.access_token)
@@ -95,7 +98,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/gen2fa')
   async gen2FAcode(@Res() res: any, @getUserIDFromToken() user: User) {
-    console.log(user)
     const user_ = await this.userService.findByLogin(user['user']['intra_nick'])
     const url_ = await this.TwoFactorAuthService.generateTwoFactorAuthSecret(user_)
     const qrCode = require('qrcode')
@@ -115,7 +117,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/remove2fa')
   async remove2facode(@Res() res: any, @getUserIDFromToken() user: User) {
-    console.log(user)
     const user_ = await this.userService.findByLogin(user['user']['intra_nick'])
     await this.TwoFactorAuthService.remove2fa(user_)
   }
@@ -150,18 +151,5 @@ export class AuthController {
       res.status(401).json({ message: 'Invalid verification code' });
     }
   }
-  // @UseGuards(JwtAuthGuard)
-  // @Post('logout')
-  // async logout(@Req() req: any, @Res() res: any) {
-  //   console.log('\nlogout');
-  //   const userName = req.user.username;
 
-  //   return req.logOut(() => {
-  //     res.json({
-  //       user: userName,
-  //       message: 'User has been logged out!',
-  //     });
-  //   });
-
-  // }
 }

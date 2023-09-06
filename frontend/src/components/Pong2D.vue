@@ -54,43 +54,35 @@ const board_dims = {
 let score: Score | null = null
 let disconnectedId: number | null = null
 
-function IsLobbyPlayer()
-{
+function IsLobbyPlayer() {
   return props.gameState == State.LOBBY_PLAYER
 }
 
-function IsInQueue()
-{
+function IsInQueue() {
   return props.gameState == State.IN_LOBBY_QUEUE
 }
 
-function IsNotReady()
-{
+function IsNotReady() {
   return props.gameState == State.NOT_READY || props.gameState == State.DISCONNECTED
 }
 
-function OtherNotReady()
-{
+function OtherNotReady() {
   return props.gameState == State.WAITING_OTHER_READY
 }
 
-function IsStarting()
-{
+function IsStarting() {
   return props.gameState == State.STARTING
 }
 
-function IsOpponentDisconnected()
-{
+function IsOpponentDisconnected() {
   return props.gameState == State.OPPONENT_DISCONNECTED
 }
 
 onMounted(() => {
-  console.log('Mounted Pong')
   window.addEventListener('resize', onWidthChange)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
-  if (props.gameState == State.OPPONENT_DISCONNECTED)
-  {
+  if (props.gameState == State.OPPONENT_DISCONNECTED) {
     let ellipsis = ''
     disconnectedId = setInterval(() => {
       reconnecting.value = 'Waiting for other user to reconnect'
@@ -105,7 +97,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  console.log('Unmounting Pong')
   socket?.emit('PlayerExited')
   window.removeEventListener('resize', onWidthChange)
   window.removeEventListener('keydown', onKeyDown)
@@ -113,9 +104,7 @@ onUnmounted(() => {
 })
 
 watch(props, (newValue, oldValue) => {
-  console.log("PONG NOTICED CHANGE IN Game state from "+oldValue+" to "+newValue)
-  if (props.gameState == State.OPPONENT_DISCONNECTED)
-  {
+  if (props.gameState == State.OPPONENT_DISCONNECTED) {
     let ellipsis = ''
     disconnectedId = setInterval(() => {
       reconnecting.value = 'Waiting for other user to reconnect'
@@ -238,7 +227,6 @@ function onWidthChange() {
 
 function onKeyDown(event: KeyboardEvent) {
   if (paddle1 != null) {
-    console.log(event.key)
     const handlers: any = {
       ArrowUp: () => {
         socket?.emit('keydown', 'up')
@@ -263,8 +251,7 @@ function onKeyUp(event: KeyboardEvent) {
   handlers?.()
 }
 
-function onJoinLobby()
-{
+function onJoinLobby() {
   socket?.emit('AddToLobby', props.intraNick)
 }
 

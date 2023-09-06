@@ -28,7 +28,7 @@ export class EventsController {
 			return res.status(303).json({ message: 'Private Game Request Already Sent' });
 		}
     if (ret == "3") {
-			return res.status(303).json({ message: 'You are aleady in a game' });
+			return res.status(303).json({ message: 'You are already in a game' });
 		}
     if (ret == "4") {
 			return res.status(303).json({ message: 'Other player is already in a game' });
