@@ -172,7 +172,7 @@
   <h3 style="text-align: center;">Selected Users</h3>
   <select class="invitedUsersList" id="inviteUser" name="inviteUser" multiple
     @mousedown="toggleOptionSelection($event)">
-    <option v-for="user in users" :key="user.id" :value="user.id" :selected="isSelectedUser(user.id)"
+    <option v-for="user in UsersNotInChannel" :key="user.id" :value="user.id" :selected="isSelectedUser(user.id)"
       class="user_options">
       {{ user.intra_nick }}
     </option>
@@ -196,7 +196,7 @@
           </v-btn>
         </div>
         <div v-if="getChannelType(selected_channel)" class="fightButton">
-          <v-btn icon @click="showUserInvitePanel=true">
+          <v-btn icon @click="inviteToChannel">
             <font-awesome-icon :icon="['fas', 'user-plus']" style="color: #ffffff" />
           </v-btn>
         </div>
@@ -377,6 +377,7 @@ let User_Friends = ref([]);
 let selected_channel = null;
 let side_info = ref(0);
 let showModal = ref(false);
+let UsersNotInChannel= ref([]);
 const unreadMessages = ref([]);
 let showChannelOptions = ref(false);
 let showUserInvitePanel = ref(false);
@@ -1323,7 +1324,27 @@ watch(messages, () => {
 
 
 const inviteToChannel = () => {
- UsersNo
+ showUserInvitePanel.value=true
+ //Todos os users no channel incluindo o proprio
+ console.log(usersInChannels)
+ //Todos os users existentes menos o proprio
+ console.log(users)
+ 
+ usersInChannels.value.forEach(element => {
+  if(element.user_id.nick != users_Nick)
+  console.log(element.user_id)
+ });
+
+const filtered = users.value.filter(channel => !usersInChannels.value.some(bannedChannel => bannedChannel.user_id.nick === channel.nick))
+UsersNotInChannel.value=filtered;
+console.log(filtered)
+ //Quero subtrair ao users o for each anterior
+  //const bannedList = await this.UserToChannelService_.getBannedChannelList(userID)
+    //const all_channels = await this.ChannelsRepository.find({where: {type: MoreThan(0)}})
+    //const filtered = all_channels.filter(channel => !bannedList.some(bannedChannel => bannedChannel.channel_id.id === channel.id))
+    //return filtered;
+
+
   // if (usersInChannels.value.length > 2) return
   // for (const id in usersInChannels.value) {
   //   if (usersInChannels.value[id].user_id.id != userId) {
