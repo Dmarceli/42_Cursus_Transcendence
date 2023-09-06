@@ -167,11 +167,10 @@ export class GameService {
   ReconnectedPlayer(player: PlayerPaddle, nick: string): boolean {
     let player1ActiveGameIndex = this.active_games.findIndex(game => game.playerPaddle1.user.intra_nick === nick)
     if (player1ActiveGameIndex !== -1) {
+      this.active_games[player1ActiveGameIndex].playerPaddle1.disconnected_date = null
       this.active_games[player1ActiveGameIndex].playerPaddle1.client = player.client
       this.active_games[player1ActiveGameIndex].playerPaddle1.frontEndData.skin = player.frontEndData.skin
 
-      this.active_games[player1ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
-      this.active_games[player1ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
       if (this.player_states.get(this.active_games[player1ActiveGameIndex].playerPaddle2.user.intra_nick) == State.DISCONNECTED) {
         this.SetPlayerStateEmit(this.active_games[player1ActiveGameIndex].playerPaddle1.client, this.active_games[player1ActiveGameIndex].playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
       }
@@ -183,11 +182,10 @@ export class GameService {
     }
     let player2ActiveGameIndex = this.active_games.findIndex(game => game.playerPaddle2.user.intra_nick === nick)
     if (player2ActiveGameIndex !== -1) {
+      this.active_games[player2ActiveGameIndex].playerPaddle2.disconnected_date = null
       this.active_games[player2ActiveGameIndex].playerPaddle2.client = player.client
       this.active_games[player2ActiveGameIndex].playerPaddle2.frontEndData.skin = player.frontEndData.skin
 
-      this.active_games[player2ActiveGameIndex].playerPaddle1.handlePlayersNotReady();
-      this.active_games[player2ActiveGameIndex].playerPaddle2.handlePlayersNotReady();
       if (this.player_states.get(this.active_games[player2ActiveGameIndex].playerPaddle1.user.intra_nick) == State.DISCONNECTED) {
         this.SetPlayerStateEmit(this.active_games[player2ActiveGameIndex].playerPaddle2.client, this.active_games[player2ActiveGameIndex].playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
       }
@@ -205,6 +203,7 @@ export class GameService {
       if (game.playerPaddle1.user.intra_nick === intra_nick) {
         game.playerPaddle1.client = client
         game.playerPaddle1.ready = true
+        game.playerPaddle1.disconnected_date = null
         if (game.playerPaddle2.ready) {
           if (game.timeStart) {
             this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.PLAYING)
@@ -221,6 +220,7 @@ export class GameService {
       else if (game.playerPaddle2.user.intra_nick === intra_nick) {
         game.playerPaddle2.client = client
         game.playerPaddle2.ready = true
+        game.playerPaddle2.disconnected_date = null
         if (game.playerPaddle1.ready) {
           if (game.timeStart) {
             this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.PLAYING)
@@ -241,13 +241,14 @@ export class GameService {
     for (let game of this.active_games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
         game.playerPaddle1.ready = false
+        game.playerPaddle1.disconnected_date = new Date()
         this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.DISCONNECTED)
         this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.OPPONENT_DISCONNECTED)
       } else if (game.playerPaddle2.client && game.playerPaddle2.client.id == client.id) {
         game.playerPaddle2.ready = false
+        game.playerPaddle2.disconnected_date = new Date()
         this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.OPPONENT_DISCONNECTED)
         this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.DISCONNECTED)
-        game.playerPaddle1.client?.emit("PlayerDisconnected")
       }
     }
   }
@@ -295,6 +296,7 @@ export class GameService {
       this.addPrivateGames(this.player_states);
       this.addLobbyGames();
       this.removeFinishedGames();
+      this.finishDisconnectedGames();
       for (let game of this.active_games) {
         if (game.playerPaddle1.client && game.playerPaddle2.client) {
           if (game.playerPaddle1.ready && game.playerPaddle2.ready) {
@@ -366,5 +368,35 @@ export class GameService {
       })
     }
     this.active_games = updated_active_games;
+  }
+  finishDisconnectedGames() {
+    for (let game of this.active_games) {
+      let player1disconnected_time = null;
+      if (game.playerPaddle1.disconnected_date) {
+        player1disconnected_time = Date.now() - game.playerPaddle1.disconnected_date.getTime();
+      }
+      let player2disconnected_time = null;
+      if (game.playerPaddle2.disconnected_date) {
+        player2disconnected_time = Date.now() - game.playerPaddle2.disconnected_date.getTime();
+      }
+      if (player1disconnected_time && player1disconnected_time > 30000)
+      {
+        if (!player2disconnected_time || player1disconnected_time > player2disconnected_time)
+        {
+          game.score.player2 = 5
+          game.playerPaddle1.ready=true
+          game.playerPaddle2.ready=true
+        }
+      }
+      if (player2disconnected_time && player2disconnected_time > 30000)
+      {
+        if (!player1disconnected_time || player2disconnected_time > player1disconnected_time)
+        {
+          game.score.player1 = 5
+          game.playerPaddle1.ready=true
+          game.playerPaddle2.ready=true
+        }
+      }
+    }
   }
 }

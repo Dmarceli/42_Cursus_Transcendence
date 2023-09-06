@@ -15,6 +15,7 @@ export class PlayerPaddle {
     movingUp: Boolean
     user: User
     ready: Boolean
+    disconnected_date: Date | null
     constructor(client: Socket, user: User, skin: string) {
         this.frontEndData = {
             x: -1,
@@ -27,6 +28,7 @@ export class PlayerPaddle {
         this.client = client
         this.user = user
         this.ready = false
+        this.disconnected_date = null
     }
     setInitialPosition(x: number, y: number)
     {
@@ -47,14 +49,5 @@ export class PlayerPaddle {
         this.frontEndData.height = height
         this.movingDown = false
         this.movingUp = false
-    }
-    handlePlayersNotReady()
-    {
-      if (!this.ready)
-      {
-        this.client.emit("GetReady")
-        return
-      }
-        this.client.emit("WaitingOtherPlayer")
     }
 }
