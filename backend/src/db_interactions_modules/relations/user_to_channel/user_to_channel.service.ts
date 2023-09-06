@@ -9,12 +9,14 @@ import { Response } from 'express';
 import { channel } from 'diagnostics_channel';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AppService } from 'src/app.service';
+import { Messages } from 'src/db_interactions_modules/messages/messages.entity';
 
 @Injectable()
 export class UserToChannelService {
   constructor(
     @InjectRepository(UserToChannel) private UserToChannelRepository: Repository<UserToChannel>,
     @InjectRepository(Channel) private ChannelRepository: Repository<Channel> ,
+    @InjectRepository(Messages) private MessageRepository: Repository<Messages> ,
     @InjectRepository(User) private UserRepository: Repository<User>,
     @Inject(forwardRef(() => UsersService))private usersService: UsersService,
     
@@ -63,6 +65,48 @@ export class UserToChannelService {
     await this.notifyRoom(id_ch);
     return resp;
   }
+
+  async deletechannel(id_us: number, id_ch: number) {
+    const channel_to_delete = await this.UserToChannelRepository.findOne({
+      where: {
+        user_id: { id: id_us },
+        channel_id: { id: id_ch }
+      }
+      ,
+      relations: ['user_id', 'channel_id']
+    });
+    if(channel_to_delete && channel_to_delete.is_owner){
+      const users_on_channel = await this.UserToChannelRepository.find({
+        where: {
+          channel_id: { id: id_ch }
+        }
+        ,
+        relations: ['user_id', 'channel_id']
+      });
+      let id_to_notify: number[] = [];
+      users_on_channel.forEach(element => {
+        id_to_notify.push(element.user_id.id)
+      });
+    await this.UserToChannelRepository.remove(users_on_channel);
+    
+    const messages_to_delete = await this.MessageRepository.find({
+      where: {
+        channel: {id: id_ch }
+      }
+    });
+    await this.MessageRepository.remove(messages_to_delete)
+    const channel_to_delete = await this.ChannelRepository.findOne({
+      where: {
+        id: id_ch
+      }
+    })
+    await this.ChannelRepository.remove(channel_to_delete)
+    await this.notifylist(id_to_notify);
+    return ;
+  }
+  else
+  return
+}
 
   async usersonchannel(ch_id: number,caller_id: number) {
     if(ch_id){
@@ -207,6 +251,36 @@ export class UserToChannelService {
   }
 
 
+  async give_ownership_to_user(id_us: number, id_ch: number, caller_id: number, res: Response){
+    const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    if((caller_privileges.is_owner)){
+      const new_owner_ = await this.UserToChannelRepository.findOne({
+        where: {
+          user_id: { id: id_us },
+          channel_id: { id: id_ch }
+        }
+        ,
+        relations: ['user_id', 'channel_id']
+      });
+      const old_owner_ = await this.UserToChannelRepository.findOne({
+        where: {
+          user_id: { id: caller_id },
+          channel_id: { id: id_ch }
+        }
+        ,
+        relations: ['user_id', 'channel_id']
+      });
+        
+      await this.UserToChannelRepository.update(new_owner_, { is_owner: true, is_admin: true })
+      await this.UserToChannelRepository.update(old_owner_, { is_owner: false, is_admin: true })
+      await this.notifyRoom(id_ch);
+      return res.status(200).json()
+    }
+    else{
+      return res.status(403).json("USER NOT AUTHORIZED TO GIVE ADMIN")
+    }
+  }
+
     async give_admin_to_user(id_us: number, id_ch: number, caller_id: number, res: Response, opt: string){
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
     if((caller_privileges.is_admin || caller_privileges.is_owner)){
@@ -266,6 +340,14 @@ export class UserToChannelService {
     else 
       return created_channel
   }
+
+  async notifylist(users: number[]){
+   
+    users.forEach(element => {
+      this.usersService.notifyUser(element,AppService.UsersOnline)
+    });
+  }
+  
 
   async notifyRoom(ch_id: number){
     if(ch_id){

@@ -19,10 +19,11 @@ import { Channel } from 'src/db_interactions_modules/channels/channel.entity';
 import { UsersModule } from 'src/db_interactions_modules/users/users.module';
 import { AppModule } from 'src/app.module';
 import { UserToChannelService } from 'src/db_interactions_modules/relations/user_to_channel/user_to_channel.service';
+import { Messages } from 'src/db_interactions_modules/messages/messages.entity';
 @Module({
   imports: [ 
     // UsersModule,
-    TypeOrmModule.forFeature([User, UserToChannel,Channel]),
+    TypeOrmModule.forFeature([User, UserToChannel,Channel, Messages]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

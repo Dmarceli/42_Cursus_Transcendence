@@ -35,6 +35,15 @@ export class UserToChannelController {
     this.userToChannelService.leavechannel(user_.id, channelID.id);
     return res.status(200).json({ message: 'Left channel' });
   }
+
+  @Post('/deletechannel')
+  async delete_channel(@Body() channelID: { id: number }, @getUserIDFromToken() user: User, @Res() res: any) {
+    if(!channelID)
+      return res.status(403).json({ message: 'Bad Format'});
+    const user_ = await this.userService.findByLogin(user['user']['intra_nick']);
+    this.userToChannelService.deletechannel(user_.id, channelID.id);
+    return res.status(200).json({ message: 'channel deleted' });
+  }
   
 
   @Get('/joinedchannels')
@@ -100,6 +109,12 @@ export class UserToChannelController {
     return this.userToChannelService.give_admin_to_user(us_id,ch_id,user.id,res,action );
   }
   
+  @Post('/giveownership/:userid/on/:channelid')
+  give_ownership_to_user(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+    return this.userToChannelService.give_ownership_to_user(us_id,ch_id,user.id,res);
+  }
+  
+
   @Post('privatemessage/:userid')
   start_private_message(@Param('userid') us_id: number, @getUserIDFromToken() user:User){
     return this.userToChannelService.privatemessage_channel(us_id,user.id);

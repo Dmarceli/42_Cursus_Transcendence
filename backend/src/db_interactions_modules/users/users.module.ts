@@ -9,9 +9,10 @@ import { AppGateway } from '../app/app.gateway';
 import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
 import { Channel } from '../channels/channel.entity';
+import { Messages } from '../messages/messages.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserToChannel,Channel]),
+    TypeOrmModule.forFeature([User, UserToChannel,Channel, Messages]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
