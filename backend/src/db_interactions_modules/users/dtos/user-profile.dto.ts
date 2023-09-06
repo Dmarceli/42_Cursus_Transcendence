@@ -1,6 +1,6 @@
 import { IsNotEmpty, MaxLength } from 'class-validator';
 
-export class CreateUserDto {
+export class UserProfileSettingsDto {
 
   @IsNotEmpty()
   userId: number;
