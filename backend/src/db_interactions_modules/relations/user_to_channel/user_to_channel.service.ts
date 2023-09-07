@@ -10,6 +10,7 @@ import { channel } from 'diagnostics_channel';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AppService } from 'src/app.service';
 import { Messages } from 'src/db_interactions_modules/messages/messages.entity';
+import { EventCreateDto } from 'src/db_interactions_modules/events/dtos/events.dto';
 
 @Injectable()
 export class UserToChannelService {
@@ -50,6 +51,11 @@ export class UserToChannelService {
       is_muted: false,
       is_banned: false,
     });
+  }
+
+  async invite_to_channel(bodyinfo: EventCreateDto) {
+    console.log(bodyinfo)
+    return ;
   }
 
   async leavechannel(id_us: number, id_ch: number) {

@@ -6,6 +6,7 @@ import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDF
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { ChannelsService } from 'src/db_interactions_modules/channels/channels.service';
+import { EventCreateDto } from 'src/db_interactions_modules/events/dtos/events.dto';
 
 
 @UseGuards(JwtAuthGuard)
@@ -25,6 +26,18 @@ export class UserToChannelController {
     }
     const user_ = await this.userService.findByLogin(user['login'])
     this.userToChannelService.joinchannel(channel, user, channelID.pass);
+    return res.status(200).json({message : 'Joined Channel'}) 
+  }
+
+  @Post('/invite_to_channel')
+  async invited_to_channel(@Body() bodyinfo: EventCreateDto, @getUserIDFromToken() user:User, @Res() res: any) {
+    // const channel = await this.channelService.getChannelByID(channelID.id)
+    // if (!channel || !channelID.id || !channelID ){
+    //   return res.status(202).json({ message: 'Channel Doesnt exist' });
+    // }
+    // const user_ = await this.userService.findByLogin(user['login'])
+    // this.userToChannelService.joinchannel(channel, user, channelID.pass);
+    await this.userToChannelService.invite_to_channel(bodyinfo)
     return res.status(200).json({message : 'Joined Channel'}) 
   }
   

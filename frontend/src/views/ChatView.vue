@@ -162,21 +162,22 @@
   </v-row>
 </div>
 </div>
-<div v-if="showUserInvitePanel" class="modal-content">
+<div v-if="showUserInvitePanel" class="modal">
+<div  class="modal-content">
   <div class="modal-header">
     <span class="close" @click="showUserInvitePanel=false">&times;</span>
     <h1>Invite to Channel</h1>
     <button class="next"
-      @click="selectedUsers.length === 1 ? Dmessage(selectedUsers[0]) : createChannelOptions = true">Invite</button>
+      @click="invite_to_chat_room(selected_user_invite)">Invite</button>
   </div>
-  <h3 style="text-align: center;">Selected Users</h3>
-  <select class="invitedUsersList" id="inviteUser" name="inviteUser" multiple
-    @mousedown="toggleOptionSelection($event)">
-    <option v-for="user in UsersNotInChannel" :key="user.id" :value="user.id" :selected="isSelectedUser(user.id)"
+  <h3 style="text-align: center;">Please select from list:</h3>
+  <select class="invitedUsersList" id="inviteUser" name="inviteUser" multiple @mousedown="update_selected_invite_user($event)">
+    <option v-for="user in UsersNotInChannel" :key="user.id" :value="user.id" :selected="selected_to_invite(user.id)"
       class="user_options">
       {{ user.intra_nick }}
     </option>
   </select>
+</div>
 </div>
 <div id="chat-container" ref="chatContainer">
   <div v-if="selected_channel" class="chat-container-header">
@@ -388,6 +389,7 @@ let channelPasswordModal = ref(false);
 let pass_to_join_ch = ref(false)
 let InputChannelPass = ref("")
 let channel_to_join = ref("")
+let selected_user_invite = null;
 
 
 let channelName = ref('');
@@ -1107,6 +1109,14 @@ function toggleOptionSelection(event) {
   }
 }
 
+function update_selected_invite_user(event) {
+  event.preventDefault();
+  const option = event.target;
+  const selectedValue = parseInt(option.value);
+  selected_user_invite=selectedValue;
+  selected_to_invite(selected_user_invite)
+}
+
 const createChannel = async () => {
   let channel_name = channelName.value;
   let channel_password = channelPassword.value;
@@ -1323,60 +1333,48 @@ watch(messages, () => {
 });
 
 
+const selected_to_invite = (user) => {
+  if(selected_user_invite)
+    console.log("aqui",selected_user_invite)
+  console.log(user)
+ if(selected_user_invite && user.toString() === selected_user_invite.toString()){
+  return true
+ }
+ return false
+};
+
+
 const inviteToChannel = () => {
  showUserInvitePanel.value=true
- //Todos os users no channel incluindo o proprio
- console.log(usersInChannels)
- //Todos os users existentes menos o proprio
- console.log(users)
- 
- usersInChannels.value.forEach(element => {
-  if(element.user_id.nick != users_Nick)
-  console.log(element.user_id)
- });
-
 const filtered = users.value.filter(channel => !usersInChannels.value.some(bannedChannel => bannedChannel.user_id.nick === channel.nick))
 UsersNotInChannel.value=filtered;
-console.log(filtered)
- //Quero subtrair ao users o for each anterior
-  //const bannedList = await this.UserToChannelService_.getBannedChannelList(userID)
-    //const all_channels = await this.ChannelsRepository.find({where: {type: MoreThan(0)}})
-    //const filtered = all_channels.filter(channel => !bannedList.some(bannedChannel => bannedChannel.channel_id.id === channel.id))
-    //return filtered;
-
-
-  // if (usersInChannels.value.length > 2) return
-  // for (const id in usersInChannels.value) {
-  //   if (usersInChannels.value[id].user_id.id != userId) {
-  //     try {
-  //       const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/events/private_game_request`, {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': `Bearer ${token}`
-  //         },
-  //         body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(usersInChannels.value[id].user_id.id), message: users_Name + " just invited you to a PONG Game! " + users_Name }),
-  //       });
-  //       if (response.ok) {
-  //         const data = await response.json();
-  //         showAlert_Game.value = true;
-  //         setTimeout(() => {
-  //           showAlert_Game.value = false;
-  //         }, 4000);
-  //       } else {
-  //         if (response.status == 303) {
-  //           const data = await response.json();
-  //           window.alert(data.message)
-  //         }
-  //         else
-  //           console.log('Error:', response.status);
-  //       }
-  //     } catch (error) {
-  //       console.log('Error:', error);
-  //     }
-  //   }
-  // }
 };
+
+const invite_to_chat_room = async (user_to_invite) => {
+  console.log(user_to_invite)
+  showUserInvitePanel.value=false
+      try {
+        const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/usertochannel/invite_to_channel`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(selected_user_invite), message: " just invited you to a PONG Game! "   }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+        }
+          else{
+            console.log('Error:', response.status);
+        }
+      } catch (error) {
+        console.log('Error:', error);
+      }
+    }
+
+
+
 
 const inviteToPrivateGame = async () => {
   if (usersInChannels.value.length > 2) return
