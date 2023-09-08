@@ -198,7 +198,8 @@ export class UserToChannelService {
           user_id:{id: true, intra_nick: true,avatar:true, nick: true},
           channel_id:{channel_name: true, id: true, type: true},
           id: true, is_admin : true, is_muted: true, is_banned : true, is_owner: true
-        }
+        },
+        order: { channel_id: {last_message_on_channel: 'DESC' }}
       }
     )
     return channels

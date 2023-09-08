@@ -28,9 +28,6 @@
           :class="['channel', { 'selected': joinedchannel.channel_id.id === selected_channel }]"
           @click="chooseChannel(joinedchannel.channel_id.id)">
           {{ getChannelName(joinedchannel.channel_id.id) }}
-          <div class="unread-messages" v-if="unreadMessages[joinedchannel.channel_id.id] > 0">
-            {{ unreadMessages[joinedchannel.channel_id.id] }}
-          </div>
         </div>
       </div>
       <div v-if="side_info === 1">
@@ -476,7 +473,7 @@ const getChannelName = (channelId) => {
     const user2ID = channelname.split('-')[1];
     const pmwith = user1ID == userId ? user2ID : user1ID;
     const user = users.value.find((user) => user.id === parseInt(pmwith));
-    return user.intra_nick ? user.intra_nick : '';
+    return user ? user.intra_nick : '';
   }
   return channel ? channel.channel_id.channel_name : '';
 };
@@ -497,21 +494,6 @@ const isUserMutedOnChannel = (userList) => {
   }
   return false
 }
-
-const check_user = async () => {
-  try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/'
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
-    } else {
-      console.log('Error:', response.status);
-      window.alert("User Doesn't exist")
-    }
-  } catch (error) {
-    console.log('Error:', error);
-  }
-};
 
 
 const getMessageClass = (author) => {
@@ -1288,14 +1270,10 @@ onBeforeMount(() => {
 
 if (socket) {
   socket.on('recMessage', async (message) => {
+    getChannelsJoined();
     if (message.channelId === selected_channel) {
       if (!showChannelOptions.value)
         scrollToBottom();
-    } else {
-      if (typeof unreadMessages.value[message.channelId] === 'undefined') {
-        unreadMessages.value[message.channelId] = 0;
-      }
-      unreadMessages.value[message.channelId]++;
     }
     await getMessages();
   });

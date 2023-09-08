@@ -32,9 +32,9 @@ export class MessagesService {
   blocked_users.forEach(element => {
     blocked_users_id.push(element.id)
   });
-  const channel= await this.channelRepository.find({where: {id:  id_given}})
+  const channel= await this.channelRepository.findOne({where: {id:  id_given}})
   const messages = await this.messagesRepository.find({
-    where: {channel: channel},
+    where: {channel: {id: channel.id}},
     relations: ['author'],
     select: { author: { nick: true, id: true } }
     ,order:{
