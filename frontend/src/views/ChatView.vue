@@ -165,7 +165,7 @@
 <div v-if="showUserInvitePanel" class="modal">
 <div  class="modal-content">
   <div class="modal-header">
-    <span class="close" @click="showUserInvitePanel=false">&times;</span>
+    <span class="close" @click="showUserInvitePanel=false;selected_user_invite=null">&times;</span>
     <h1>Invite to Channel</h1>
     <button class="next"
       @click="invite_to_chat_room(selected_user_invite)">Invite</button>
@@ -1114,6 +1114,8 @@ function update_selected_invite_user(event) {
   const option = event.target;
   const selectedValue = parseInt(option.value);
   selected_user_invite=selectedValue;
+  showUserInvitePanel.value=false;
+  showUserInvitePanel.value=true;
   selected_to_invite(selected_user_invite)
 }
 
@@ -1351,8 +1353,7 @@ UsersNotInChannel.value=filtered;
 };
 
 const invite_to_chat_room = async (user_to_invite) => {
-  console.log(user_to_invite)
-  showUserInvitePanel.value=false
+  if(selected_user_invite){
       try {
         const response = await fetch(`${process.env.VUE_APP_BACKEND_URL}/usertochannel/invite_to_channel`, {
           method: 'POST',
@@ -1360,7 +1361,7 @@ const invite_to_chat_room = async (user_to_invite) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ requester_user: parseInt(userId), decider_user: parseInt(selected_user_invite), message: " just invited you to a PONG Game! "   }),
+          body: JSON.stringify({ requester_user: parseInt(userId), invited_user: parseInt(selected_user_invite), message: " just invited you to room " , channel: parseInt(selected_channel) }),
         });
         if (response.ok) {
           const data = await response.json();
@@ -1371,6 +1372,9 @@ const invite_to_chat_room = async (user_to_invite) => {
       } catch (error) {
         console.log('Error:', error);
       }
+    }
+      showUserInvitePanel.value=false
+      selected_user_invite=null
     }
 
 

@@ -20,10 +20,18 @@ import { UsersModule } from 'src/db_interactions_modules/users/users.module';
 import { AppModule } from 'src/app.module';
 import { UserToChannelService } from 'src/db_interactions_modules/relations/user_to_channel/user_to_channel.service';
 import { Messages } from 'src/db_interactions_modules/messages/messages.entity';
+import { EventsService } from 'src/db_interactions_modules/events/events.service';
+import { Events } from 'src/db_interactions_modules/events/events.entity';
+import { friendService } from 'src/db_interactions_modules/relations/friend/friend.service';
+import { friend } from 'src/db_interactions_modules/relations/friend/friend.entity';
+import { AppService } from 'src/app.service';
+import { GameService } from 'src/db_interactions_modules/game/game.service';
+import { GameHistoryService } from 'src/db_interactions_modules/game_history/game_history.service';
+import { GameHistory } from 'src/db_interactions_modules/game_history/game_history.entity';
 @Module({
   imports: [ 
     // UsersModule,
-    TypeOrmModule.forFeature([User, UserToChannel,Channel, Messages]),
+    TypeOrmModule.forFeature([User,GameHistory, UserToChannel,Channel,friend, Messages,Events]),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
@@ -43,7 +51,12 @@ import { Messages } from 'src/db_interactions_modules/messages/messages.entity';
     GoogleStrategy,
     UsersService,
     TwoFactorAuthService,
-    UserToChannelService
+    UserToChannelService,
+    EventsService,
+    friendService,
+    AppService,
+    GameService,
+    GameHistoryService
   ]
 })
 export class AuthModule {}

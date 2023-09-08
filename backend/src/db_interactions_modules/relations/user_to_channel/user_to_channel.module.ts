@@ -19,7 +19,7 @@ import { EventsModule } from 'src/db_interactions_modules/events/events.module';
 @Module({
     imports: [
         TypeOrmModule.forFeature([UserToChannel, Channel, User, Events, Messages])
-        ,forwardRef(() => AppModule),
+        ,forwardRef(() => AppModule), EventsModule
     ],
     controllers: [UserToChannelController],
     providers: [UserToChannelService],

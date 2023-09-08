@@ -2,7 +2,7 @@ import { Injectable, Inject,forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserToChannel } from './user_to_channel.entity';
-import { CreateUserToChannDto } from './dtos/user_to_channel.dto';
+import { CreateUserToChannDto, InviteUserToChannDto } from './dtos/user_to_channel.dto';
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { Channel } from 'src/db_interactions_modules/channels/channel.entity';
 import { Response } from 'express';
@@ -11,6 +11,7 @@ import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { AppService } from 'src/app.service';
 import { Messages } from 'src/db_interactions_modules/messages/messages.entity';
 import { EventCreateDto } from 'src/db_interactions_modules/events/dtos/events.dto';
+import { EventsService } from 'src/db_interactions_modules/events/events.service';
 
 @Injectable()
 export class UserToChannelService {
@@ -20,6 +21,8 @@ export class UserToChannelService {
     @InjectRepository(Messages) private MessageRepository: Repository<Messages> ,
     @InjectRepository(User) private UserRepository: Repository<User>,
     @Inject(forwardRef(() => UsersService))private usersService: UsersService,
+    @Inject(forwardRef(() => EventsService))private eventsService: EventsService,
+    @Inject(forwardRef(() => AppService))private appService: AppService,
     
   ) { }
 
@@ -53,8 +56,34 @@ export class UserToChannelService {
     });
   }
 
-  async invite_to_channel(bodyinfo: EventCreateDto) {
+  async invite_to_channel(bodyinfo: InviteUserToChannDto) {
     console.log(bodyinfo)
+    const requester_user=await this.UserRepository.findOne({where: {id:bodyinfo.requester_user}})
+    const invited_user=await this.UserRepository.findOne({where: {id:bodyinfo.invited_user}})
+    const is_requester_on_channel = await this.UserToChannelRepository.findOne({where: {user_id:requester_user, channel_id: {id:bodyinfo.channel}}})
+    const is_invited_already_on_channel = await this.UserToChannelRepository.findOne({where: {user_id:invited_user, channel_id: {id:bodyinfo.channel}}})
+    const channel= await this.ChannelRepository.findOne({where: {id: bodyinfo.channel}})
+    if(requester_user && invited_user && is_requester_on_channel && !is_invited_already_on_channel && channel){
+     const user_on_ch= await this.UserToChannelRepository.save({
+        user_id: invited_user,
+        channel_id: {id:bodyinfo.channel},
+        is_owner: false,
+        is_admin: false,
+        is_muted: false,
+        is_banned: false,
+      });
+      if(user_on_ch){
+        await this.notifyRoom(bodyinfo.channel);
+        let msg_to_send= requester_user.intra_nick + bodyinfo.message + channel.channel_name
+        let event_ : EventCreateDto = {
+          requester_user: bodyinfo.requester_user,
+          decider_user: bodyinfo.invited_user,
+          message: msg_to_send
+        }
+        await this.eventsService.create(event_,0);
+        await this.usersService.update_channels_on_list(invited_user.id,bodyinfo.channel)
+      }
+    }
     return ;
   }
 

@@ -15,18 +15,20 @@ import { Channel } from '../channels/channel.entity';
 import { FriendModule } from '../relations/friend/friend.module';
 import { friendService } from '../relations/friend/friend.service';
 import { GameModule } from '../game/games.module';
+import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
+import { UserToChannelService } from '../relations/user_to_channel/user_to_channel.service';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Events, Channel,User, Messages]),
+    TypeOrmModule.forFeature([Events, Channel,User, Messages,UserToChannel]),
     UsersModule,
     MessagesModule,
     GameModule,
     forwardRef(() => FriendModule),
   ],
   controllers: [EventsController],
-  providers: [EventsService,AppService],
+  providers: [EventsService,AppService, UsersService,UserToChannelService],
   exports: [EventsService]
 })
 export class EventsModule {}

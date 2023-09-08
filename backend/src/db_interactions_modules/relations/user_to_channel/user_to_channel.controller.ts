@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res } from '@nestjs/common';
 import { UserToChannelService } from './user_to_channel.service';
-import { CreateUserToChannDto } from './dtos/user_to_channel.dto';
+import { CreateUserToChannDto, InviteUserToChannDto } from './dtos/user_to_channel.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from 'src/db_interactions_modules/users/user.entity';
@@ -30,7 +30,7 @@ export class UserToChannelController {
   }
 
   @Post('/invite_to_channel')
-  async invited_to_channel(@Body() bodyinfo: EventCreateDto, @getUserIDFromToken() user:User, @Res() res: any) {
+  async invited_to_channel(@Body() bodyinfo: InviteUserToChannDto, @getUserIDFromToken() user:User, @Res() res: any) {
     // const channel = await this.channelService.getChannelByID(channelID.id)
     // if (!channel || !channelID.id || !channelID ){
     //   return res.status(202).json({ message: 'Channel Doesnt exist' });

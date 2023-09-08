@@ -9,6 +9,23 @@ import { IsString, MaxLength,MinLength, ValidateIf, IsIn, IsNumber, isNumber, ma
     pass: string;
 
   }
+
+  export class InviteUserToChannDto {
+
+    @IsDefined()
+    requester_user: number;
+
+    @IsDefined()
+    invited_user: number;
+  
+    @IsDefined()
+    message: string;
+
+    @IsDefined()
+    channel: number;
+  }
+  
+  
   
   
   

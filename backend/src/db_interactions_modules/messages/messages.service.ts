@@ -7,11 +7,13 @@ import { UserToChannelService } from '../relations/user_to_channel/user_to_chann
  import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
 import { User } from '../users/user.entity';
 import { friendService } from '../relations/friend/friend.service';
+import { Events } from '../events/events.entity';
 @Injectable()
 export class MessagesService {
  constructor(
    @InjectRepository(Messages) private messagesRepository: Repository<Messages>,
    @InjectRepository(Channel) private channelRepository: Repository<Channel>,
+   @InjectRepository(Events) private eventsRepository: Repository<Events>,
    @InjectRepository(UserToChannel)private readonly userToChannel: Repository<UserToChannel>,
    private user_to_channel_service: UserToChannelService,
    private friendservice: friendService

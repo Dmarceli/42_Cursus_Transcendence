@@ -15,11 +15,10 @@ export class EventsService {
   constructor(
     @InjectRepository(Events) private eventsRepository: Repository<Events>,
     @InjectRepository(User) private UserRepository: Repository<User> ,
-
-    private usersService: UsersService,
+    @Inject(forwardRef(() => UsersService))private usersService: UsersService,
     private FriendsService: friendService,
-    private appService: AppService,
-    private gameService: GameService,
+    @Inject(forwardRef(() => AppService))private appService: AppService,
+    @Inject(forwardRef(() => GameService))private gameService: GameService,
    ) {}
 
   async create(createEventDto: EventCreateDto, event_type: number) {
