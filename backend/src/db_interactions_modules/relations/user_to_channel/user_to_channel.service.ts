@@ -148,6 +148,11 @@ export class UserToChannelService {
     const usersInChannel = await this.UserToChannelRepository.find({
       where: { channel_id: { id: ch_id }},
      relations: ['user_id', 'channel_id'],
+     select: {
+                user_id:{id: true, intra_nick: true,avatar:true, nick: true},
+                channel_id:{channel_name: true, id: true, type: true},
+                id: true, is_admin : true, is_muted: true, is_banned : true, is_owner: true
+              },
      order:{
       id: "ASC"
      }
@@ -188,7 +193,12 @@ export class UserToChannelService {
     const channels = await this.UserToChannelRepository.find(
       {
         where: {user_id: {id: us_id}, is_banned : false},
-        relations: {channel_id:true, user_id: true}
+        relations: {channel_id:true, user_id: true},
+        select: {
+          user_id:{id: true, intra_nick: true,avatar:true, nick: true},
+          channel_id:{channel_name: true, id: true, type: true},
+          id: true, is_admin : true, is_muted: true, is_banned : true, is_owner: true
+        }
       }
     )
     return channels
