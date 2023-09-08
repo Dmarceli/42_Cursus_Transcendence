@@ -7,7 +7,7 @@
       <RouterLink to="/profile">User profile</RouterLink>
       <v-btn @click="toggleNotifications()" style="background-color:transparent;">
         <v-icon color="green">mdi-bell</v-icon>
-        <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
+        <div v-if="unseenNotifications.length > 0" class="notification-badge" >{{ unseenNotifications.length }}</div>
       </v-btn>
       <v-btn @click="logout">Logout</v-btn>
     </nav>
@@ -441,6 +441,11 @@ nav a {
     align-content: center;
     justify-content: center;
   }
+}
 
+@media (prefers-color-scheme: light) {
+  .notification-badge{
+    color: black !important;
+  }
 }
 </style>
