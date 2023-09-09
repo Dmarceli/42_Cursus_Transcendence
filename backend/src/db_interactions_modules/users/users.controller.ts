@@ -14,12 +14,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post('/createuser')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.createUser(createUserDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Post('/profile/')
   @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
@@ -52,7 +46,8 @@ export class UsersController {
     if (!login) {
       return res.status(HttpStatus.NOT_FOUND).json();
     }
-    else {
+    else
+    {
       return res.status(HttpStatus.OK).json(login);
     }
   }

@@ -32,7 +32,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'myProfile',
-      component: ProfileView,
+      component: ProfileView
     },
     {
       path: '/profile/:intra_nick',
