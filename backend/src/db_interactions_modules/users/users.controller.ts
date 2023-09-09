@@ -1,4 +1,4 @@
-import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete, Res, Req, UploadedFile, UseInterceptors, HttpStatus } from '@nestjs/common';
+import { Controller,UseGuards, Get, Post, Body, Patch, Param, Delete, Res, Req, UploadedFile, UseInterceptors, HttpStatus, NotFoundException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'
 import { UsersService } from './users.service';
@@ -6,6 +6,8 @@ import { CreateUserDto } from './dtos/user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from './user.entity';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
 
 @Controller('users')
@@ -25,6 +27,16 @@ export class UsersController {
 
   @Get('/avatar/:filename')
   seeUploadedFile(@Param('filename') file, @Res() res) {
+    try {
+      const filePath = join('./uploads', file)
+      if (!existsSync(filePath)) {
+          throw new NotFoundException(`Could not find requested file ${file}`)
+      }
+    }
+    catch(err)
+    {
+      return res.status(err.status).send(err.message)
+    }
     return res.sendFile(file, { root: './uploads' });
   }
 
