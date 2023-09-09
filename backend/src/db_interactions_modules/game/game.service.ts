@@ -46,47 +46,67 @@ export class GameService {
     this.EmitUpdatedState(client, nick)
   }
 
-  UpdatePlayerState(nick: string) {
-    console.warn("Found mismatch on player state " + this.player_states[nick])
-    let playerInActiveGame = this.active_games.find(active_games => active_games.playerPaddle1.user.intra_nick == nick || active_games.playerPaddle2.user.intra_nick == nick)
-    if (playerInActiveGame) {
-      if (playerInActiveGame.timeStart) {
-        return this.player_states.set(nick, State.PLAYING)
+  UpdatePlayerState(client: Socket, nick: string) {
+    let ActiveGameWithPlayer = this.active_games.find(active_games => active_games.playerPaddle1.user.intra_nick == nick || active_games.playerPaddle2.user.intra_nick == nick)
+
+    // Check if player is playing or starting
+    if (ActiveGameWithPlayer) {
+      if (ActiveGameWithPlayer.timeStart) {
+        this.SetPlayerStateEmit(client, nick, State.PLAYING)
+        return
       }
-      else if (playerInActiveGame.starting) {
-        return this.player_states.set(nick, State.STARTING)
+      else if (ActiveGameWithPlayer.starting) {
+        this.SetPlayerStateEmit(client, nick, State.STARTING)
+        return
       }
+
+      // Check if player is not ready or waiting for other to be ready
       let player = null;
-      if (playerInActiveGame.playerPaddle1.user.intra_nick == nick)
-        player = playerInActiveGame.playerPaddle1
+      if (ActiveGameWithPlayer.playerPaddle1.user.intra_nick == nick)
+        player = ActiveGameWithPlayer.playerPaddle1
       else
-        player = playerInActiveGame.playerPaddle2
+        player = ActiveGameWithPlayer.playerPaddle2
       if (player.ready) {
-        return this.player_states.set(nick, State.WAITING_OTHER_READY)
+        this.SetPlayerStateEmit(client, nick, State.WAITING_OTHER_READY)
+        return
       }
       else {
-        return this.player_states.set(nick, State.NOT_READY)
+        this.SetPlayerStateEmit(client, nick, State.NOT_READY)
+        return
       }
     }
+    // Check if Private Player chose paddle
     if (this.privateGamePlayers.find(playerPaddle => playerPaddle.user.intra_nick == nick)) {
-      return this.player_states.set(nick, State.CHOSE_PRIVATE_PLAYER)
+      this.SetPlayerStateEmit(client, nick, State.CHOSE_PRIVATE_PLAYER)
+      return
     }
+
+    // Check if user is in Private Game
     if (this.private_games.find(privateGame => privateGame.player1 == nick || privateGame.player2 == nick)) {
-      return this.player_states.set(nick, State.SETTING_PRIVATE_GAME)
+      this.SetPlayerStateEmit(client, nick, State.SETTING_PRIVATE_GAME)
+      return
     }
+
+    // Check if user is in lobby queue
     if (this.lobby.find(playerPaddle => playerPaddle.user.intra_nick == nick)) {
-      return this.player_states.set(nick, State.IN_LOBBY_QUEUE)
+      this.SetPlayerStateEmit(client, nick, State.IN_LOBBY_QUEUE)
+      return
     }
+
+    // Check if user chose paddle
     if (this.lobbyPlayers.find(playerPaddle => playerPaddle.user.intra_nick == nick)) {
-      return this.player_states.set(nick, State.LOBBY_PLAYER)
+      this.SetPlayerStateEmit(client, nick, State.LOBBY_PLAYER)
+      return
     }
+
+    // Delete user if it is not in any array
     if (this.player_states.has(nick))
       return this.player_states.delete(nick)
   }
 
   async CreateLobbyPlayer(playerClient: Socket, nick: string, skin: string = "") {
     if (this.player_states.has(nick)) {
-      this.UpdatePlayerState(nick)
+      this.UpdatePlayerState(playerClient, nick)
       return;
     }
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
@@ -97,8 +117,7 @@ export class GameService {
 
   AddPlayerToLobby(playerClient: Socket, nick: string) {
     if (!this.player_states.has(nick) || this.player_states.get(nick) != State.LOBBY_PLAYER) {
-      this.UpdatePlayerState(nick)
-      this.EmitUpdatedState(playerClient, nick)
+      this.UpdatePlayerState(playerClient, nick)
       return;
     }
     const freePlayerIndex = this.lobbyPlayers.findIndex(player => player.user.intra_nick === nick)
@@ -128,7 +147,7 @@ export class GameService {
 
   async CreatePrivateGamePlayer(playerClient: Socket, nick: string, skin: string = "") {
     if (!this.player_states.has(nick) || this.player_states.get(nick) != State.SETTING_PRIVATE_GAME) {
-      this.UpdatePlayerState(nick)
+      this.UpdatePlayerState(playerClient, nick)
       return;
     }
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
@@ -137,12 +156,22 @@ export class GameService {
     this.SetPlayerStateEmit(playerClient, nick, State.CHOSE_PRIVATE_PLAYER)
   }
 
-  async createPrivateGame(player1_intra_nick: string, player2_intra_nick: string) {
-    if (this.player_states.has(player1_intra_nick) || this.player_states.has(player2_intra_nick)) {
-      // Check if active games otherwise just remove them and continue creating
-      this.UpdatePlayerState(player1_intra_nick)
-      this.UpdatePlayerState(player2_intra_nick)
+  updateStateIntraNick(intra_nick: string) {
+    let playerUserSocket = AppService.UsersOnline.find((userSocket) => {
+      return (userSocket.user.intra_nick == intra_nick)
+    })
+    if (playerUserSocket) {
+      this.UpdatePlayerState(playerUserSocket.client, intra_nick)
       return;
+    }
+  }
+
+  async createPrivateGame(player1_intra_nick: string, player2_intra_nick: string) {
+    if (this.player_states.has(player1_intra_nick)) {
+      this.updateStateIntraNick(player1_intra_nick)
+    }
+    if (this.player_states.has(player2_intra_nick)) {
+      this.updateStateIntraNick(player2_intra_nick)
     }
     if (this.IsInPrivateGame(player1_intra_nick)) {
       return;
@@ -237,6 +266,41 @@ export class GameService {
     }
   }
 
+  UpdatePlayerSocket(client: Socket, intra_nick: string) {
+    let playerPaddle = null
+    let game = this.active_games.find(game => game.playerPaddle1.user.intra_nick == intra_nick)
+    if (game) {
+      playerPaddle = game.playerPaddle1
+    }
+    if (!playerPaddle) {
+      game = this.active_games.find(game => game.playerPaddle2.user.intra_nick == intra_nick)
+      if (game) {
+        playerPaddle = game.playerPaddle2
+      }
+    }
+    if (!playerPaddle)
+      playerPaddle = this.active_games.find(game => game.playerPaddle2.user.intra_nick == intra_nick)
+    if (!playerPaddle)
+      playerPaddle = this.lobbyPlayers.find(player => player.user.intra_nick == intra_nick)
+    if (!playerPaddle)
+      playerPaddle = this.privateGamePlayers.find(player => player.user.intra_nick == intra_nick)
+    if (!playerPaddle)
+      playerPaddle = this.lobby.find(player => player.user.intra_nick == intra_nick)
+    if (playerPaddle) {
+      playerPaddle.client = client
+    }
+  }
+
+  HandlePlayerConnected(client: Socket) {
+    let updatedUserSocket = AppService.UsersOnline.find((userSocket) => {
+      return (userSocket.client == client)
+    })
+    if (updatedUserSocket) {
+      let userNick = updatedUserSocket.user.intra_nick
+      this.UpdatePlayerSocket(client, userNick)
+    }
+  }
+
   HandlePlayerDisconnected(client: Socket) {
     for (let game of this.active_games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
@@ -317,7 +381,7 @@ export class GameService {
   }
 
   PrivateGameStillNotAdded(private_game: PrivateGame, player_states) {
-    if (!this.privateGamePlayers){
+    if (!this.privateGamePlayers) {
       return true;
     }
     const indexPlayer1 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player1);
@@ -379,22 +443,18 @@ export class GameService {
       if (game.playerPaddle2.disconnected_date) {
         player2disconnected_time = Date.now() - game.playerPaddle2.disconnected_date.getTime();
       }
-      if (player1disconnected_time && player1disconnected_time > 30000)
-      {
-        if (!player2disconnected_time || player1disconnected_time > player2disconnected_time)
-        {
+      if (player1disconnected_time && player1disconnected_time > 30000) {
+        if (!player2disconnected_time || player1disconnected_time > player2disconnected_time) {
           game.score.player2 = 5
-          game.playerPaddle1.ready=true
-          game.playerPaddle2.ready=true
+          game.playerPaddle1.ready = true
+          game.playerPaddle2.ready = true
         }
       }
-      if (player2disconnected_time && player2disconnected_time > 30000)
-      {
-        if (!player1disconnected_time || player2disconnected_time > player1disconnected_time)
-        {
+      if (player2disconnected_time && player2disconnected_time > 30000) {
+        if (!player1disconnected_time || player2disconnected_time > player1disconnected_time) {
           game.score.player1 = 5
-          game.playerPaddle1.ready=true
-          game.playerPaddle2.ready=true
+          game.playerPaddle1.ready = true
+          game.playerPaddle2.ready = true
         }
       }
     }
