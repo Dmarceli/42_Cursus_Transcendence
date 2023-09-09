@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res } from '@nestjs/common';
 import { UserToChannelService } from './user_to_channel.service';
-import { CreateUserToChannDto } from './dtos/user_to_channel.dto';
+import { CreateUserToChannDto, InviteUserToChannDto } from './dtos/user_to_channel.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { ChannelsService } from 'src/db_interactions_modules/channels/channels.service';
+import { EventCreateDto } from 'src/db_interactions_modules/events/dtos/events.dto';
 
 
 @UseGuards(JwtAuthGuard)
@@ -27,6 +28,18 @@ export class UserToChannelController {
     this.userToChannelService.joinchannel(channel, user, channelID.pass);
     return res.status(200).json({message : 'Joined Channel'}) 
   }
+
+  @Post('/invite_to_channel')
+  async invited_to_channel(@Body() bodyinfo: InviteUserToChannDto, @getUserIDFromToken() user:User, @Res() res: any) {
+    // const channel = await this.channelService.getChannelByID(channelID.id)
+    // if (!channel || !channelID.id || !channelID ){
+    //   return res.status(202).json({ message: 'Channel Doesnt exist' });
+    // }
+    // const user_ = await this.userService.findByLogin(user['login'])
+    // this.userToChannelService.joinchannel(channel, user, channelID.pass);
+    await this.userToChannelService.invite_to_channel(bodyinfo)
+    return res.status(200).json({message : 'Joined Channel'}) 
+  }
   
 
   @Post('/leavechannel')
@@ -34,6 +47,15 @@ export class UserToChannelController {
     const user_ = await this.userService.findByLogin(user['user']['intra_nick']);
     this.userToChannelService.leavechannel(user_.id, channelID.id);
     return res.status(200).json({ message: 'Left channel' });
+  }
+
+  @Post('/deletechannel')
+  async delete_channel(@Body() channelID: { id: number }, @getUserIDFromToken() user: User, @Res() res: any) {
+    if(!channelID)
+      return res.status(403).json({ message: 'Bad Format'});
+    const user_ = await this.userService.findByLogin(user['user']['intra_nick']);
+    this.userToChannelService.deletechannel(user_.id, channelID.id);
+    return res.status(200).json({ message: 'channel deleted' });
   }
   
 
@@ -100,6 +122,12 @@ export class UserToChannelController {
     return this.userToChannelService.give_admin_to_user(us_id,ch_id,user.id,res,action );
   }
   
+  @Post('/giveownership/:userid/on/:channelid')
+  give_ownership_to_user(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+    return this.userToChannelService.give_ownership_to_user(us_id,ch_id,user.id,res);
+  }
+  
+
   @Post('privatemessage/:userid')
   start_private_message(@Param('userid') us_id: number, @getUserIDFromToken() user:User){
     return this.userToChannelService.privatemessage_channel(us_id,user.id);

@@ -7,7 +7,7 @@
       <RouterLink to="/profile">User profile</RouterLink>
       <v-btn @click="toggleNotifications()" style="background-color:transparent;">
         <v-icon color="green">mdi-bell</v-icon>
-        <div v-if="unseenNotifications.length > 0" class="notification-badge">{{ unseenNotifications.length }}</div>
+        <div v-if="unseenNotifications.length > 0" class="notification-badge" >{{ unseenNotifications.length }}</div>
       </v-btn>
       <v-btn @click="logout">Logout</v-btn>
     </nav>
@@ -21,6 +21,7 @@
       <v-card-text>
         <div v-if="notifications.length > 0" class="notifications-box">
           <div v-for="notification in notifications" :key="notification.id" class="notification-item">
+            {{ formatTime(notification.time) }}
             {{ notification.message }}
             <div v-if="notification.type > 0">
               <v-btn @click="decideNotification(notification.id, true)">
@@ -85,10 +86,28 @@ async function decideNotification(NotificationID: number, Decision: boolean) {
   }
 }
 
+const formatTime = (timestamp) => {
+  const currentTime = new Date();
+  const messageTime = new Date(timestamp);
+  const timeDiffMinutes = Math.floor((currentTime - messageTime) / (1000 * 60));
+
+  if (timeDiffMinutes < 1) {
+    return 'Just now';
+  } else if (timeDiffMinutes < 60) {
+    return `${timeDiffMinutes} mins ago`;
+  } else if (timeDiffMinutes < 1440) {
+    const hours = Math.floor(timeDiffMinutes / 60);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  } else {
+    const days = Math.floor(timeDiffMinutes / 1440);
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  }
+};
+
 function logout() {
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   islogged.value = false;
-  window.location.href = '/login';
+  window.location.href = '/';
 }
 
 let socket: Socket | null = null;
@@ -441,6 +460,11 @@ nav a {
     align-content: center;
     justify-content: center;
   }
+}
 
+@media (prefers-color-scheme: light) {
+  .notification-badge{
+    color: black !important;
+  }
 }
 </style>

@@ -706,6 +706,27 @@
   cursor: pointer;
 }
 
+
+.del-ch-button{
+  width:70px;
+  height: 70px;
+  background-image: url(../src/assets/del_channel.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  filter: invert(100%);
+  border:none;
+  position:absolute;
+  bottom:0;
+  right:0;
+}
+
+.del-ch-button:hover{
+  cursor: pointer;
+}
+
+
 .more-options:hover{
   cursor: pointer;
 }
