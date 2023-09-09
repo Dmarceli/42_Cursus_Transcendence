@@ -27,15 +27,9 @@ export class UsersController {
 
   @Get('/avatar/:filename')
   seeUploadedFile(@Param('filename') file, @Res() res) {
-    try {
-      const filePath = join('./uploads', file)
-      if (!existsSync(filePath)) {
-          throw new NotFoundException(`Could not find requested file ${file}`)
-      }
-    }
-    catch(err)
-    {
-      return res.status(err.status).send(err.message)
+    const filePath = join('./uploads', file)
+    if (!existsSync(filePath)) {
+        return res.sendFile("default.jpg", { root: './uploads' });
     }
     return res.sendFile(file, { root: './uploads' });
   }
