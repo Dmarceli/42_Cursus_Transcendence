@@ -52,9 +52,11 @@ const socket: Socket | undefined = inject('socket')
 onBeforeMount(async () => {
   token = getCookieValueByName('token');
   if (token)
+  {
     decodedToken = jwt_decode(token);
-  users_Name.value = decodedToken.user.intra_nick;
-  socket?.emit('GetUpdatedState', users_Name.value)
+    users_Name.value = decodedToken.user.intra_nick;
+    socket?.emit('GetUpdatedState', users_Name.value)
+  }
 })
 
 onMounted(() => {

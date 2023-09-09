@@ -29,6 +29,8 @@ export class AppService {
   const channel= await this.channelRepository.findOne({where:{
     id: msg_payload.channelId
   }})
+  channel.last_message_on_channel=new Date()
+  await this.channelRepository.save(channel)
     return await this.messagesRepository.save({...msg_payload,
     author: user,
     channel: channel});

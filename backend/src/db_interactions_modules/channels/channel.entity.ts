@@ -21,6 +21,9 @@ import {
 
     @Column({nullable: true, select: false})
     password: string;
+
+    @CreateDateColumn()
+    last_message_on_channel: Date;
     
     // @ManyToMany(() => User)
     // @JoinTable()

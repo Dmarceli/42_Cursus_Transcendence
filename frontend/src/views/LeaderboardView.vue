@@ -2,6 +2,23 @@
 import { ref, computed, onBeforeMount } from 'vue';
 import router from '@/router';
 
+  let token = getCookieValueByName('token');	
+  function getCookieValueByName(name: string) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    if (cookie.startsWith(`${name}=`)) {
+      cookie = cookie.substring(name.length + 1);
+      return (cookie);
+    }
+  }
+  return null;
+}
+  interface Player {
+    id: number;
+    name: string;
+    score: number;
+  }
 
 interface Player {
   id: number;
@@ -42,15 +59,20 @@ const closeModal = () => {
 
 
 const fetchLeaderboard = async () => {
-  try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
-    const response = await fetch(url);
-    const data = await response.json();
-    leaderboard.value = data;
-  } catch (error) {
-    console.error('Error fetching leaderboard data:', error);
-  }
-};
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
+      const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+      const data = await response.json();
+      console.log(data)
+      leaderboard.value = data;
+    } catch (error) {
+      console.error('Error fetching leaderboard data:', error);
+    }
+  };
 
 onBeforeMount(() => {
   fetchLeaderboard();

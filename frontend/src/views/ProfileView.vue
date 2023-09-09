@@ -161,20 +161,25 @@ const fetchFriends = async () => {
 }
 
 const fetchLeaderboard = async () => {
-  try {
-    let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
-    const response = await fetch(url);
-    const data = await response.json();
-    let rank = data.findIndex((user: any) => user.id == userProfile.value.id)
-    if (rank == -1) {
-      console.error('Could not find current user in leaderboard');
-      return
+    try {
+      let url = process.env.VUE_APP_BACKEND_URL + '/users/leaderboard/'
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      let rank = data.findIndex((user: any) => user.id == userProfile.value.id)
+      if (rank == -1) {
+        console.error('Could not find current user in leaderboard');
+        return
+      }
+      userProfile.value.rank = rank+1;
+    } catch (error) {
+      console.error('Error fetching leaderboard data:', error);
     }
-    userProfile.value.rank = rank + 1;
-  } catch (error) {
-    console.error('Error fetching leaderboard data:', error);
-  }
-};
+  };
+
 
 const fetchLastFiveGames = async () => {
   try {
@@ -292,6 +297,7 @@ async function saveSettings() {
     return
   }
   let oldNick = userProfile.value.nick;
+  let oldImage = userProfile.value.avatar;
   if (updateNickname.value !== '') {
     userProfile.value.nick = updateNickname.value;
   }
@@ -306,20 +312,26 @@ async function saveSettings() {
     const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
       method: 'POST',
       body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
     });
+    let data = await response.json();
     if (response.ok) {
-      let data = await response.json();
       updateToken();
     }
     //Caso o Nick já esteja em Uso
-    else if (response) {
+    else {
       userProfile.value.nick = oldNick;
-      alert("User already in Use")
+      userProfile.value.avatar = oldImage;
+      alert(data.message)
     }
   } catch (error) {
     console.log('Error:', error);
     userProfile.value.nick = oldNick;
+    userProfile.value.avatar = oldImage;
   }
+  updateAvatar.value=null
   closeSettings();
 }
 

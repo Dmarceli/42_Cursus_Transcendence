@@ -7,11 +7,13 @@ import { UserToChannelService } from '../relations/user_to_channel/user_to_chann
  import { UserToChannel } from '../relations/user_to_channel/user_to_channel.entity';
 import { User } from '../users/user.entity';
 import { friendService } from '../relations/friend/friend.service';
+import { Events } from '../events/events.entity';
 @Injectable()
 export class MessagesService {
  constructor(
    @InjectRepository(Messages) private messagesRepository: Repository<Messages>,
    @InjectRepository(Channel) private channelRepository: Repository<Channel>,
+   @InjectRepository(Events) private eventsRepository: Repository<Events>,
    @InjectRepository(UserToChannel)private readonly userToChannel: Repository<UserToChannel>,
    private user_to_channel_service: UserToChannelService,
    private friendservice: friendService
@@ -30,9 +32,9 @@ export class MessagesService {
   blocked_users.forEach(element => {
     blocked_users_id.push(element.id)
   });
-  const channel= await this.channelRepository.find({where: {id:  id_given}})
+  const channel= await this.channelRepository.findOne({where: {id:  id_given}})
   const messages = await this.messagesRepository.find({
-    where: {channel: channel},
+    where: {channel: {id: channel.id}},
     relations: ['author'],
     select: { author: { nick: true, id: true } }
     ,order:{
