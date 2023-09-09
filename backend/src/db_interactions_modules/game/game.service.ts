@@ -244,6 +244,7 @@ export class GameService {
         }
         else {
           this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.WAITING_OTHER_READY)
+          this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.NOT_READY)
         }
       }
       else if (game.playerPaddle2.user.intra_nick === intra_nick) {
@@ -261,25 +262,41 @@ export class GameService {
         }
         else {
           this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.WAITING_OTHER_READY)
+          this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.NOT_READY)
         }
       }
     }
   }
 
-  UpdatePlayerSocket(client: Socket, intra_nick: string) {
+  HandleOtherPlayerReconnected(game: Game, player: PlayerPaddle) {
+    if (player.ready)
+    {
+      this.SetPlayerStateEmit(player.client, player.user.intra_nick, State.WAITING_OTHER_READY)
+    }
+    else
+    {
+      this.SetPlayerStateEmit(player.client, player.user.intra_nick, State.NOT_READY)
+    }
+  }
+
+  ReconnectPlayer(client: Socket, intra_nick: string) {
     let playerPaddle = null
     let game = this.active_games.find(game => game.playerPaddle1.user.intra_nick == intra_nick)
     if (game) {
-      playerPaddle = game.playerPaddle1
+      game.playerPaddle1.client = client
+      if (game.timeStart)
+        this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.WAITING_OTHER_READY)
+      this.HandleOtherPlayerReconnected(game, game.playerPaddle2)
+      return
     }
-    if (!playerPaddle) {
-      game = this.active_games.find(game => game.playerPaddle2.user.intra_nick == intra_nick)
-      if (game) {
-        playerPaddle = game.playerPaddle2
-      }
+    game = this.active_games.find(game => game.playerPaddle2.user.intra_nick == intra_nick)
+    if (game) {
+      game.playerPaddle2.client = client
+      if (game.timeStart)
+        this.SetPlayerStateEmit(game.playerPaddle2.client, game.playerPaddle2.user.intra_nick, State.NOT_READY)
+      this.HandleOtherPlayerReconnected(game, game.playerPaddle1)
+      return
     }
-    if (!playerPaddle)
-      playerPaddle = this.active_games.find(game => game.playerPaddle2.user.intra_nick == intra_nick)
     if (!playerPaddle)
       playerPaddle = this.lobbyPlayers.find(player => player.user.intra_nick == intra_nick)
     if (!playerPaddle)
@@ -297,7 +314,7 @@ export class GameService {
     })
     if (updatedUserSocket) {
       let userNick = updatedUserSocket.user.intra_nick
-      this.UpdatePlayerSocket(client, userNick)
+      this.ReconnectPlayer(client, userNick)
     }
   }
 
