@@ -11,7 +11,8 @@ import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDF
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { GoogleAuthGuard } from './google/auth_google.guard';
 import { TwoFACodeCheck } from './2FA/2FA-CodeCheck-Dto';
-
+import { Repository} from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('/auth')
 export class AuthController {
@@ -19,7 +20,8 @@ export class AuthController {
     private readonly authService: AuthService,
     private userService: UsersService,
     private TwoFactorAuthService: TwoFactorAuthService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    @InjectRepository(User) private UserRepository: Repository<User> ,
   ) {
   }
   /*******************************************/
@@ -45,6 +47,9 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
+      const user_= await this.UserRepository.findOne({where: {id: req.user.id }})
+      user_.last_joined_date= new Date();
+      await this.UserRepository.save(user_)
       res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
@@ -74,6 +79,9 @@ export class AuthController {
       res.cookie('token', "2FA" + access_token2FA)
     }
     else {
+      const user_= await this.UserRepository.findOne({where: {id: req.user.id }})
+      user_.last_joined_date= new Date();
+      await this.UserRepository.save(user_)
       res.cookie('token', payload.access_token, { secure: true, SameSite: 'None', domain: 'localhost' })
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
@@ -88,6 +96,8 @@ export class AuthController {
     let verified = await this.TwoFactorAuthService.verifyTwoFaCode(body.code, user_)
     if (verified && user_) {
       const payload = await this.authService.login(user_)
+      user_.last_joined_date= new Date();
+      await this.UserRepository.save(user_)
       res.cookie('token', payload.access_token)
       res.status(200).json({ message: 'Verification successful', code: payload.access_token });
     } else {
