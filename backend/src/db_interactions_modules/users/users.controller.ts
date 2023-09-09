@@ -6,6 +6,8 @@ import { CreateUserDto } from './dtos/user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { User } from './user.entity';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { UserProfileSettingsDto } from './dtos/user-profile.dto';
 import * as sanitizeHtml from 'sanitize-html';
 
@@ -30,6 +32,10 @@ export class UsersController {
 
   @Get('/avatar/:filename')
   seeUploadedFile(@Param('filename') file, @Res() res) {
+    const filePath = join('./uploads', file)
+    if (!existsSync(filePath)) {
+        return res.sendFile("default.jpg", { root: './uploads' });
+    }
     return res.sendFile(file, { root: './uploads' });
   }
 
