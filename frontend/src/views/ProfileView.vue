@@ -297,6 +297,7 @@ async function saveSettings() {
     return
   }
   let oldNick = userProfile.value.nick;
+  let oldImage = userProfile.value.avatar;
   if (updateNickname.value !== '') {
     userProfile.value.nick = updateNickname.value;
   }
@@ -311,20 +312,26 @@ async function saveSettings() {
     const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
       method: 'POST',
       body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
     });
+    let data = await response.json();
     if (response.ok) {
-      let data = await response.json();
       updateToken();
     }
     //Caso o Nick já esteja em Uso
-    else if (response) {
+    else {
       userProfile.value.nick = oldNick;
-      alert("User already in Use")
+      userProfile.value.avatar = oldImage;
+      alert(data.message)
     }
   } catch (error) {
     console.log('Error:', error);
     userProfile.value.nick = oldNick;
+    userProfile.value.avatar = oldImage;
   }
+  updateAvatar.value=null
   closeSettings();
 }
 

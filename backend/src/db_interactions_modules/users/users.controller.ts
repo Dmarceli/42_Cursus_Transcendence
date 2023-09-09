@@ -26,8 +26,9 @@ export class UsersController {
   async uploadFile(@UploadedFile(new ParseFilePipe({
     validators: [
       new MaxFileSizeValidator({ maxSize: 5242880 }),
-      new FileTypeValidator({ fileType: /\.(jpg|jpeg|png|gif)$/i }),
-    ]
+      new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)/ }),
+    ],
+    fileIsRequired: false
   })) file: Express.Multer.File, @Body() userProfileDto : UserProfileSettingsDto) {
     userProfileDto.nickUpdate = sanitizeHtml(userProfileDto.nickUpdate);
     return this.usersService.updateProfile(file, userProfileDto.userId, userProfileDto.nickUpdate);
