@@ -161,6 +161,9 @@ async function Submit() {
     const response = await fetch(process.env.VUE_APP_BACKEND_URL + "/users/profile", {
       method: 'POST',
       body: formData,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     if (response.ok) {
       let data = await response.json();
