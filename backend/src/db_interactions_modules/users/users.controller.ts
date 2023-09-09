@@ -11,7 +11,7 @@ import * as sanitizeHtml from 'sanitize-html';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('/createuser')
@@ -48,7 +48,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('/getUsers/:intra_nick')
   async findbyLogin(@Param('intra_nick') intra_nick: string, @Res() res) {
-    let login = await this.usersService.findByLogin(intra_nick);
+    let login =  await this.usersService.findByLogin(intra_nick);
     if (!login) {
       return res.status(HttpStatus.NOT_FOUND).json();
     }
