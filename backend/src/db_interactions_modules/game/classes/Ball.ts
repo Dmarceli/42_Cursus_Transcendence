@@ -35,4 +35,9 @@ export class Ball {
     }
     this.speed = 5
   }
+  increaseBallSpeed()
+  {
+    console.log("SPEED IS "+this.speed)
+    this.speed *= 1.1
+  }
 }

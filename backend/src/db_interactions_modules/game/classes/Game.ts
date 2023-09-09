@@ -135,7 +135,7 @@ export class Game {
         || this.ball.direction.x > 0 && this.ball.frontEndData.x < this.playerPaddle1.frontEndData.x + this.playerPaddle1.frontEndData.width) {
         this.ball.direction.x *= -1
       }
-      this.ball.speed *= 1.1
+      this.ball.increaseBallSpeed()
       this.isColliding = true
     }
     else if (areColliding(this.ball.frontEndData, this.playerPaddle2.frontEndData) && !this.isColliding) {
@@ -144,7 +144,7 @@ export class Game {
         this.ball.direction.x < 0 && this.ball.frontEndData.x > this.playerPaddle2.frontEndData.x) {
         this.ball.direction.x *= -1
       }
-      this.ball.speed *= 1.1
+      this.ball.increaseBallSpeed()
       this.isColliding = true
     }
     else {
