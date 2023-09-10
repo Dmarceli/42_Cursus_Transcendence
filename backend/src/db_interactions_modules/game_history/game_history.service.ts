@@ -25,7 +25,7 @@ export class GameHistoryService {
     return;
   }
 
-  async get_history(id: string) {
+  async get_history(id: number) {
     const gameHistoryQueryBuilder = this.gameHistoryRepository.createQueryBuilder("game_history");
 
     const game_history = await gameHistoryQueryBuilder
