@@ -32,14 +32,11 @@ export class Ball {
       const angle = randomNumberBetween(0, 2 * Math.PI)
       this.direction = { x: Math.cos(angle), y: Math.sin(angle) }
     }
-    this.speed = 6
+    this.speed = 4
   }
-  increaseBallSpeed()
-  {
-      if (this.speed < 12)
-      {
-        console.log(this.speed)
-        this.speed *= 1.2
-      }
+  increaseBallSpeed() {
+    if (this.speed < 11) {
+      this.speed += 1.2
+    }
   }
 }

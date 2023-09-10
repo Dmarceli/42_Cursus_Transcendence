@@ -312,7 +312,7 @@ export class GameService {
           }
         }
       }
-    }, 15
+    }, 10
     )
   }
 

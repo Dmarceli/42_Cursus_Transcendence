@@ -46,9 +46,9 @@ export class Game {
     this.timeStart = null
     this.starting = false
     this.startCounter = 3
-    this.ball = new Ball(700, 350, 11.5)
-    player1.setInitialPosition(40, 300)
-    player2.setInitialPosition(1340, 300)
+    this.ball = new Ball(700, 350, 12)
+    player1.setInitialPosition(40, (board_dims.height/2)-(player1.frontEndData.height/2))
+    player2.setInitialPosition(1340, (board_dims.height/2)-(player1.frontEndData.height/2))
     this.playerPaddle1 = player1
     this.playerPaddle2 = player2
     this.score = new Score
@@ -77,9 +77,9 @@ export class Game {
     }, 1000);
   }
   resetPositions(): void {
-    this.ball.init(700, 350, 11.5)
-    this.playerPaddle1.resetPositions(40, 300, 20, 100)
-    this.playerPaddle2.resetPositions(1340, 300, 20, 100)
+    this.ball.init(700, 350, 12)
+    this.playerPaddle1.resetPositions(40, 300, 20, 110)
+    this.playerPaddle2.resetPositions(1340, 300, 20, 110)
     this.isColliding = false
   }
   reset(): void {
