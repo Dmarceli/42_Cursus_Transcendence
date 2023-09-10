@@ -7,6 +7,7 @@ import { IsString, MaxLength,MinLength, ValidateIf, IsIn, IsNumber, isNumber, ma
     type: number;
 
     @IsDefined()
+    @IsString()
     channel_name: string;
   
     password: string;
