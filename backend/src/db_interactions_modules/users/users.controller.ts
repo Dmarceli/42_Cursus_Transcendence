@@ -8,7 +8,7 @@ import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDF
 import { User } from './user.entity';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { UserProfileSettingsDto } from './dtos/user-profile.dto';
+import { UserProfileSettingsDto as NickStringDto } from './dtos/user-profile.dto';
 import * as sanitizeHtml from 'sanitize-html';
 
 @Controller('users')
@@ -25,9 +25,9 @@ export class UsersController {
       new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif)/ }),
     ],
     fileIsRequired: false
-  })) file: Express.Multer.File, @Body() userProfileDto : UserProfileSettingsDto) {
-    userProfileDto.nickUpdate = sanitizeHtml(userProfileDto.nickUpdate);
-    return this.usersService.updateProfile(file, userProfileDto.userId, userProfileDto.nickUpdate);
+  })) file: Express.Multer.File, @getUserIDFromToken() user: User, @Body() params : NickStringDto) {
+    params.nickUpdate = sanitizeHtml(params.nickUpdate);
+    return this.usersService.updateProfile(file, user.id, params.nickUpdate);
   }
 
   @Get('/avatar/:filename')
