@@ -3,6 +3,7 @@ import { IsString, MaxLength,MinLength, ValidateIf, IsIn, IsNumber, isNumber, ma
 
   export class CreateUserToChannDto {
     @IsNumber()
+    @IsDefined()
     id: number;
 
     //@Optional()
@@ -24,8 +25,4 @@ import { IsString, MaxLength,MinLength, ValidateIf, IsIn, IsNumber, isNumber, ma
     @IsDefined()
     channel: number;
   }
-  
-  
-  
-  
   
