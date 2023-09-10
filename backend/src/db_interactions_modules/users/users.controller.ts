@@ -54,6 +54,7 @@ export class UsersController {
     }
     else
     {
+      delete login.TwoFASecret;
       return res.status(HttpStatus.OK).json(login);
     }
   }
