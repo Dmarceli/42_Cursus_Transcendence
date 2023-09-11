@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Res, UseGuards } from '@nestjs/common';
 import { GameHistoryService } from './game_history.service';
 import { CreateGameHistoryDto } from './dtos/createGameHistory.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
@@ -10,7 +10,7 @@ export class GameHistoryController {
   constructor(private readonly gameHistoryService: GameHistoryService) { }
 
   @Get(':id')
-  findOne(@Param('id', ParseIdPipe) id: number) {
-    return this.gameHistoryService.get_history(id);
+  findOne(@Param('id', ParseIdPipe) id: number, @Res() res: any) {
+    return this.gameHistoryService.get_history(id, res);
   }
 }

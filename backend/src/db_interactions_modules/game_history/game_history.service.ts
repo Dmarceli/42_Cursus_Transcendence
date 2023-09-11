@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Res } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GameHistory } from './game_history.entity';
@@ -25,18 +25,21 @@ export class GameHistoryService {
     return;
   }
 
-  async get_history(id: number) {
-    const gameHistoryQueryBuilder = this.gameHistoryRepository.createQueryBuilder("game_history");
+  async get_history(userId: number, @Res() res: any) {
 
+    let user = await this.userRepository.findOne({ where: { id: userId } })
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid Request: Invalid user' });
+    }
+    const gameHistoryQueryBuilder = this.gameHistoryRepository.createQueryBuilder("game_history");
     const game_history = await gameHistoryQueryBuilder
-        .select(["game_history", "loser.nick", "loser.avatar", "winner.nick", "winner.avatar"])
-        .leftJoin("game_history.user_id_loser", "loser")
-        .leftJoin("game_history.user_id_winner", "winner")
-        .where("loser.id = :userId", { userId: id })
-        .orWhere("winner.id = :userId", { userId: id })
-        .orderBy("game_history.time_begin", "ASC")
-        .getMany();
-    return game_history;
+      .select(["game_history", "loser.nick", "loser.avatar", "winner.nick", "winner.avatar"])
+      .leftJoin("game_history.user_id_loser", "loser")
+      .leftJoin("game_history.user_id_winner", "winner")
+      .where("loser.id = :userId", { userId: userId })
+      .orWhere("winner.id = :userId", { userId: userId })
+      .orderBy("game_history.time_begin", "ASC")
+      .getMany();
+    return res.status(200).json(game_history);
   }
 }
-
