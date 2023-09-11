@@ -28,7 +28,7 @@ export class Ball {
   init(x: number, y: number, radius: number): void {
     this.frontEndData = { x: x, y: y, radius: radius }
     this.direction = { x: 0, y: 0 }
-    while (Math.abs(this.direction.x) <= 0.4 || Math.abs(this.direction.x) >= 1) {
+    while (Math.abs(this.direction.x) <= 0.4 || Math.abs(this.direction.x) >= 0.9) {
       const angle = randomNumberBetween(0, 2 * Math.PI)
       this.direction = { x: Math.cos(angle), y: Math.sin(angle) }
     }
