@@ -67,20 +67,21 @@ export class UserToChannelController {
 
   @Get('/usersinchannel/:channelId')
   async getUsersInChannel(@Param('channelId', ParseIntPipe) channelId: number , @getUserIDFromToken() user:User, @Res() res: any) {
-    if(channelId){
+    if(channelId && check_valid_number(channelId)){
     const users = await this.userToChannelService.usersonchannel(+channelId,-1);
     return res.status(200).json(users);
     }
-    return res.status(200);
+    return res.status(200).json("");
   }
   
   @Get('/bannedusersinchannel/:channelId')
   async getbannedUsersInChannel(@Param('channelId', ParseIntPipe) channelId: number , @getUserIDFromToken() user:User, @Res() res: any) {
-    if(channelId){
+
+    if(channelId && check_valid_number(channelId)){
     const users = await this.userToChannelService.bannedusersonchannel(+channelId,user.id);
     return res.status(200).json(users);
     }
-    return res.status(200);
+    return res.status(200).json("");
   }
 
   @Get('/getusersonchannel/:id')
@@ -93,28 +94,36 @@ export class UserToChannelController {
 
   @Get('/getChannelsByUserID/:id')
   findChannelsByUserID(@Param('id', ParseIntPipe) us_id: number){
-    return this.userToChannelService.findChannelsByID(us_id);
+    if(check_valid_number(us_id))
+      return this.userToChannelService.findChannelsByID(us_id);
   }
 
   @Post('/kick/:userid/from/:channelid')
   kick_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
-    return this.userToChannelService.kick_from_channel(us_id,ch_id,user.id,res );
+    if(check_valid_number(us_id) && check_valid_number(ch_id))
+      return this.userToChannelService.kick_from_channel(us_id,ch_id,user.id,res );
+    return res.status(400).json("Invalid User / Channel")
   }
   
   @Post('/ban/:userid/from/:channelid')
   ban_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
-    return this.userToChannelService.ban_from_channel(us_id,ch_id,user.id,res );
+    if(check_valid_number(us_id) && check_valid_number(ch_id))
+      return this.userToChannelService.ban_from_channel(us_id,ch_id,user.id,res );
+    return res.status(400).json("Invalid User / Channel")
   }
 
   @Post('/unban/:userid/from/:channelid')
   unban_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
-    return this.userToChannelService.unban_from_channel(us_id,ch_id,user.id,res );
+    if(check_valid_number(us_id) && check_valid_number(ch_id))
+      return this.userToChannelService.unban_from_channel(us_id,ch_id,user.id,res );
+    return res.status(400).json("Invalid User / Channel")
   }
 
   @Post('/mute/:userid/from/:channelid')
   mute_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     if(check_valid_number(us_id) && check_valid_number(ch_id))
       return this.userToChannelService.mute_from_channel(us_id,ch_id,user.id,res );
+    return res.status(400).json("Invalid User / Channel")
   }
   @Post('/giveadmin/:userid/on/:channelid/:action')
   //{{SERVER_IP}}:3000/usertochannel/giveadmin/1/on/1/take - remove

@@ -289,6 +289,8 @@ export class UserToChannelService {
 
   async mute_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response){
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    if(!caller_privileges)
+      return res.status(400).json("User Not found")
     const user_to_mute = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
     if((caller_privileges.is_admin || caller_privileges.is_owner) && !user_to_mute.is_owner){
       const channel_to_leave = await this.UserToChannelRepository.findOne({
@@ -314,7 +316,7 @@ export class UserToChannelService {
 
   async give_ownership_to_user(id_us: number, id_ch: number, caller_id: number, res: Response){
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
-    if((caller_privileges.is_owner)){
+    if( caller_privileges && (caller_privileges.is_owner)){
       const new_owner_ = await this.UserToChannelRepository.findOne({
         where: {
           user_id: { id: id_us },
@@ -344,7 +346,7 @@ export class UserToChannelService {
 
     async give_admin_to_user(id_us: number, id_ch: number, caller_id: number, res: Response, opt: string){
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
-    if((caller_privileges.is_admin || caller_privileges.is_owner)){
+    if(caller_privileges && (caller_privileges.is_admin || caller_privileges.is_owner)){
       const channel_to_leave = await this.UserToChannelRepository.findOne({
         where: {
           user_id: { id: id_us },

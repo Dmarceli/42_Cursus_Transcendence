@@ -45,6 +45,7 @@ export class EventsController {
 
   @Post('/event_decision/:event_id/:decision')
   async event_decision(@Param('decision') decision: string, @Param('event_id') event_id: number) {
+    if(check_valid_number(event_id) && (decision == 'true' || decision == 'false'))
     return await this.eventsService.closedecision(decision, event_id);
   }
 
@@ -75,6 +76,9 @@ export class EventsController {
       await this.eventsService.markNotificationAsSeen(notificationId);
     }
   }
-}catch(error){}
+}catch(error){
+  return
+}
+return
   }
 }
