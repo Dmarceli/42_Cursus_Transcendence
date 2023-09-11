@@ -41,7 +41,20 @@ export class UsersService {
   }
 
   async findAll() {
-    return await this.userRepository.find();
+    return await this.userRepository.find({
+      select: [
+          "id",
+          "nick",
+          "intra_nick",
+          "avatar",
+          "lost_games",
+          "won_games",
+          "xp_total",
+          "TwoFAEnabled",
+          "creation_date",
+          "last_joined_date",
+          "is_first_login"
+        ]});
   }
 
    async findbyusername_(nick_:string, res: Response) {
