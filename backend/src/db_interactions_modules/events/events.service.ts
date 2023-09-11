@@ -103,8 +103,10 @@ export class EventsService {
   }
 
   
-  async markNotificationAsSeen(notificationId: number): Promise<void> {
-    await this.eventsRepository.update(notificationId, { already_seen: true });
+  async markNotificationAsSeen(notificationId: number){
+    const notification_ = await this.eventsRepository.findOne({where: {id: notificationId}})
+    if(notification_)
+      await this.eventsRepository.update(notification_, { already_seen: true });
   }
   // findOne(id: number) {
   //   return `This action returns a #${id} gameHistory`;

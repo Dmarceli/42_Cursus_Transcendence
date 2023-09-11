@@ -9,6 +9,7 @@ import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDF
 import { User } from 'src/db_interactions_modules/users/user.entity';
 import { UnblockUserDto } from './dtos/user_to_unblock.dto';
 import { BlockUserDto } from './dtos/user_to_block.dto';
+import check_valid_number from 'src/db_interactions_modules/app/tools/tools';
 
 
 @UseGuards(JwtAuthGuard)
@@ -43,8 +44,9 @@ export class friendsController {
   }
   
   @Delete('/deletefriends/:id1/:id2')
-  remove(@Param('id1', ParseIntPipe) id1: number,@Param('id2', ParseIntPipe) id2: number) {
-    return this.friendService.delete_friend(id1,id2);
+  remove(@Param('id1', ParseIntPipe) id1: number,@Param('id2', ParseIntPipe) id2: number,@getUserIDFromToken() user:User) {
+    if(check_valid_number(id1) && check_valid_number(id2) && (id1 == user.id || id2 == user.id))
+      return this.friendService.delete_friend(id1,id2);
   }
 
 }
