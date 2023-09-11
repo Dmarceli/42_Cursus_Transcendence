@@ -26,10 +26,13 @@ export class UsersController {
     ],
     fileIsRequired: false
   })) file: Express.Multer.File, @getUserIDFromToken() user: User, @Body() params : NickStringDto) {
-    if(!user || !user.nick)
+    if(!user || !params || !params.userId || !params.nickUpdate)
       return
-    params.nickUpdate = sanitizeHtml(params.nickUpdate);
+      console.log(params)
+   
+      params.nickUpdate = sanitizeHtml(params.nickUpdate);
     return this.usersService.updateProfile(file, user.id, params.nickUpdate);
+
   }
 
   @Get('/avatar/:filename')
