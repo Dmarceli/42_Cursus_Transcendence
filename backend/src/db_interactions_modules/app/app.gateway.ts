@@ -62,6 +62,7 @@ import { PrivateGameDto } from '../game/dtos/game.dto';
   AppService.UsersOnline.forEach((user) => {
     user.client.emit("online-status-update");
   })
+  this.gameService.HandlePlayerConnected(client)
 }
 
 // Game Service
