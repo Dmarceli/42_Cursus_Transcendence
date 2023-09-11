@@ -24,18 +24,4 @@ export class ChannelsController {
   protect(@Body() channelinfo: any,@getUserIDFromToken() user: User, @Res() res: any) {
     return this.channelsService.protect(channelinfo,user.id, res);
   }
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.channelsService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateChannelDto: UpdateChannelDto) {
-  //   return this.channelsService.update(+id, updateChannelDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.channelsService.remove(+id);
-  // }
 }

@@ -64,10 +64,15 @@ export class ChannelsService {
   }
 
   async protect(channelInfo: any,userID: number, res: Response){
-    if(!this.UserToChannelService_.isUserAdminOrOwnerInChannel(channelInfo.channel_id, userID))
-      return res.status(403).json({message: "User Doesnt have privileges",})
-    {
-      try {
+    try {
+      let channel = await this.ChannelsRepository.findOne(
+        {where: {id: channelInfo.channel_id }}
+      )
+      if (!channel) {
+        return res.status(400).json({message: "Invalid channel to be protected",});
+      }
+      if(!this.UserToChannelService_.isUserAdminOrOwnerInChannel(channelInfo.channel_id, userID))
+        return res.status(403).json({message: "User Doesnt have privileges",})
         const updateResult = await this.ChannelsRepository.update(channelInfo.channel_id, {
           type: 2,
           password: channelInfo.newPassword,
@@ -76,23 +81,7 @@ export class ChannelsService {
           return res.status(200).json({ message: "Channel protected successfully." });
         }
       } catch (error) {
-        return res.status(402).json({message: "Error",});
-    }
+        return res.status(400).json({message: "Invalid Request",});
     }
   }
-  // findAll() {
-  //   return `This action returns all channels`;
-  // }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} channel`;
-  // }
-
-  // update(id: number, updateChannelDto: UpdateChannelDto) {
-  //   return `This action updates a #${id} channel`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} channel`;
-  // }
 }
