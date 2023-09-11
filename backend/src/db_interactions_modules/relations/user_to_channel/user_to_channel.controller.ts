@@ -7,6 +7,7 @@ import { User } from 'src/db_interactions_modules/users/user.entity';
 import { UsersService } from 'src/db_interactions_modules/users/users.service';
 import { ChannelsService } from 'src/db_interactions_modules/channels/channels.service';
 import { EventCreateDto } from 'src/db_interactions_modules/events/dtos/events.dto';
+import check_valid_number from 'src/db_interactions_modules/app/tools/tools';
 
 
 @UseGuards(JwtAuthGuard)
@@ -112,7 +113,8 @@ export class UserToChannelController {
 
   @Post('/mute/:userid/from/:channelid')
   mute_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
-    return this.userToChannelService.mute_from_channel(us_id,ch_id,user.id,res );
+    if(check_valid_number(us_id) && check_valid_number(ch_id))
+      return this.userToChannelService.mute_from_channel(us_id,ch_id,user.id,res );
   }
   @Post('/giveadmin/:userid/on/:channelid/:action')
   //{{SERVER_IP}}:3000/usertochannel/giveadmin/1/on/1/take - remove

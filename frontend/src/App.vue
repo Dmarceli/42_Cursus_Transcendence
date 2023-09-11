@@ -253,7 +253,7 @@ async function executeLoginwithId(idvalue: number) {
 }
 
 const showNotifications = ref(false);
-const notifications = ref([]);
+const notifications = ref([1]);
 const unseenNotifications = computed(() => {
   return notifications.value.filter(notification => !notification.already_seen);
 });
@@ -273,7 +273,7 @@ const markAllNotificationsAsSeen = async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ unseenNotificationIds }),
+      body: JSON.stringify( {unseenNotificationIds} ),
     });
     fetchNotifications();
   } catch (error) {

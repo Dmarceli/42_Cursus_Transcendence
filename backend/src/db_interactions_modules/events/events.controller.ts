@@ -4,6 +4,8 @@ import { EventCreateDto } from './dtos/events.dto';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { User } from '../users/user.entity';
+import check_valid_number from '../app/tools/tools';
+import { IsArray, isNumber } from 'class-validator';
 
 
 @UseGuards(JwtAuthGuard)
@@ -64,23 +66,15 @@ export class EventsController {
 
   @Post('/mark_seen_all')
   async markAllNotificationsAsSeen(@Body() IDS: any){
-    const { unseenNotificationIds } = IDS;
+    const  {unseenNotificationIds}  = IDS;
+    try{
+    if(unseenNotificationIds.length > 1){
     for (const notificationId of unseenNotificationIds) {
+      if(!check_valid_number(notificationId) || !isNumber(notificationId))
+        return
       await this.eventsService.markNotificationAsSeen(notificationId);
     }
   }
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.gameHistoryService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateGameHistoryDto: UpdateGameHistoryDto) {
-  //   return this.gameHistoryService.update(+id, updateGameHistoryDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.gameHistoryService.remove(+id);
-  // }
+}catch(error){}
+  }
 }
