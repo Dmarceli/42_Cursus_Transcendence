@@ -26,6 +26,8 @@ export class UsersController {
     ],
     fileIsRequired: false
   })) file: Express.Multer.File, @getUserIDFromToken() user: User, @Body() params : NickStringDto) {
+    if(!user || !user.nick)
+      return
     params.nickUpdate = sanitizeHtml(params.nickUpdate);
     return this.usersService.updateProfile(file, user.id, params.nickUpdate);
   }

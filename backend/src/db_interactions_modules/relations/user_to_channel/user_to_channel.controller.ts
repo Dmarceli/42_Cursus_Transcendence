@@ -22,10 +22,11 @@ export class UserToChannelController {
  @Post('/joinchannel')
   async create(@Body() channelID: CreateUserToChannDto, @getUserIDFromToken() user:User, @Res() res: any) {
     const channel = await this.channelService.getChannelByID(channelID.id)
-    if (!channel || !channelID.id || !channelID ){
+    const user_ = await this.userService.findByLogin(user['login'])
+    if (!channel || !channelID.id || !channelID || !user_ || !user_.id){
       return res.status(202).json({ message: 'Channel Doesnt exist' });
     }
-    const user_ = await this.userService.findByLogin(user['login'])
+
     this.userToChannelService.joinchannel(channel, user, channelID.pass);
     return res.status(200).json({message : 'Joined Channel'}) 
   }
@@ -52,9 +53,10 @@ export class UserToChannelController {
 
   @Post('/deletechannel')
   async delete_channel(@Body() channelID: CreateUserToChannDto, @getUserIDFromToken() user: User, @Res() res: any) {
-    if(!channelID)
-      return res.status(403).json({ message: 'Bad Format'});
     const user_ = await this.userService.findByLogin(user['user']['intra_nick']);
+    if(!channelID || !channelID.id || !user || !user.id || !user_ || !user_.id)
+      return res.status(403).json({ message: 'Bad Format'});
+    
     return this.userToChannelService.deletechannel(user_.id, channelID.id, res);
   }
   
