@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Res } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { friend } from './friend.entity';
@@ -19,20 +19,22 @@ export class friendService {
  }
 
 
- async blockuser(user_to_block: number, user: number) {
+ async blockuser(user_to_block: number, user: number, @Res() res) {
   if(!user_to_block || !user)
-    return
+    return res.status(400).json({ message: 'Invalid Request: Missing user or invalid token' });
   if(this.findFriendshipByIDS(user_to_block,user))
     this.delete_friend(user_to_block,user)
   const to_block= await this.userRepository.findOne({where: {id: user_to_block} })
   const user1= await this.userRepository.findOne({where: {id: user} })
+  if (!to_block || !user1 || user_to_block==user){
+    return res.status(400).json({ message: 'Invalid User to block' });
+  }
   const resp=await this.friendRepository.save({
     user1Id: user1,
     user2Id: to_block,
     is_block: true
    });
-   return ([resp.user1Id.id, resp.user2Id.id, resp.is_block])
-  
+   return res.status(200).json([resp.user1Id.id, resp.user2Id.id, resp.is_block])
  }
 
 
@@ -89,7 +91,6 @@ async get_blockedusers(userId: number) {
 async delete_friend(id1: number,id2: number) {
   if(!id1 || !id2 )
     return
-  
   const friendship = await this.friendRepository.findOne({
     where: [{ user1Id: {id: id1}, user2Id: {id: id2}}, 
            { user1Id: {id: id2}, user2Id: {id: id1}}
@@ -98,7 +99,7 @@ async delete_friend(id1: number,id2: number) {
 	});
   if(friendship){
     const resp = await this.friendRepository.remove(friendship)
-     return ([resp.user1Id.id, resp.user2Id.id, resp.is_block])
+    return [resp.user1Id.id, resp.user2Id.id, resp.is_block]
   }
   else
     return
