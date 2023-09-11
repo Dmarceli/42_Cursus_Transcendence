@@ -279,7 +279,7 @@ function SigReady() {
 
 .lobby-state
 {
-  display: flex;
+  display: inline-block;
   padding: 0 rem;
   margin: 0;
   height: 100%;
