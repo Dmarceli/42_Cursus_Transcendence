@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res, ParseIntPipe } from '@nestjs/common';
 import { UserToChannelService } from './user_to_channel.service';
 import { CreateUserToChannDto, InviteUserToChannDto } from './dtos/user_to_channel.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
@@ -43,19 +43,18 @@ export class UserToChannelController {
   
 
   @Post('/leavechannel')
-  async leave(@Body() channelID: { id: number }, @getUserIDFromToken() user: User, @Res() res: any) {
+  async leave(@Body() channelID: CreateUserToChannDto, @getUserIDFromToken() user: User, @Res() res: any) {
     const user_ = await this.userService.findByLogin(user['user']['intra_nick']);
     this.userToChannelService.leavechannel(user_.id, channelID.id);
     return res.status(200).json({ message: 'Left channel' });
   }
 
   @Post('/deletechannel')
-  async delete_channel(@Body() channelID: { id: number }, @getUserIDFromToken() user: User, @Res() res: any) {
+  async delete_channel(@Body() channelID: CreateUserToChannDto, @getUserIDFromToken() user: User, @Res() res: any) {
     if(!channelID)
       return res.status(403).json({ message: 'Bad Format'});
     const user_ = await this.userService.findByLogin(user['user']['intra_nick']);
-    this.userToChannelService.deletechannel(user_.id, channelID.id);
-    return res.status(200).json({ message: 'channel deleted' });
+    return this.userToChannelService.deletechannel(user_.id, channelID.id, res);
   }
   
 
@@ -66,7 +65,7 @@ export class UserToChannelController {
   }
 
   @Get('/usersinchannel/:channelId')
-  async getUsersInChannel(@Param('channelId') channelId: string , @getUserIDFromToken() user:User, @Res() res: any) {
+  async getUsersInChannel(@Param('channelId', ParseIntPipe) channelId: number , @getUserIDFromToken() user:User, @Res() res: any) {
     if(channelId){
     const users = await this.userToChannelService.usersonchannel(+channelId,-1);
     return res.status(200).json(users);
@@ -75,7 +74,7 @@ export class UserToChannelController {
   }
   
   @Get('/bannedusersinchannel/:channelId')
-  async getbannedUsersInChannel(@Param('channelId') channelId: string , @getUserIDFromToken() user:User, @Res() res: any) {
+  async getbannedUsersInChannel(@Param('channelId', ParseIntPipe) channelId: number , @getUserIDFromToken() user:User, @Res() res: any) {
     if(channelId){
     const users = await this.userToChannelService.bannedusersonchannel(+channelId,user.id);
     return res.status(200).json(users);
@@ -84,7 +83,7 @@ export class UserToChannelController {
   }
 
   @Get('/getusersonchannel/:id')
-  findAll(@Param('id') ch_id: string,  @getUserIDFromToken() user:User) {
+  findAll(@Param('id', ParseIntPipe) ch_id: number,  @getUserIDFromToken() user:User) {
     if(ch_id)
       return this.userToChannelService.usersonchannel(+ch_id,user.id);
     else
@@ -92,44 +91,44 @@ export class UserToChannelController {
   }
 
   @Get('/getChannelsByUserID/:id')
-  findChannelsByUserID(@Param('id') us_id: number){
+  findChannelsByUserID(@Param('id', ParseIntPipe) us_id: number){
     return this.userToChannelService.findChannelsByID(us_id);
   }
 
   @Post('/kick/:userid/from/:channelid')
-  kick_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+  kick_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.kick_from_channel(us_id,ch_id,user.id,res );
   }
   
   @Post('/ban/:userid/from/:channelid')
-  ban_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+  ban_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.ban_from_channel(us_id,ch_id,user.id,res );
   }
 
   @Post('/unban/:userid/from/:channelid')
-  unban_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+  unban_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.unban_from_channel(us_id,ch_id,user.id,res );
   }
 
   @Post('/mute/:userid/from/:channelid')
-  mute_user_from_channel(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+  mute_user_from_channel(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.mute_from_channel(us_id,ch_id,user.id,res );
   }
   @Post('/giveadmin/:userid/on/:channelid/:action')
   //{{SERVER_IP}}:3000/usertochannel/giveadmin/1/on/1/take - remove
   //{{SERVER_IP}}:3000/usertochannel/giveadmin/1/on/1/give - dá admin
-  give_admin_to_user(@Param('userid') us_id: number,@Param('channelid') ch_id: number,@Param('action') action: string, @getUserIDFromToken() user:User, @Res() res: any){
+  give_admin_to_user(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number,@Param('action') action: string, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.give_admin_to_user(us_id,ch_id,user.id,res,action );
   }
   
   @Post('/giveownership/:userid/on/:channelid')
-  give_ownership_to_user(@Param('userid') us_id: number,@Param('channelid') ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
+  give_ownership_to_user(@Param('userid', ParseIntPipe) us_id: number,@Param('channelid', ParseIntPipe) ch_id: number, @getUserIDFromToken() user:User, @Res() res: any){
     return this.userToChannelService.give_ownership_to_user(us_id,ch_id,user.id,res);
   }
   
 
   @Post('privatemessage/:userid')
-  start_private_message(@Param('userid') us_id: number, @getUserIDFromToken() user:User){
+  start_private_message(@Param('userid', ParseIntPipe) us_id: number, @getUserIDFromToken() user:User){
     return this.userToChannelService.privatemessage_channel(us_id,user.id);
   }
 
