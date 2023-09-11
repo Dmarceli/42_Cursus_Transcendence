@@ -33,6 +33,8 @@ export class MessagesService {
     blocked_users_id.push(element.id)
   });
   const channel= await this.channelRepository.findOne({where: {id:  id_given}})
+  if (!channel)
+    return
   const messages = await this.messagesRepository.find({
     where: {channel: {id: channel.id}},
     relations: ['author'],
