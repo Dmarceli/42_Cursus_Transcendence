@@ -7,10 +7,10 @@ import { ParseIdPipe } from 'src/db_interactions_modules/pipes/parse_id.pipe'
 @UseGuards(JwtAuthGuard)
 @Controller('game-history')
 export class GameHistoryController {
-	constructor(private readonly gameHistoryService: GameHistoryService) { }
+  constructor(private readonly gameHistoryService: GameHistoryService) { }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseIdPipe) id: number) {
     return this.gameHistoryService.get_history(id);
   }
 }
