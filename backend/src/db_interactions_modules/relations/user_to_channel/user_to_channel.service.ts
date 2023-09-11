@@ -1,4 +1,4 @@
-import { Injectable, Inject,forwardRef } from '@nestjs/common';
+import { Injectable, Inject,forwardRef, Res } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserToChannel } from './user_to_channel.entity';
@@ -101,8 +101,8 @@ export class UserToChannelService {
     return resp;
   }
 
-  async deletechannel(id_us: number, id_ch: number) {
-    const channel_to_delete = await this.UserToChannelRepository.findOne({
+  async deletechannel(id_us: number, id_ch: number, @Res() res: any) {
+    const user_to_channel = await this.UserToChannelRepository.findOne({
       where: {
         user_id: { id: id_us },
         channel_id: { id: id_ch }
@@ -110,8 +110,12 @@ export class UserToChannelService {
       ,
       relations: ['user_id', 'channel_id']
     });
-    if(channel_to_delete && channel_to_delete.is_owner){
-      const users_on_channel = await this.UserToChannelRepository.find({
+    if(!user_to_channel)
+      return res.status(400).json({ message: 'Invalid Channel Id' });
+    if(!user_to_channel.is_owner)
+      return res.status(403).json({ message: 'User lacks permission to delete channel' });
+
+    const users_on_channel = await this.UserToChannelRepository.find({
         where: {
           channel_id: { id: id_ch }
         }
@@ -137,10 +141,8 @@ export class UserToChannelService {
     })
     await this.ChannelRepository.remove(channel_to_delete)
     await this.notifylist(id_to_notify);
-    return ;
-  }
-  else
-  return
+    // await this.UserToChannelRepository.remove(user_to_channel)
+    return res.status(200).json({ message: 'channel deleted' });
 }
 
   async usersonchannel(ch_id: number,caller_id: number) {
@@ -208,6 +210,8 @@ export class UserToChannelService {
  async kick_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response) {
   const caller_privileges= await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
   const user_to_kick= await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+  if (!caller_privileges || !user_to_kick)
+    return res.status(400).json("Invalid request")
   if((caller_privileges.is_admin || caller_privileges.is_owner) && !user_to_kick.is_owner){
     const channel_to_leave = await this.UserToChannelRepository.find({
         where: {
@@ -217,7 +221,8 @@ export class UserToChannelService {
         ,
         relations: ['user_id', 'channel_id']
       });
-  
+      if (!channel_to_leave)
+        return res.status(400).json("Invalid request")
       await this.UserToChannelRepository.remove(channel_to_leave)
       await this.notifyRoom(id_ch);
       await this.usersService.notifyUser(id_us,AppService.UsersOnline)
@@ -233,6 +238,8 @@ export class UserToChannelService {
   async ban_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response){
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
     const user_to_ban = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    if (!caller_privileges || !user_to_ban)
+      return res.status(400).json("Invalid request")
     if((caller_privileges.is_admin || caller_privileges.is_owner) && !user_to_ban.is_owner){
       const channel_to_leave = await this.UserToChannelRepository.findOne({
         where: {
@@ -242,6 +249,8 @@ export class UserToChannelService {
         ,
         relations: ['user_id', 'channel_id']
       });
+      if (!channel_to_leave)
+        return res.status(400).json("Invalid request")
       await this.UserToChannelRepository.update(channel_to_leave, { is_banned: true, is_admin: false })
       await this.notifyRoom(id_ch);
       this.usersService.notifyUser(id_us,AppService.UsersOnline)
@@ -254,6 +263,10 @@ export class UserToChannelService {
 
   async unban_from_channel(id_us: number, id_ch: number, caller_id: number, res: Response){
     const caller_privileges = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:caller_id},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    const user_to_unban = await this.UserToChannelRepository.findOne({ where:[{user_id:{id:id_us},channel_id:{id:id_ch}}], relations: ['channel_id','user_id']})
+    if (!caller_privileges || !user_to_unban) {
+      return res.status(400).json("Invalid request")
+    }
     if((caller_privileges.is_admin || caller_privileges.is_owner)){
       const channel_to_come_back = await this.UserToChannelRepository.findOne({
         where: {
@@ -263,6 +276,8 @@ export class UserToChannelService {
         ,
         relations: ['user_id', 'channel_id']
       });
+      if (!channel_to_come_back)
+        return res.status(400).json("Invalid request")
       await this.UserToChannelRepository.update(channel_to_come_back, { is_banned: false })
       await this.notifyRoom(id_ch);
       return res.status(200).json()
