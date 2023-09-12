@@ -188,7 +188,9 @@ async function verifyCode(token: string, code: any) {
       islogged.value = true;
       socket = io(process.env.VUE_APP_BACKEND_URL, {
         auth: {
-          token: token
+          token: token,
+          userAgent: window.navigator.userAgent,
+          privateWindow: window.navigator.doNotTrack
         }
       });
       provide('socket', socket)
@@ -345,6 +347,9 @@ if (socket && islogged.value == true) {
 
   socket.on('notification', Notification => {
     fetchNotifications();
+  });
+  socket.on('token_refresh_', (newtoken) => {
+    document.cookie = `token=${newtoken}`
   });
 
   socket.on('logout', Notification => {

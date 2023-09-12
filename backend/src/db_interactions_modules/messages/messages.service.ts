@@ -28,7 +28,6 @@ export class MessagesService {
   }
   let messageList: Array<Messages> = [];
   const blocked_users=await  this.friendservice.get_blockedusers(user.id)
-  console.log(blocked_users)
   let blocked_users_id: Array<Number> = [];
   blocked_users.forEach(element => {
     blocked_users_id.push(element.id)

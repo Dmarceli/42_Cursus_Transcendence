@@ -151,8 +151,6 @@ export class UsersService {
     const user_logged = AppService.UsersOnline.find( User_ => User_.user.id == payload.id)
     if(user_logged)
     {
-        console.log(client.handshake.auth)
-        console.log(user_logged)
       if (client.handshake.auth.privateWindow == user_logged.privateWindow
         && client.handshake.auth.userAgent == user_logged.userAgent) {
         user_logged.client.emit("DisconnectSocketToken")
@@ -160,6 +158,7 @@ export class UsersService {
       else
         user_logged.client.emit("DeletingToken")
       this.remove_disconnect_User(user_logged.client)
+      
     }
     const resp = await this.userRepository.findOne({where: {id: payload.id}});
     if(!resp)
