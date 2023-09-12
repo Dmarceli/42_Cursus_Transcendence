@@ -42,8 +42,8 @@ import {
    }
    
    handleDisconnect(client: Socket) {
-     this.gameService.HandlePlayerDisconnected(client)
      this.appService.user_remove_disconect(client)
+     this.gameService.HandlePlayerDisconnected(client)
      AppService.UsersOnline.forEach((user) => {
      user.client.emit("online-status-update");
     })
@@ -84,14 +84,6 @@ import {
     handleAddPlayerToLobby(client: Socket, intra_nick: string) {
       this.gameService.AddPlayerToLobby(client, intra_nick)
     }
-
-    @SubscribeMessage('ExitLobby')
-    handleExitLobby(client: Socket, intra_nick: string) {
-      this.gameService.RemoveFromLobby(client)
-      this.gameService.EmitUpdatedState(client, intra_nick);
-    }
-
-
     @SubscribeMessage('PlayerReady')
     handlePlayerReady(client: Socket, intra_nick: string) {
       this.gameService.PlayerReady(client, intra_nick)
