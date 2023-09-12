@@ -269,10 +269,12 @@ export class GameService {
   }
 
   HandleOtherPlayerReconnected(game: Game, player: PlayerPaddle) {
-    if (player.ready) {
+    if (player.ready)
+    {
       this.SetPlayerStateEmit(player.client, player.user.intra_nick, State.WAITING_OTHER_READY)
     }
-    else {
+    else
+    {
       this.SetPlayerStateEmit(player.client, player.user.intra_nick, State.NOT_READY)
     }
   }
@@ -316,24 +318,7 @@ export class GameService {
     }
   }
 
-  RemoveFromLobby(client: Socket) {
-    let updatedLobby = this.lobby.filter((player) => {
-      if (player.client.id == client.id) {
-        let user = AppService.UsersOnline.find(userOnline => userOnline.client == player.client)
-        if (!user)
-          return
-        if (this.player_states.has(user.user.intra_nick)) {
-          this.player_states.delete(user.user.intra_nick)
-        }
-        return false
-      }
-      return true
-    })
-    this.lobby = updatedLobby;
-  }
-
   HandlePlayerDisconnected(client: Socket) {
-    this.RemoveFromLobby(client);
     for (let game of this.active_games) {
       if (game.playerPaddle1.client && game.playerPaddle1.client.id == client.id) {
         game.playerPaddle1.ready = false
