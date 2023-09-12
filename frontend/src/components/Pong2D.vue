@@ -2,8 +2,9 @@
   <div class="states" v-if="IsLobbyPlayer()">
     <v-btn @click="onJoinLobby">Join Lobby</v-btn>
   </div>
-  <div class="states" v-else-if="IsInQueue()">
+  <div class="lobby-state" v-else-if="IsInQueue()">
     <WaitingLobbyPage></WaitingLobbyPage>
+    <v-btn class="leave-lobby-btn" @click="exitLobby">Exit Lobby</v-btn>
   </div>
   <div class="states" v-else-if="IsNotReady()">
     <v-btn @click="SigReady">I'm ready to play</v-btn>
@@ -255,6 +256,10 @@ function onJoinLobby() {
   socket?.emit('AddToLobby', props.intraNick)
 }
 
+function exitLobby() {
+  socket?.emit('ExitLobby', props.intraNick)
+}
+
 function SigReady() {
   socket?.emit('PlayerReady', props.intraNick)
 }
@@ -266,6 +271,15 @@ function SigReady() {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 0 rem;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.lobby-state
+{
+  display: inline-block;
   padding: 0 rem;
   margin: 0;
   height: 100%;
@@ -289,4 +303,5 @@ function SigReady() {
 canvas {
   z-index: 1;
 }
+
 </style>
