@@ -27,12 +27,16 @@ export class Ball {
   }
   init(x: number, y: number, radius: number): void {
     this.frontEndData = { x: x, y: y, radius: radius }
-    this.frontEndData.radius = y / 40
     this.direction = { x: 0, y: 0 }
     while (Math.abs(this.direction.x) <= 0.4 || Math.abs(this.direction.x) >= 0.9) {
       const angle = randomNumberBetween(0, 2 * Math.PI)
       this.direction = { x: Math.cos(angle), y: Math.sin(angle) }
     }
-    this.speed = 5
+    this.speed = 4
+  }
+  increaseBallSpeed() {
+    if (this.speed < 11) {
+      this.speed += 1.2
+    }
   }
 }

@@ -285,7 +285,7 @@ export class GameService {
     if (game) {
       game.playerPaddle1.client = client
       if (game.timeStart)
-        this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.WAITING_OTHER_READY)
+        this.SetPlayerStateEmit(game.playerPaddle1.client, game.playerPaddle1.user.intra_nick, State.NOT_READY)
       this.HandleOtherPlayerReconnected(game, game.playerPaddle2)
       return
     }
@@ -393,7 +393,7 @@ export class GameService {
           }
         }
       }
-    }, 15
+    }, 10
     )
   }
 
