@@ -1,10 +1,13 @@
 <template>
-  <h1>Welcome, player! Queueing you in for some fantastic matches{{ ellipsis }}</h1>
+  <h1>{{props.text}}{{ ellipsis }}</h1>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
+let props = defineProps<{
+  text: string
+}>()
 let ellipsis = ref("")
 
 onMounted(() => {
