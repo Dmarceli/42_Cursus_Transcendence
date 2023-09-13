@@ -4,7 +4,7 @@
       <RouterLink to="/">Pong</RouterLink>
       <RouterLink to="/chat">Chat</RouterLink>
       <RouterLink to="/leaderboard">Leaderboard</RouterLink>
-      <RouterLink to="/profile">User profile</RouterLink>
+      <RouterLink @click="reloadRoute" to="/profile">User profile</RouterLink>
       <v-btn @click="toggleNotifications()" style="background-color:transparent;">
         <v-icon color="green">mdi-bell</v-icon>
         <div v-if="unseenNotifications.length > 0" class="notification-badge" >{{ unseenNotifications.length }}</div>
@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterLink, RouterView, useRoute } from 'vue-router';
 import Login from "./components/LoginPage.vue";
 import { Socket, io } from 'socket.io-client'
 import { ref, provide, onBeforeMount, computed, nextTick } from 'vue'
@@ -64,6 +64,15 @@ const first_login_modal = ref(false);
 const islogged = ref(false);
 const isGameRoute = computed(() => router.currentRoute.value.path === '/')
 let routerKey = ref(0)
+
+async function reloadRoute()
+{
+  await nextTick()
+    if (router.currentRoute.value.path !== '/profile') {
+      router.push('/').then(() => router.push('/profile'))
+    }
+    routerKey.value++
+}
 
 async function decideNotification(NotificationID: number, Decision: boolean) {
   let token = getCookieValueByName('token');
