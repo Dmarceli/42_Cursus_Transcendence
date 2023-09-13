@@ -49,12 +49,12 @@ export class EventsService {
         already_seen: false
       });
     } catch (error) {
-      console.error('Error notifying user:', error);
+      console.error('Error notifying user');
     }
     try {
       await this.appService.user_to_notify(createEventDto.decider_user);
     } catch (error) {
-      console.error('Error notifying user:', error);
+      console.error('Error notifying user');
     }
   }
 
