@@ -151,7 +151,7 @@ export class UserToChannelService {
       where: { channel_id: { id: ch_id }},
      relations: ['user_id', 'channel_id'],
      select: {
-                user_id:{id: true, intra_nick: true,avatar:true, nick: true},
+                user_id:{id: true, intra_nick: true,avatar:true, nick: true, lost_games: true, won_games: true, xp_total: true},
                 channel_id:{channel_name: true, id: true, type: true},
                 id: true, is_admin : true, is_muted: true, is_banned : true, is_owner: true
               },

@@ -9,7 +9,7 @@
         <v-icon color="green">mdi-bell</v-icon>
         <div v-if="unseenNotifications.length > 0" class="notification-badge" >{{ unseenNotifications.length }}</div>
       </v-btn>
-      <v-btn @click="logout">Logout</v-btn>
+      <v-btn @click="clearCookie">Logout</v-btn>
     </nav>
   </header>
 
@@ -104,10 +104,15 @@ const formatTime = (timestamp) => {
   }
 };
 
-function logout() {
+function clearCookie()
+{
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  logout()
+}
+
+function logout() {
   islogged.value = false;
-  window.location.href = '/';
+  socket?.disconnect();
 }
 
 let socket: Socket | null = null;
@@ -115,6 +120,8 @@ async function setupSocket(token) {
   socket = io(process.env.VUE_APP_BACKEND_URL, {
     auth: {
       token: token,
+      userAgent: window.navigator.userAgent,
+      privateWindow: window.navigator.doNotTrack
     },
   });
   provide('socket', socket);
@@ -161,6 +168,8 @@ async function verifyCode(token: string, code: any) {
 
 //let token = getCookieValueByName('token');
 
+
+
 (async () => {
   let token = getCookieValueByName('token');
   if (token) {
@@ -179,7 +188,9 @@ async function verifyCode(token: string, code: any) {
       islogged.value = true;
       socket = io(process.env.VUE_APP_BACKEND_URL, {
         auth: {
-          token: token
+          token: token,
+          userAgent: window.navigator.userAgent,
+          privateWindow: window.navigator.doNotTrack
         }
       });
       provide('socket', socket)
@@ -337,6 +348,9 @@ if (socket && islogged.value == true) {
   socket.on('notification', Notification => {
     fetchNotifications();
   });
+  socket.on('token_refresh_', (newtoken) => {
+    document.cookie = `token=${newtoken}`
+  });
 
   socket.on('logout', Notification => {
     logout();
@@ -351,6 +365,12 @@ if (socket && islogged.value == true) {
   socket.on('DisconnectSocketToken', () => {
     logout();
   })
+
+  socket.on("DeletingToken", () => {
+    console.log("Aqui")
+    clearCookie()
+  })
+
 }
 
 onBeforeMount(() => {

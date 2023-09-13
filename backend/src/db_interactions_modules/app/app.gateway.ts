@@ -62,6 +62,7 @@ import {
     AppService.UsersOnline.forEach((user) => {
       user.client.emit("online-status-update");
     })
+    client.emit('token_refresh_',client.handshake.auth.token)
     this.gameService.HandlePlayerConnected(client)
   }
   
