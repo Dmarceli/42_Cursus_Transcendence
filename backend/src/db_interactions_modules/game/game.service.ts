@@ -110,9 +110,12 @@ export class GameService {
       return;
     }
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
-    let newPlayer = new PlayerPaddle(playerClient, user, skin);
-    this.lobbyPlayers.push(newPlayer);
-    this.SetPlayerStateEmit(playerClient, nick, State.LOBBY_PLAYER)
+    if (user && user.intra_nick)
+    {
+      let newPlayer = new PlayerPaddle(playerClient, user, skin);
+      this.lobbyPlayers.push(newPlayer);
+      this.SetPlayerStateEmit(playerClient, nick, State.LOBBY_PLAYER)
+    }
   }
 
   AddPlayerToLobby(playerClient: Socket, nick: string) {
@@ -151,9 +154,12 @@ export class GameService {
       return;
     }
     const user = await this.userRepository.findOne({ where: { intra_nick: nick } })
-    let newPlayer = new PlayerPaddle(playerClient, user, skin);
-    this.privateGamePlayers.push(newPlayer);
-    this.SetPlayerStateEmit(playerClient, nick, State.CHOSE_PRIVATE_PLAYER)
+    if (user && user.intra_nick)
+    {
+      let newPlayer = new PlayerPaddle(playerClient, user, skin);
+      this.privateGamePlayers.push(newPlayer);
+      this.SetPlayerStateEmit(playerClient, nick, State.CHOSE_PRIVATE_PLAYER)
+    }
   }
 
   updateStateIntraNick(intra_nick: string) {
