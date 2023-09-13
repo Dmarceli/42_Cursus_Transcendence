@@ -3,8 +3,11 @@
     <v-btn @click="onJoinLobby">Join Lobby</v-btn>
   </div>
   <div class="lobby-state" v-else-if="IsInQueue()">
-    <WaitingLobbyPage></WaitingLobbyPage>
+    <AnimatedEllipsis text="Welcome, player! Queueing you in for some fantastic matches"></AnimatedEllipsis>
     <v-btn class="leave-lobby-btn" @click="exitLobby">Exit Lobby</v-btn>
+  </div>
+  <div class="lobby-state" v-else-if="ChosePrivatePlayer()">
+    <AnimatedEllipsis text="Waiting for opponent to choose paddle"></AnimatedEllipsis>
   </div>
   <div class="states" v-else-if="IsNotReady()">
     <v-btn @click="SigReady">I'm ready to play</v-btn>
@@ -24,7 +27,7 @@
 <script setup lang="ts">
 import { ref, inject, onMounted, onUnmounted, watch } from 'vue'
 import { Socket } from 'socket.io-client'
-import WaitingLobbyPage from './WaitingLobbyPage.vue'
+import AnimatedEllipsis from './AnimatedEllipsis.vue'
 import { type Rectangle, Paddle, type Circle, Ball, Score } from './pong-types'
 import { State } from '@/helpers/state';
 
@@ -61,6 +64,11 @@ function IsLobbyPlayer() {
 
 function IsInQueue() {
   return props.gameState == State.IN_LOBBY_QUEUE
+}
+
+function ChosePrivatePlayer()
+{
+  return props.gameState == State.CHOSE_PRIVATE_PLAYER
 }
 
 function IsNotReady() {
