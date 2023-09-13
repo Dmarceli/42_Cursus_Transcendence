@@ -34,7 +34,9 @@ export class EventsService {
       relations: ['requester_user', 'decider_user'],})
       const decider_user = await this.usersService.findById(createEventDto.decider_user)
       const requester_user = await this.usersService.findById(createEventDto.requester_user)
-      if(already_requested)
+      if(!decider_user || !requester_user)
+        return
+      else if(already_requested )
         return "2"
       else if (this.gameService.player_states.has(requester_user.intra_nick))
         return "3"

@@ -31,6 +31,8 @@ function buttonBYPASS_TEMP() {
 </script>
 
 <style>
+
+
 .loginpage {
   display: flex;
   justify-content: center;
@@ -73,9 +75,10 @@ function buttonBYPASS_TEMP() {
 }
 
 .welcome {
-  display: table-cell;
+  display: flex;
   text-align: center;
-  /* Horizontally center */
-  vertical-align: middle;
-  /* Vertically center */
-}</style>
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+</style>
