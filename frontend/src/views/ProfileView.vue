@@ -91,7 +91,7 @@ function getCookieValueByName(name: string) {
 
 const fetchUserProfile = async () => {
   let url: string
-  if (route.name === 'myProfile') {
+  if (route.name == 'myProfile') {
     url = process.env.VUE_APP_BACKEND_URL + '/users/getUserInfo/';
   } else {
     url = process.env.VUE_APP_BACKEND_URL + '/users/getUsers/' + route.params.intra_nick;
