@@ -70,8 +70,8 @@ export class UserToChannelController {
   @Get('/usersinchannel/:channelId')
   async getUsersInChannel(@Param('channelId', ParseIntPipe) channelId: number , @getUserIDFromToken() user:User, @Res() res: any) {
     if(channelId && check_valid_number(channelId)){
-    const users = await this.userToChannelService.usersonchannel(+channelId,-1);
-    return res.status(200).json(users);
+      const users = await this.userToChannelService.usersonchannel(+channelId,-1);
+      return res.status(200).json(users);
     }
     return res.status(200).json("");
   }
@@ -88,7 +88,8 @@ export class UserToChannelController {
 
   @Get('/getusersonchannel/:id')
   findAll(@Param('id', ParseIntPipe) ch_id: number,  @getUserIDFromToken() user:User) {
-    if(ch_id)
+    if(ch_id && check_valid_number(ch_id
+      ))
       return this.userToChannelService.usersonchannel(+ch_id,user.id);
     else
       return
