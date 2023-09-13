@@ -44,13 +44,13 @@ export class AuthController {
         TwoFAEnabled: true
       };
       let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
-      res.cookie('token', "2FA" + access_token2FA)
+      res.cookie('token', "2FA" + access_token2FA, { secure: false, domain: process.env.HOST_IP })
     }
     else {
       const user_= await this.UserRepository.findOne({where: {id: req.user.id }})
       user_.last_joined_date= new Date();
       await this.UserRepository.save(user_)
-      res.cookie('token', payload.access_token, { secure: true, sameSite: 'None', domain: 'localhost' })
+      res.cookie('token', payload.access_token, { secure: false, domain: process.env.HOST_IP })
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
     }
@@ -76,13 +76,13 @@ export class AuthController {
         TwoFAEnabled: true
       };
       let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
-      res.cookie('token', "2FA" + access_token2FA)
+      res.cookie('token', "2FA" + access_token2FA, { secure: false, domain: process.env.HOST_IP })
     }
     else {
       const user_= await this.UserRepository.findOne({where: {id: req.user.id }})
       user_.last_joined_date= new Date();
       await this.UserRepository.save(user_)
-      res.cookie('token', payload.access_token, { secure: true, SameSite: 'None', domain: 'localhost' })
+      res.cookie('token', payload.access_token,  { secure: false, domain: process.env.HOST_IP })
       res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
       res.setHeader('Location', process.env.BACKEND_URL)
 
@@ -98,7 +98,7 @@ export class AuthController {
       const payload = await this.authService.login(user_)
       user_.last_joined_date= new Date();
       await this.UserRepository.save(user_)
-      res.cookie('token', payload.access_token)
+      res.cookie('token', payload.access_token,  { secure: false, domain: process.env.HOST_IP })
       res.status(200).json({ message: 'Verification successful', code: payload.access_token });
     } else {
       res.status(401).json({ message: 'Invalid verification code' });
@@ -140,9 +140,9 @@ export class AuthController {
       if (!user_) {
         return res.status(404).json({ message: 'User not found' });
       }
-      res.cookie('token', '', { expires: new Date(0), secure: true, sameSite: 'None', domain: 'localhost' });
+      res.cookie('token', '', { expires: new Date(0), secure: false, domain: process.env.HOST_IP  });
       const newToken = await this.authService.login(user_);
-      res.cookie('token', newToken.access_token, { secure: true, sameSite: 'None', domain: 'localhost' });
+      res.cookie('token', newToken.access_token,  { secure: false, domain: process.env.HOST_IP });
       return res.status(200).json({ message: 'Token updated successfully', newToken: newToken.access_token });
     } catch (error) {
       return res.status(500).json({ message: 'An error occurred', error: error.message });
@@ -155,7 +155,7 @@ export class AuthController {
     const user_ = await this.userService.findById(id1)
     if (user_) {
       const payload = await this.authService.login(user_)
-      res.cookie('token', payload.access_token)
+      res.cookie('token', payload.access_token,  { secure: false, domain: process.env.HOST_IP })
       res.status(200).json({ message: 'Verification successful', code: payload.access_token });
     } else {
       res.status(401).json({ message: 'Invalid verification code' });

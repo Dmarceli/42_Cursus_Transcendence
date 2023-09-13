@@ -155,8 +155,9 @@ export class UsersService {
         && client.handshake.auth.userAgent == user_logged.userAgent) {
         user_logged.client.emit("DisconnectSocketToken")
       }
-      else
+      else {
         user_logged.client.emit("DeletingToken")
+      }
       this.remove_disconnect_User(user_logged.client)
       
     }

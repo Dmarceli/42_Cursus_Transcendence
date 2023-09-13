@@ -366,11 +366,10 @@ if (socket && islogged.value == true) {
     logout();
   })
 
-socket.on("DeletingToken", () =>
-{
-  console.log("Aqui")
-  clearCookie()
-})
+  socket.on("DeletingToken", () => {
+    console.log("Aqui")
+    clearCookie()
+  })
 
 }
 
