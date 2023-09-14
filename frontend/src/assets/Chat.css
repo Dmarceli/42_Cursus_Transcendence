@@ -186,7 +186,7 @@
 	overflow-y: scroll;
 	padding: 10px;
 	position: relative;
-	transition: width 0.7s ease-in-out, opacity 0.7s ease-in-out;
+	transition: min-width 0.7s ease-in-out, opacity 0.7s ease-in-out;
 	max-width: 200px;
 	padding-right: 0;
   border-radius: 14px;
@@ -194,6 +194,7 @@
 
 
 .channels-list.collapsed {
+	min-width: 0;
 	width: 0; 
 	padding: 0;
 	opacity: 0;
