@@ -106,6 +106,7 @@ export class EventsService {
 
   
   async markNotificationAsSeen(notificationId: number){
+		console.log(notificationId)
     const notification_ = await this.eventsRepository.findOne({where: {id: notificationId}})
     if(notification_)
       await this.eventsRepository.update(notification_, { already_seen: true });

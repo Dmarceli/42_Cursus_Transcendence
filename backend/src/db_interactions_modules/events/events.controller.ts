@@ -60,7 +60,7 @@ export class EventsController {
   }
 
 
-  @Post('/mark_seen/:notificationId')
+  @Post('/_seen/:notificationId')
   async markNotificationAsSeen(@Param('notificationId') notificationId: number){
     await this.eventsService.markNotificationAsSeen(notificationId);
   }
@@ -69,7 +69,7 @@ export class EventsController {
   async markAllNotificationsAsSeen(@Body() IDS: any){
     const  {unseenNotificationIds}  = IDS;
     try{
-    if(unseenNotificationIds.length > 1){
+    if(unseenNotificationIds.length > 0){
     for (const notificationId of unseenNotificationIds) {
       if(!check_valid_number(notificationId) || !isNumber(notificationId))
         return
