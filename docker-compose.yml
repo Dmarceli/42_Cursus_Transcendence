@@ -1,27 +1,22 @@
 version: '3'
-
 services:
   postgres:
     image: postgres
     restart: on-failure
-    volumes:
-      - v_db:/data
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - PGDATA=/data
-      - APP_DATABASE=${DB_NAME}
+    - POSTGRES_USER=${POSTGRES_USER}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    - PGDATA=/data
+    - APP_DATABASE=${DB_NAME}
     ports:
-      - "5432:5432"
+    - "5432:5432"
     container_name: db
 
   backend:
-    image: node
+    build: ./backend
     depends_on:
       - postgres
     restart: on-failure
-    volumes:
-      - ./backend:/home/node/app
 
     env_file:
       - .env    
@@ -33,12 +28,10 @@ services:
     entrypoint: ["bash" , "-c" , "npm install && npm run start:dev"]
 
   frontend:
-    image: node
+    build: ./frontend
     restart: on-failure
     environment:
       - VUE_APP_BACKEND_URL=${BACKEND_URL}
-    volumes:
-      - ./frontend:/home/node/app
     ports:
       - '5173:5173'
     container_name: frontend
@@ -51,10 +44,3 @@ services:
 networks:
   transcendence:
     driver: bridge
-
-volumes:
-  v_db:
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DB_VOL_LOC}

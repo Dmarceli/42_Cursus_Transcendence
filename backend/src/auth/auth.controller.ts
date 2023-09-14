@@ -61,34 +61,34 @@ export class AuthController {
   /***            Login Google             ***/
   /*******************************************/
 
-  @Get('/login_google')
-  @UseGuards(GoogleAuthGuard)
-  async googleAuth(@Req() req) { }
+  // @Get('/login_google')
+  // @UseGuards(GoogleAuthGuard)
+  // async googleAuth(@Req() req) { }
 
-  @Get('/callback_google')
-  @UseGuards(GoogleAuthGuard)
-  async googleAuthRedirect(@Req() req: { user: User }, @Res() res: any) {
-    const payload = this.authService.googleLogin(req.user)
-    if (payload.TwoFAEnabled && payload.TwoFASecret) {
-      const payload2FA = {
-        login: payload.user.intra_nick,
-        id: -1,
-        TwoFAEnabled: true
-      };
-      let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
-      res.cookie('token', "2FA" + access_token2FA, { secure: false, domain: process.env.HOST_IP })
-    }
-    else {
-      const user_= await this.UserRepository.findOne({where: {id: req.user.id }})
-      user_.last_joined_date= new Date();
-      await this.UserRepository.save(user_)
-      res.cookie('token', payload.access_token,  { secure: false, domain: process.env.HOST_IP })
-      res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
-      res.setHeader('Location', process.env.BACKEND_URL)
+  // @Get('/callback_google')
+  // @UseGuards(GoogleAuthGuard)
+  // async googleAuthRedirect(@Req() req: { user: User }, @Res() res: any) {
+  //   const payload = this.authService.googleLogin(req.user)
+  //   if (payload.TwoFAEnabled && payload.TwoFASecret) {
+  //     const payload2FA = {
+  //       login: payload.user.intra_nick,
+  //       id: -1,
+  //       TwoFAEnabled: true
+  //     };
+  //     let access_token2FA = this.jwtService.sign(payload2FA, { privateKey: "WRONG2FA", expiresIn: '5m' })
+  //     res.cookie('token', "2FA" + access_token2FA, { secure: false, domain: process.env.HOST_IP })
+  //   }
+  //   else {
+  //     const user_= await this.UserRepository.findOne({where: {id: req.user.id }})
+  //     user_.last_joined_date= new Date();
+  //     await this.UserRepository.save(user_)
+  //     res.cookie('token', payload.access_token,  { secure: false, domain: process.env.HOST_IP })
+  //     res.setHeader('Access-Control-Allow-Origin', process.env.BACKEND_URL)
+  //     res.setHeader('Location', process.env.BACKEND_URL)
 
-    }
-    res.redirect(process.env.FRONTEND_URL)
-  }
+  //   }
+  //   res.redirect(process.env.FRONTEND_URL)
+  // }
 
   @Post('/check2fa')
   async check2FAcode(@Body() body: TwoFACodeCheck, @Res() res: any) {
@@ -146,19 +146,6 @@ export class AuthController {
       return res.status(200).json({ message: 'Token updated successfully', newToken: newToken.access_token });
     } catch (error) {
       return res.status(500).json({ message: 'An error occurred', error: error.message });
-    }
-  }
-
-  // TEMPORARY
-  @Get('/tempbypass/:id')
-  async tempsecbypass(@Req() req: any, @Res() res: any, @Param('id') id1: number) {
-    const user_ = await this.userService.findById(id1)
-    if (user_) {
-      const payload = await this.authService.login(user_)
-      res.cookie('token', payload.access_token,  { secure: false, domain: process.env.HOST_IP })
-      res.status(200).json({ message: 'Verification successful', code: payload.access_token });
-    } else {
-      res.status(401).json({ message: 'Invalid verification code' });
     }
   }
 
