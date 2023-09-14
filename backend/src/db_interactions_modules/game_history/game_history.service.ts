@@ -34,7 +34,8 @@ export class GameHistoryService {
         .leftJoin("game_history.user_id_winner", "winner")
         .where("loser.id = :userId", { userId: id })
         .orWhere("winner.id = :userId", { userId: id })
-        .orderBy("game_history.time_begin", "ASC")
+        .orderBy("game_history.time_end", "DESC")
+        .take(5)
         .getMany();
     return game_history;
   }

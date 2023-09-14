@@ -4,6 +4,7 @@ import { ChannelCreateDto, ChannelProtectDto } from './dtos/channelcreate.dto';
 import { getUserIDFromToken } from 'src/db_interactions_modules/users/getUserIDFromToken';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { User } from '../users/user.entity';
+import * as sanitizeHtml from 'sanitize-html';
 
 @UseGuards(JwtAuthGuard)
 @Controller('channels')
@@ -12,6 +13,7 @@ export class ChannelsController {
 
   @Post('/create')
   create(@Body() createChannelDto: ChannelCreateDto,@getUserIDFromToken() user: User) {
+    createChannelDto.channel_name = sanitizeHtml(createChannelDto.channel_name);
     return this.channelsService.create(createChannelDto,user.id);
   }
 
