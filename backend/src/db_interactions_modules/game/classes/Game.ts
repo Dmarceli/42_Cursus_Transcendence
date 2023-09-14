@@ -57,6 +57,23 @@ export class Game {
     this.userRepository = userRepository
     this.isFinished = false
   }
+
+  PrematureFinish(playerstates: Map<string, State>)
+  {
+    if (!this.timeStart && !this.starting)
+    {
+      this.isFinished=true
+      if (playerstates.has(this.playerPaddle1.user.intra_nick)) {
+        playerstates.delete(this.playerPaddle1.user.intra_nick)
+      }
+      if (playerstates.has(this.playerPaddle2.user.intra_nick)) {
+        playerstates.delete(this.playerPaddle2.user.intra_nick)
+      }
+      this.EmitUpdatedState(playerstates, this.playerPaddle1.client, this.playerPaddle1.user.intra_nick)
+      this.EmitUpdatedState(playerstates, this.playerPaddle2.client, this.playerPaddle2.user.intra_nick)
+    }
+  }
+
   start(player_states): void {
     let interval = setInterval(() => {
       if (this.startCounter < 1) {

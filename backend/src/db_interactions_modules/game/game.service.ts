@@ -468,6 +468,7 @@ export class GameService {
     const indexPlayer2 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player2);
     if (indexPlayer1 !== -1 && indexPlayer2 !== -1) {
       let game = new Game(this.privateGamePlayers[indexPlayer1], this.privateGamePlayers[indexPlayer2], this.gameHistoryService, this.userRepository)
+      setTimeout(game.PrematureFinish.bind(game), 10000, this.player_states);
       this.active_games.push(game)
       this.SetPlayerStateEmit(this.privateGamePlayers[indexPlayer1].client, this.privateGamePlayers[indexPlayer1].user.intra_nick, State.NOT_READY)
       this.SetPlayerStateEmit(this.privateGamePlayers[indexPlayer2].client, this.privateGamePlayers[indexPlayer2].user.intra_nick, State.NOT_READY)
@@ -497,6 +498,7 @@ export class GameService {
     if (this.lobby.length < 2)
       return
     let game = new Game(this.lobby[0], this.lobby[1], this.gameHistoryService, this.userRepository)
+    setTimeout(game.PrematureFinish.bind(game), 10000, this.player_states);
     this.lobby.splice(0, 2)
     this.active_games.push(game)
     AppService.UsersOnline.forEach((user) => {
