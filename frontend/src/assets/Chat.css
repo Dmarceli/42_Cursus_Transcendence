@@ -16,6 +16,7 @@
     justify-content: baseline;
     flex-grow: 1;
     height: 100vh;
+    width: 100%;
 }
 
 
@@ -27,6 +28,9 @@
 	#chat-container{
 		height: 90vh;
 	}
+  .channels-list {
+    min-width: 120px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -178,7 +182,7 @@
 }
 
 .channels-list {
-	width: 160px;
+	min-width: 160px;
 	border: 1px solid #ccc;
 	overflow-y: scroll;
 	padding: 10px;
