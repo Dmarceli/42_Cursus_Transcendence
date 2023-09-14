@@ -1,4 +1,4 @@
-import { IsString, MaxLength,MinLength, ValidateIf,Min,Max, IsIn, IsNumber, isNumber, maxLength, IsDefined, minLength, IsArray } from 'class-validator';
+import { IsString, MaxLength,MinLength, ValidateIf,Min,Max, IsIn, IsNumber, isNumber, maxLength, IsDefined, minLength, IsArray, IsNotEmpty, Matches } from 'class-validator';
 import { isNumberObject } from 'util/types';
 
   export class ChannelCreateDto {
@@ -11,6 +11,11 @@ import { isNumberObject } from 'util/types';
 
     @IsDefined()
     @IsString()
+    @IsNotEmpty({message: 'Channel name should not be empty'})
+    @MaxLength(20, {message: 'Channel Name is too long'})
+    @Matches(/^[a-zA-Z0-9._-]{0,20}$/, {
+      message: 'The name contains invalid characters',
+    })
     channel_name: string;
     
     @IsDefined()

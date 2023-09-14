@@ -79,7 +79,7 @@
                 <v-container>
                   <v-row>
                     <v-col cols="12">
-                      <v-text-field v-model="channelName" label="Channel Name"></v-text-field>
+                      <v-text-field v-model="channelName" :rules="channelnameinput.rules" label="Channel Name"></v-text-field>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -348,7 +348,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, onBeforeMount, watch, nextTick } from 'vue';
+import { ref, inject, onBeforeMount, watch, nextTick, reactive } from 'vue';
 import jwt_decode from 'jwt-decode';
 import { Md5 } from 'ts-md5';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -395,6 +395,14 @@ let channelPassword = ref('');
 const allOnlineStatuses = ref([]);
 
 const socket = inject('socket')
+
+const channelNameRegex = /^[a-zA-Z0-9._-]{0,20}$/;
+const channelnameinput = reactive({
+  rules: [
+    (value : string) => value.length < 20 || 'Channel Name too long',
+    (value : string) => channelNameRegex.test(value) || 'Invalid Characters found',
+  ],
+});
 
 const getStatusForUser = (userId: number) => {
   const userStatus = allOnlineStatuses.value.find(onlineStatus => onlineStatus.userId === userId);
@@ -1102,6 +1110,10 @@ function update_selected_invite_user(event) {
 }
 
 const createChannel = async () => {
+  if (!channelNameRegex.test(channelName.value) || channelName.value.length > 20 || channelName.value.length == 0) {
+    return
+  }
+
   let channel_name = channelName.value;
   let channel_password = channelPassword.value;
   let ch_type = channelPassword.value ? 2 : 1;
