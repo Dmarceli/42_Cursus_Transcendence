@@ -60,7 +60,7 @@ export class EventsController {
   }
 
 
-  @Post('/_seen/:notificationId')
+  @Post('/mark_seen/:notificationId')
   async markNotificationAsSeen(@Param('notificationId') notificationId: number){
     await this.eventsService.markNotificationAsSeen(notificationId);
   }
