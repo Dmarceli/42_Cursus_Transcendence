@@ -67,7 +67,6 @@ const fetchLeaderboard = async () => {
       },
     });
       const data = await response.json();
-      console.log(data)
       leaderboard.value = data;
     } catch (error) {
       console.error('Error fetching leaderboard data:', error);
