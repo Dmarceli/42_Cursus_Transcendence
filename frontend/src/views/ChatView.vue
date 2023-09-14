@@ -306,7 +306,7 @@
             </v-card>
           </v-dialog>
         </div>
-          <button v-if="!isUserOwner(usersInChannels, usersInChannel)" class="leave-button" @click="leaveChannel(selected_channel)"></button>
+          <button v-if="!isUserOwner(usersInChannels)" class="leave-button" @click="leaveChannel(selected_channel)"></button>
           <button v-else class="del-ch-button" @click="deleteChannel(selected_channel)"></button>     
       </div>
       <div v-else-if="showChannelOptions && !getChannelType(selected_channel)">
@@ -768,7 +768,7 @@ const isUserMorePowerful = (userList, target) => {
   return true;
 }
 
-const isUserOwner = (userList, target) => {
+const isUserOwner = (userList) => {
   let is_owner_of_channel = false
   for (const userId in userList) {
     if (userList[userId]['user_id']['nick'] == users_Nick && userList[userId]['is_owner'])
