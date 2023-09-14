@@ -3,9 +3,6 @@
     <div class="welcome">
       <h1>Welcome to Raquetas</h1>
       <button class="button" @click="button42">Login with 42</button>
-      <button class="button" @click="buttonGoogle">Login with Google</button>
-      <button class="button" @click="buttonBYPASS_TEMP">BYPASS</button>
-      <input class="button" v-model="id_to_login_form" placeholder=0>
     </div>
   </div>
 </template>

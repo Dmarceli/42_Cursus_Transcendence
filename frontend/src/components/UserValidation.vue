@@ -8,7 +8,7 @@
         Did we do a good job or would you like to change any of them? 🤔
       </v-card-text>
       <div class="settings-section">
-        <label for="avatar" class="avatar-label"></label>
+        <label class="avatar-label"></label>
         <div class="avatar-container-settings">
           <img :src="updateAvatar || userData.avatar" alt="Avatar" class="avatar-settings" />
         </div>

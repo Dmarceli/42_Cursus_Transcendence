@@ -57,7 +57,6 @@ export class UserToChannelService {
   }
 
   async invite_to_channel(bodyinfo: InviteUserToChannDto) {
-    console.log(bodyinfo)
     const requester_user=await this.UserRepository.findOne({where: {id:bodyinfo.requester_user}})
     const invited_user=await this.UserRepository.findOne({where: {id:bodyinfo.invited_user}})
     const is_requester_on_channel = await this.UserToChannelRepository.findOne({where: {user_id:requester_user, channel_id: {id:bodyinfo.channel}}})

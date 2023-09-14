@@ -74,7 +74,7 @@ export class UsersService {
    	   return res.status(200).json(resp);
 		}
 		} catch (error) {
-			console.log(error);
+			//console.log(error);
     }
 	}
     

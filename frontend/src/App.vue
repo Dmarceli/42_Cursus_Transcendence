@@ -1,5 +1,6 @@
 <template>
   <header v-if="islogged && !first_login_modal">
+    
     <nav>
       <RouterLink to="/">Pong</RouterLink>
       <RouterLink to="/chat">Chat</RouterLink>
@@ -256,7 +257,7 @@ async function fetch_logged_previous() {
       console.error('Error fetching User Profile data:', response.statusText);
     }
   } catch (error) {
-    console.error('Error fetching User Profile data', error);
+    //console.error('Error fetching User Profile data', error);
   }
 }
 
