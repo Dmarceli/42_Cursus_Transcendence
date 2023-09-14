@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 
@@ -62,6 +63,10 @@ const items = [
     src: 'game_paddles/xing_ong.jpg'
   }
 ]
+
+onMounted(() => {
+  setTimeout(selectPaddle, 15000)
+})
 
 function selectPaddle() {
   emit('chosePaddle', items[model.value].src)

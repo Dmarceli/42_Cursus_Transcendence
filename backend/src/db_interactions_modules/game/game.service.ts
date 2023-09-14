@@ -12,9 +12,11 @@ import { State } from './classes/game-state-enum';
 export class PrivateGame {
   player1: string
   player2: string
+  timeStart: Date
   constructor(player1: string, player2: string) {
     this.player1 = player1;
-    this.player2 = player2
+    this.player2 = player2;
+    this.timeStart = new Date();
   }
 }
 
@@ -418,6 +420,46 @@ export class GameService {
     )
   }
 
+  ResetStateUser(intra_nick: string)
+  {
+    if (this.player_states.has(intra_nick)) {
+      this.player_states.delete(intra_nick)
+    }
+    let userOnline = AppService.UsersOnline.find(userOnline => userOnline.user.intra_nick == intra_nick)
+    if (!userOnline)
+      return
+    this.EmitUpdatedState(userOnline.client, intra_nick)
+  }
+
+  PrivateTimerExpired(private_game: PrivateGame)
+  {
+    if (private_game.timeStart)
+    {
+        let private_game_start = Date.now() - private_game.timeStart.getTime();
+        if (private_game_start && private_game_start > 20000)
+        {
+          const indexPlayer1 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player1);
+          if (indexPlayer1 !== -1) {
+            this.privateGamePlayers.splice(indexPlayer1, 1);
+          }
+          const indexPlayer2 = this.privateGamePlayers.findIndex(private_player => private_player.user.intra_nick === private_game.player2);
+          if (indexPlayer2 !== -1) {
+            this.privateGamePlayers.splice(indexPlayer2, 1);
+          }
+          this.ResetStateUser(private_game.player1)
+          this.ResetStateUser(private_game.player2)
+          return false
+        }
+    }
+    return true
+  }
+
+  deleteExpiredPrivateGames()
+  {
+    let updated_private_games = this.private_games.filter(this.PrivateTimerExpired.bind(this))
+    this.private_games = updated_private_games
+  }
+
   PrivateGameStillNotAdded(private_game: PrivateGame, player_states) {
     if (!this.privateGamePlayers) {
       return true;
@@ -446,6 +488,7 @@ export class GameService {
   }
 
   addPrivateGames(player_states) {
+    this.deleteExpiredPrivateGames();
     let updated_private_games = this.private_games.filter(this.PrivateGameStillNotAdded.bind(this), player_states)
     this.private_games = updated_private_games
   }
